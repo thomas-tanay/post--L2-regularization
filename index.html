@@ -1,0 +1,1715 @@
+<!doctype html><html>
+<head>
+<meta charset="utf-8">
+<script src="http://distill.pub/template.v1.js"></script>
+
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.12.1/math.min.js"> </script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+      processEscapes: true
+    },
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+<script type="text/javascript"
+   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+<script type="text/front-matter">
+  title: "A New Angle on L2 Regularization"
+  description: "Adversarial Examples in Linear Classification and Beyond"
+  authors:
+  - Thomas Tanay: http://thomastanay.com/
+  - Lewis Griffin: https://sites.google.com/site/lewisdgriffin/home
+  affiliations:
+  - CoMPLEX, UCL: http://www.ucl.ac.uk/complex
+  - CoMPLEX, UCL: http://www.ucl.ac.uk/complex
+</script>
+
+<script src="assets/vis_functions.js"></script>
+
+</head>
+
+<body>
+<dt-article class="centered">
+  <h1 class="l-middle">A New Angle on L2 Regularization</h1>
+  <h2 class="l-middle"> <i>Adversarial Examples in Linear Classification and Beyond</i> </h2>
+  <dt-byline></dt-byline>
+  
+  <p>Classifiers are prone to adversarial examples when the average distance between the data and the boundary (or <em>adversarial distance</em>) is small.</p>
+  
+  <p> <span style="color: rgb(60%,60%,60%); font-style: italic;">In linear classification... </span> <br>
+  L2 regularization plays a central role in the phenomenon. By scaling the loss function, it balances the objective
+  between minimizing the error and maximizing the adversarial distance over the training set.</p>
+  
+  <style>
+  #fig0-title {
+    margin-bottom: 30px;
+	text-align: center;
+	font-size: 15px;
+  }
+  #play-button {
+    margin-left: 15px;
+	font: 12px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(50%,50%,50%);
+  }
+  .fig0-span {
+    display: inline-block;
+	width: 30px;
+	text-align: right;
+  }
+  #fig0-line1 {
+    margin-left: 60px;
+	margin-right: 60px;
+    margin-bottom: 15px;
+    display: -webkit-flex;
+    display: flex;
+	justify-content: center;
+  }
+  #fig0-line2 {
+    margin-left: 60px;
+	margin-right: 60px;
+    margin-bottom: 15px;
+    display: -webkit-flex;
+    display: flex;
+	justify-content: space-between;
+  }
+  #fig0 {
+    display: -webkit-flex;
+    display: flex;
+	justify-content: space-between;
+  }
+  .fig0-subfig {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	justify-content: center;
+  }
+  .fig0-subfig-content {
+	width: 300px;
+	height: 200px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(80%,80%,80%);
+  }
+  .fig0-caption {
+    margin-top: 5px;
+	text-align: center;
+  }
+  #fig0-canvas {
+    margin-right: 20px;
+  }
+  #fig0-input {
+    margin-top: 3px;
+  }
+  </style>
+  
+  <figure class="l-middle">
+    <div class="l-body">
+	  <div id="fig0-title"> SVM on the 2 vs 3 MNIST problem trained with varying levels of L2 regularization: <button id="play-button"> PLAY </button> </div>
+	  <div id="fig0-line1">
+	    <figcaption> Regularization parameter : &ensp; $\lambda = 10$ <sup> <span id="fig0-value-lambda">...</span> </sup> &ensp; </figcaption>
+	  </div>
+      <div id="fig0-line2">
+	    <figcaption id="fig0-errTrain"> Training error : &ensp; $err_{\text{train}} = $ <span class="fig0-span" id="fig0-value-errTrain">...</span> % </figcaption>
+	    <figcaption id="fig0-dAdv"> Adversarial distance : &ensp; $d_{\text{adv}} =  $ <span class="fig0-span" id="fig0-value-dAdv">...</span> </figcaption>
+	  </div>
+	</div>
+    <div id="fig0">
+	  <div class="fig0-subfig">
+	    <canvas id="fig0-canvas" width="150" height="150"> </canvas>
+		<figcaption class="fig0-caption"> weight vector $\boldsymbol{w}$</figcaption>
+	  </div>
+	  <div class="fig0-subfig">
+	    <div class="fig0-subfig-content" id="fig0-subfig-content1"> </div>
+		<figcaption class="fig0-caption"> Projection of the training data on $\boldsymbol{\hat{w}}$ (histograms) <br> and loss function used during training (solid lines).</figcaption>
+	  </div>
+	  <div class="fig0-subfig">
+	    <div class="fig0-subfig-content" id="fig0-subfig-content2"> </div>
+		<figcaption class="fig0-caption"> Projection of the training data in the deviation <br> plane of $\boldsymbol{\hat{w}}$.</figcaption>
+	  </div>
+	</div>
+  </figure>
+  
+  <script>
+   fig0();
+  </script>
+  
+  <p> <span style="color: rgb(60%,60%,60%); font-style: italic;">In neural networks... </span> <br>
+  
+  The scaling of the loss function can be controlled with weight decay, resulting in a simple form of adversarial training. 
+  Its potential appears underexploited in practice.</p>
+  
+  <style>
+  #fig0bis {
+    display: -webkit-flex;
+    display: flex;
+  }
+  #fig0bis-title {
+    margin-bottom: 20px;
+	text-align: center;
+	font-size: 15px;
+  }
+  #fig0bis-subfig1 {
+    margin-right: 10px;
+  }
+  #fig0bis-subfig2 {
+    margin-left: 10px;
+  }
+  #fig0bis-column1 {
+    margin-right: 10px;
+	margin-top: 0px;
+	margin-bottom: 35px;
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  #fig0bis-caption11 {
+    margin-top: 4px;
+	margin-bottom: 5.5px;
+	text-align: center;
+	font-size: 10px;
+	line-height: 130%;
+  }
+  #fig0bis-caption12 {
+    margin-top: 5.5px;
+	margin-bottom: 8.5px;
+	text-align: center;
+	font-size: 10px;
+	line-height: 130%;	
+  }
+  #fig0bis-caption13 {
+    margin-top: 8.5px;
+	margin-bottom: auto;
+	text-align: center;
+	font-size: 10px;
+	line-height: 130%;
+  }
+  .fig0bis-caption2 {
+    margin-top: 5px;
+	text-align: center;
+  }
+  </style>
+
+  <figure class="l-middle">
+    <div id="fig0bis-title"> LeNet on MNIST trained with two different levels of weight decay: </div>
+    <div id="fig0bis">
+	  <div id="fig0bis-column1">
+	    <figcaption id="fig0bis-caption11"> original images</figcaption>
+		<figcaption id="fig0bis-caption12"> adversarial examples</figcaption>
+		<figcaption id="fig0bis-caption13"> perturbations</figcaption>
+	  </div>
+	  <div id="fig0bis-subfig1">
+        <img src="assets/adv_weightDecay0.0005_abstract.png">
+	    <figcaption class="fig0bis-caption2"> weight decay $= 0.0005$</figcaption>
+	  </div>
+	  <div id="fig0bis-subfig2">
+	    <img src="assets/adv_weightDecay1_abstract.png">
+	    <figcaption class="fig0bis-caption2"> weight decay $= 1.0$</figcaption>
+	  </div>
+	</div>
+  </figure>
+  
+  <hr>
+  
+  <h2> Context </h2>
+  
+  <style>
+  #Carell_Deschanel {
+    display: -webkit-flex;
+    display: flex;
+	justify-content: space-between;
+  }
+  .Carell_Deschanel_caption1 {
+    display: inline-block;
+	width: 180px;
+	text-align: center;
+  }
+  #Carell_Deschanel_caption2 {
+    display: inline-block;
+	width: 200px;
+	text-align: center;
+  }
+  </style>
+  
+  <p> Deep neural networks have been shown to be vulnerable to the adversarial example phenomenon <dt-cite key="szegedy2013intriguing,goodfellow2014explaining"></dt-cite>:
+  all models tested so far can have their classifications dramatically altered by small image perturbations. The following predictions were for instance made by
+  a state-of-the-art network trained to recognize celebrities <dt-cite key="parkhi2015deep"></dt-cite>: <p>
+  <figure class="l-body">
+    <img src="assets/Carell_Deschanel.png">
+	<div id="Carell_Deschanel">
+	  <figcaption class="Carell_Deschanel_caption1"> Steve Carell (score: 0.966)</figcaption>
+	  <figcaption id="Carell_Deschanel_caption2"> Zooey Deschanel (score: 0.968)</figcaption>
+	  <figcaption class="Carell_Deschanel_caption1"> perturbation </figcaption>
+	</div>
+  </figure>
+  
+  <p> This result is puzzling for two reasons. First, it challenges conventional wisdom on generalization in machine learning.
+  Second, it constitutes a potential threat to real-world applications <dt-cite key="papernot2016practical,kurakin2016adversarial"></dt-cite>. Researchers at 
+  OpenAI have for instance recently created images that <a href="https://blog.openai.com/robust-adversarial-inputs/"> reliably fool neural network classifiers 
+  when viewed from varied scales and perspectives</a>. Understanding this phenomenon and improving deep networks' robustness has thus become an important 
+  research objective.</p>
+  
+  <p>Several approaches have been explored already. The phenomenon has been described in details <dt-cite key="moosavi2016deepfool,carlini2016towards"></dt-cite> 
+  and some theoretical analysis has been provided <dt-cite key="bastani2016measuring,fawzi2016robustness"></dt-cite>. Attempts have been made at designing more robust 
+  architectures <dt-cite key="gu2014towards,papernot2016distillation,zhao2016suppressing"></dt-cite> or at detecting adversarial examples during evaluation 
+  <dt-cite key="bhagoji2017dimensionality,feinman2017detecting,grosse2017statistical,metzen2017detecting"></dt-cite>. <em>Adversarial training</em> has also been 
+  introduced as a new regularization technique penalising adversarial directions <dt-cite key="goodfellow2014explaining,shaham2015understanding,miyato2017virtual,sankaranarayanan2017regularizing"></dt-cite>.
+  Despite these numerous contributions, the problem stays largely unresolved <dt-cite key="goodfellow2017attacking,carlini2017adversarial"></dt-cite>.
+  Confronted with this difficulty, we propose to proceed from fundamentals: focusing on linear classification first and then increasing complexity incrementally.</p>
+
+  <hr>
+  
+  <h2> Preamble </h2>
+  
+  <p>In linear classification, adversarial perturbations are often understood as a property of the dot product in high dimension:
+  "for high dimensional problems, we can make many infinitesimal changes to the input that add up to one large change to the output" 
+  <dt-cite key="goodfellow2014explaining"></dt-cite>. Yet, this view is misleading&mdash; consider for instance the following toy problem.</p>
+
+  <p> For a given pixel height $h$, let's define two classes of images in the space $[-1, 1]^{h \times 2h}$: </p>
+  
+  <style>
+  .classesIJ-row {
+    display: -webkit-flex;
+    display: flex;
+  }
+  .classesIJ-cell1 {
+    margin-left: 0px;
+	margin-right: 20px;
+    margin-top: auto;
+	margin-bottom: auto;
+	font-weight: bold;
+	border-radius: 5px;
+	background-color: rgb(80%,80%,80%)
+  }
+  .classesIJ-cell2 {
+	margin: 0px;
+  }
+  .classesIJ-examples {
+    margin-left: 0px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  .imIJ {
+	vertical-align: text-bottom;
+    -ms-interpolation-mode: nearest-neighbor;
+    image-rendering: optimizeSpeed;
+    image-rendering: pixelated;
+  }
+  #classesIJ-buttons {
+    margin-top: 20px;
+	margin-bottom: 30px;
+	width: 350px;
+    text-align: center;
+	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(50%,50%,50%);
+	background: rgb(95%,95%,95%);
+    border-radius: 25px;
+  }
+  .classesIJ-one-button {
+    margin: 5px;
+	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(50%,50%,50%);
+  }
+  </style>
+
+  <div class="classesIJ-row">
+    <p class="classesIJ-cell1" style="color: rgb(25%,25%,25%)"> &nbsp;Class $I$&nbsp; </p>
+	<p class="classesIJ-cell2"> Left half-image: random values in $[-1, -0.1]$ <br> Right half-image: constant value $0$</p>
+  </div>
+  <p class="classesIJ-examples"> Ex:
+    <canvas class="imIJ" id="classI_0" width="90" height="45"> </canvas>,&nbsp;&nbsp;
+	<canvas class="imIJ" id="classI_1" width="90" height="45"> </canvas>,&nbsp;&nbsp;
+	<canvas class="imIJ" id="classI_2" width="90" height="45"> </canvas>,&nbsp;&nbsp;
+	<canvas class="imIJ" id="classI_3" width="90" height="45"> </canvas>,&nbsp;&nbsp;
+	<canvas class="imIJ" id="classI_4" width="90" height="45"> </canvas>,&nbsp;&nbsp;etc.
+  </p>
+  <div class="classesIJ-row">
+    <p class="classesIJ-cell1" style="color: rgb(99%,99%,99%)"> &nbsp;Class $J$&nbsp; </p>
+	<p class="classesIJ-cell2"> Left half-image: random values in $[0.1, 1]$ <br> Right half-image: constant value $0$</p>
+  </div>
+  <p class="classesIJ-examples"> Ex:
+    <canvas class="imIJ" id="classJ_0" width="90" height="45"> </canvas>,&nbsp;&nbsp;
+	<canvas class="imIJ" id="classJ_1" width="90" height="45"> </canvas>,&nbsp;&nbsp;
+	<canvas class="imIJ" id="classJ_2" width="90" height="45"> </canvas>,&nbsp;&nbsp;
+	<canvas class="imIJ" id="classJ_3" width="90" height="45"> </canvas>,&nbsp;&nbsp;
+	<canvas class="imIJ" id="classJ_4" width="90" height="45"> </canvas>,&nbsp;&nbsp;etc.
+  </p>
+  <div id="classesIJ-buttons"> Pixel height:
+    <button class="classesIJ-one-button" onclick="example_images(1)"> $h=1$ </button>
+	<button class="classesIJ-one-button" onclick="example_images(10)"> $h=10$ </button>
+	<button class="classesIJ-one-button" onclick="example_images(50)"> $h=50$ </button>
+  </div>
+  
+  <script>
+    example_images(10);
+  </script>
+  
+  <p> Then, let's consider the following two vectors in $[-1, 1]^{h \times 2h}$: </p>
+  
+  <style>
+  .vectors-row {
+    display: -webkit-flex;
+    display: flex;
+	margin-bottom: 20px;
+  }
+  .vectors-cell1 {
+    margin-top: 0px;
+	margin-bottom: 0px;
+	margin-right: 20px
+  }
+  .vectors-cell2 {
+    margin-top: 0px;
+	margin-bottom: 0px;
+	width: 375px;
+	border-right-style: solid;
+	border-right-width: 1px;
+  }
+  .vectors-cell3 {
+	margin-left: 30px;
+	margin-top: auto;
+	margin-bottom: auto;
+  }
+  </style>
+  
+  <div class="vectors-row">
+	<p class="vectors-cell1"> $\boldsymbol{e_1}$ </p>
+	<p class="vectors-cell2"> Left half-image: constant value $1$ <br> Right half-image: constant value $0$ </p>
+	<div class="vectors-cell3"> <canvas class="imIJ" id="e1" width="90" height="45"> </canvas> </div>
+  </div>
+  <div class="vectors-row">
+	<p class="vectors-cell1"> $\boldsymbol{e_2}$ </p>
+    <p class="vectors-cell2"> Left half-image: constant value $0$ <br> Right half-image: constant value $1$ </p>
+	<div class="vectors-cell3"> <canvas class="imIJ" id="e2" width="90" height="45"> </canvas> </div>
+  </div>
+  
+  <script>
+    vectors_e1_e2();
+  </script>
+  
+  <p> We observe that: <br>
+  1) $\boldsymbol{e_1} \!\cdot\! \boldsymbol{e_2} = 0. \quad$ $\boldsymbol{e_1}$ and $\boldsymbol{e_2}$ are orthogonal. <br>
+  2) $\forall \boldsymbol{x} \in I\;\; \boldsymbol{e_1} \!\cdot\! \boldsymbol{x} &lt; 0 \quad \text{and} \quad \forall \boldsymbol{x} \in J\;\; \boldsymbol{e_1} \!\cdot\! \boldsymbol{x} > 0. \quad$ The hyperplane $H_1$ defined by $\boldsymbol{e_1}$ separates the classes $I$ and $J$ perfectly. <br>
+  3) $\forall \boldsymbol{x} \in I \cup J\;\; \boldsymbol{e_2} \!\cdot\! \boldsymbol{x} = 0. \quad$ The hyperplane $H_2$ defined by $\boldsymbol{e_2}$ lies on the classes $I$ and $J$, it does not separate them. </p>
+	  
+  <p> Finally let's define $\boldsymbol{e_\theta}$, a version of $\boldsymbol{e_1}$ rotated towards $\boldsymbol{e_2}$ by an angle $\theta$:
+		$$\boldsymbol{e_\theta} := \cos(\theta)\,\boldsymbol{e_1} + \sin(\theta)\,\boldsymbol{e_2}$$
+	  For all $\theta$ in $[0,\pi/2)$, we have: <br>
+	  4) $\forall \boldsymbol{x} \in I \cup J\;\; \boldsymbol{e_\theta} \!\cdot\! \boldsymbol{x} = \cos(\theta)\,\boldsymbol{e_1} \!\cdot\! \boldsymbol{x}$ <br>
+	  In the range considered, $\,\cos(\theta) > 0\,$ and the hyperplane $H_\theta$ defined by $\boldsymbol{e_\theta}$ separates $I$ and $J$ just like $H_1$. </p>
+	  
+  <p> These observations are straightforward when we consider the projections of the classes $I$ and $J$ into the plane spanned by $\boldsymbol{e_1}$ and $\boldsymbol{e_2}$: </p>
+
+  <style>
+  #fig1 {
+    display: -webkit-flex;
+    display: flex;
+  }
+  #fig1-left {
+    margin-left: auto;
+	margin-right: auto;
+	margin-top: auto;
+	margin-bottom: 60px;
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  #fig1-left-controler {
+    margin-left: auto;
+	margin-right: auto;
+	margin-top: auto;
+	margin-bottom: 20px;
+    display: -webkit-flex;
+    display: flex;
+  }
+  #fig1-left-controler-input {
+    margin-top: 5px;
+    margin-left: 10px;
+	margin-right: 10px;
+  }
+  #fig1-left-caption1 {
+    margin-top: 3px;
+  }
+  #fig1-left-caption2 {
+    margin-top: auto;
+	margin-bottom: auto;
+	margin-right: 10px;
+  }
+  #fig1-left-content {
+    margin-left: 10px;
+	margin-right: auto;
+	margin-top: 20px;
+	margin-bottom: auto;
+    display: -webkit-flex;
+    display: flex;
+  }
+  #fig1-left-canvas {
+    margin-top: auto;
+    margin-bottom: auto;
+	margin-left: 0px;
+    margin-right: auto;
+    -ms-interpolation-mode: nearest-neighbor;
+    image-rendering: optimizeSpeed;
+    image-rendering: pixelated;
+  }
+  #fig1-right {
+    margin-left: auto;
+	margin-right: 0px;
+	width: 420px;
+	height: 280px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(80%,80%,80%);
+  }
+  #fig1-caption {
+	margin-top: 10px;
+  }
+  </style>
+  
+  <figure class="l-middle">
+    <div id="fig1">
+      <div id="fig1-left">
+	    <div id="fig1-left-controler">
+		  <figcaption id="fig1-left-caption1"> $\theta:$ </figcaption>
+		  <input id="fig1-left-controler-input" type="range" min="0" max="0.99" step="0.01"> </input>
+		  <figcaption> <span id="fig1-value-theta">...</span>$ \; \dfrac{\pi}{2}$ </figcaption>
+		</div>
+	    <div id="fig1-left-content">
+		  <figcaption id="fig1-left-caption2"> $\boldsymbol{e_\theta}:$ </figcaption>
+		  <canvas id="fig1-left-canvas" width="150" height="75"> </canvas>
+		</div>
+	  </div>
+	  <div id="fig1-right"> </div>
+	</div>
+	<figcaption id="fig1-caption"> It is apparent in the plane $(\boldsymbol{e_1}, \boldsymbol{e_2})$ that: 
+	1) $\boldsymbol{e_1}$ and $\boldsymbol{e_2}$ are orthogonal,
+    2) $H_1$ separates the classes $I$ and $J$ perfectly, 
+	3) $H_2$ does not separate the classes $I$ and $J$ and 
+	4) $H_{\theta}$ separates the classes $I$ and $J$ perfectly for all $\theta$ in $[0,\pi/2)$. </figcaption>
+  </figure>
+  
+  <script>
+   fig1();
+  </script>
+  
+  <p> The two classes we have defined form large clusters in image space (both extending into half the dimensions of the space). 
+  At the same time, they occupy clearly distinct regions and can be separated by an infinite number of hyperplanes (in particular, $H_\theta$ for all $\theta$ in $[0,\pi/2)$).
+  This raises an interesting question: if all the linear classifiers $H_{\theta}$ perform equally well on clean data, are they all equally robust to image perturbations? </p>
+  
+  <p> For an image $\boldsymbol{x}$ in $[-1, 1]^{h \times 2h}$, the <em>signed euclidean distance</em> between $\boldsymbol{x}$ and $H_{\theta}$ is: 
+  $$d(\boldsymbol{x}) = \boldsymbol{x} \!\cdot\! \boldsymbol{\hat{e}_{\theta}}$$
+  with: $\displaystyle \boldsymbol{\hat{e}_{\theta}} = \frac{\boldsymbol{e_{\theta}}}{\lVert\boldsymbol{e_{\theta}}\rVert}\;$ 
+  (here and in the following, $\lVert\cdot\rVert$ refers to the L2-norm).</p>
+  
+  <p>If $\boldsymbol{x}$ is in $I \cup J$, we can write:
+  $$d(\boldsymbol{x}) = \cos(\theta)\,\boldsymbol{x} \!\cdot\! \boldsymbol{\hat{e}_1}$$ 
+  and we see that $d(\boldsymbol{x}) \to 0$ when $\theta \to \pi/2$. Hence, $H_{\theta}$ becomes increasingly vulnerable to image perturbations as $\theta \to \pi/2$.</p>
+  
+  <p>As an illustration, let's consider some adversarial examples affecting $H_{\theta}$.
+  For a given image $\boldsymbol{x}$ in $I \cup J$, the closest image classified into the opposite class is the <em>projected image</em> of 
+  $\boldsymbol{x}$ on $H_{\theta}$, defined as:
+  $$\boldsymbol{x}_p := \boldsymbol{x} - d(\boldsymbol{x}) \; \boldsymbol{\hat{e}_{\theta}}$$
+  When $\boldsymbol{x}$ and $\boldsymbol{x}_p$ are very close, we say that $\boldsymbol{x}_p$ is an <em>adversarial examples</em> of $\boldsymbol{x}$. 
+  Observe though that $\boldsymbol{x}_p$ is classified with a low confidence score (it lies on the boundary) and it is
+  perhaps more interesting to consider <em>high-confidence adversarial examples</em> <dt-cite key="carlini2017adversarial"></dt-cite>.
+  In the following, we focus on the <em>mirror image</em> of $\boldsymbol{x}$ through $H_{\theta}$, defined as:
+  $$\boldsymbol{x}_m := \boldsymbol{x} - 2\,d(\boldsymbol{x}) \; \boldsymbol{\hat{e}_{\theta}}$$
+  $\boldsymbol{x}_m$ is the nearest image classified in the opposite class with the same confidence level as $\boldsymbol{x}$ 
+  (or such that: $d(\boldsymbol{x}_m) = -d(\boldsymbol{x})$).
+  
+  <p> We can show that the mirror image through $H_{\theta}$ satisfies the following two properties: <br>
+  1) $\theta = 0\; \implies\; \forall \boldsymbol{x} \in I\;\; \boldsymbol{x}_m \in J\;$ and 
+  $\;\forall \boldsymbol{x} \in J\;\; \boldsymbol{x}_m \in I$. <br>
+  2) $\theta \to \pi/2\; \implies\; \forall \boldsymbol{x} \in I \cup J\;\; ||\boldsymbol{x}_m – \boldsymbol{x}|| \to 0$.</p>
+  
+  <p> Consider for instance two images $\boldsymbol{x} \in I$ and $\boldsymbol{y} \in J$: </p>
+  
+  <style>
+  #fig2 {
+    display: -webkit-flex;
+    display: flex;
+  }
+  #fig2-left {
+    margin-left: 0px;
+	margin-right: auto;
+	margin-top: 0px;
+	margin-bottom: auto;
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  #fig2-left-controler {
+    margin-left: auto;
+	margin-right: auto;
+	margin-top: 40px;
+	margin-bottom: 0px;
+    display: -webkit-flex;
+    display: flex;
+  }
+  #fig2-left-controler-input {
+    margin-top: 5px;
+    margin-left: 10px;
+	margin-right: 10px;
+  }
+  #fig2-left-caption1 {
+    margin-top: 3px;
+  }
+  .fig2-left-caption2 {
+	margin-bottom: 5px;
+	text-align: center;
+  }
+  .fig2-left-caption3 {
+    margin-top: auto;
+	margin-bottom: 13px;
+  }
+  #fig2-left-content {
+    margin-left: 0px;
+	margin-right: auto;
+	margin-top: 20px;
+	margin-bottom: auto;
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  .fig2-left-content-line {
+    margin-left: 0px;
+	margin-top: 15px;
+	margin-bottom: 5px;
+    display: -webkit-flex;
+    display: flex;
+  }
+  .fig2-left-content-image {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  #fig2-right {
+    margin-left: auto;
+	margin-right: 0px;
+	width: 420px;
+	height: 280px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(80%,80%,80%);
+  }
+  #fig2-caption {
+	margin-top: 10px;
+  }
+  #fig2-buttons {
+    margin-top: 10px;
+	margin-bottom: 30px;
+	width: 350px;
+    text-align: center;
+	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(50%,50%,50%);
+	background: rgb(95%,95%,95%);
+    border-radius: 25px;
+  }
+  .fig2-one-button {
+    margin: 5px;
+	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(50%,50%,50%);
+  }
+  </style>
+  
+  <figure class="l-middle" id="fig2-margin">
+    <div id="fig2">
+      <div id="fig2-left">
+	    <div id="fig2-left-controler">
+		  <figcaption id="fig2-left-caption1"> $\theta:$ </figcaption>
+		  <input id="fig2-left-controler-input" type="range" min="0" max="0.99" step="0.01"> </input>
+		  <figcaption> <span id="fig2-value-theta">...</span>$ \; \dfrac{\pi}{2}$ </figcaption>
+		</div>
+		<div id="fig2-left-content">
+		  <div class="fig2-left-content-line">
+		    <div class="fig2-left-content-image">
+			  <figcaption class="fig2-left-caption2"> $\boldsymbol{x}$ </figcaption>
+			  <canvas id="fig2-left-canvas-x" width="90" height="45"> </canvas>
+			</div>
+			<figcaption class="fig2-left-caption3"> $\,+\,$ <span id="fig2-value-dx">...</span> $\,\times\,$ </figcaption>
+		    <div class="fig2-left-content-image">
+			  <figcaption class="fig2-left-caption2"> $\boldsymbol{e_{\theta}}$ </figcaption>
+			  <canvas id="fig2-left-canvas-etheta" width="90" height="45"> </canvas>
+			</div>
+			<figcaption class="fig2-left-caption3"> $\;=\;$ </figcaption>
+		    <div class="fig2-left-content-image">
+			  <figcaption class="fig2-left-caption2"> $\boldsymbol{x}_m$ </figcaption>
+			  <canvas id="fig2-left-canvas-xm" width="90" height="45"> </canvas>
+			</div>
+		  </div>
+		  <div class="fig2-left-content-line">
+		    <div class="fig2-left-content-image">
+			  <figcaption class="fig2-left-caption2"> $\boldsymbol{y}$ </figcaption>
+			  <canvas id="fig2-left-canvas-y" width="90" height="45"> </canvas>
+			</div>
+			<figcaption class="fig2-left-caption3"> $\;+$ <span id="fig2-value-dy">...</span> $\,\times\,$ </figcaption>
+		    <div class="fig2-left-content-image">
+			  <figcaption class="fig2-left-caption2"> $-\boldsymbol{e_{\theta}}$ </figcaption>
+			  <canvas id="fig2-left-canvas-minus-etheta" width="90" height="45"> </canvas>
+			</div>
+			<figcaption class="fig2-left-caption3"> $\;=\;$ </figcaption>
+		    <div class="fig2-left-content-image">
+			  <figcaption class="fig2-left-caption2"> $\boldsymbol{y}_m$ </figcaption>
+			  <canvas id="fig2-left-canvas-ym" width="90" height="45"> </canvas>
+			</div>
+		  </div>
+		</div>
+	  </div>
+	  <div id="fig2-right"> </div>
+	</div>
+	<figcaption id="fig2-caption"> Two images $\boldsymbol{x} \in I$ and $\boldsymbol{y} \in J$, their mirror images $\boldsymbol{x}_m$ and $\boldsymbol{y}_m$
+                 and their projections in the plane $(\boldsymbol{e_1}, \boldsymbol{e_2})$.<br>
+				 1) When $\theta = 0$, $\boldsymbol{x}_m \in J$ and $\boldsymbol{y}_m \in I$.
+				 2) When $\theta \to \pi/2$, $||\boldsymbol{x}_m-\boldsymbol{x}|| \to 0$ and $||\boldsymbol{y}_m-\boldsymbol{y}|| \to 0$. 
+    </figcaption>
+  </figure>
+  
+  <script>
+   fig2(10);
+  </script>
+  
+  <p  id="fig2-buttons"> Pixel height:
+    <button class="fig2-one-button" onclick="fig2(1)"> $h=1$ </button>
+	<button class="fig2-one-button" onclick="fig2(10)"> $h=10$ </button>
+	<button class="fig2-one-button" onclick="fig2(50)"> $h=50$ </button>
+  </p>
+
+  <style>
+  .p-header {
+    margin-bottom: 10px;
+	font-style: italic;
+	text-decoration: underline;
+  }
+  </style>
+  
+  <ul> 
+  <li> <div class="p-header"> When$\; \theta = 0$,$\;H_{\theta}\;$does not suffer from adversarial examples: </div>
+  $\boldsymbol{x}_m$ and $\boldsymbol{y}_m$ actually belong to the opposite class according to human observers. </li>
+  <li> <div class="p-header"> When$\; \theta \to \pi/2$,$\;H_{\theta}\;$suffers from strong adversarial examples: </div>
+  $\boldsymbol{x}_m$ and $\boldsymbol{y}_m$ are visually indistinguishable from their original images (and yet they are classified differently with high confidence).</li>
+  </ul>
+  
+  <p> Importantly, high dimensionality is neither necessary (adversarial examples might exist when $h=1$) nor sufficient (adversarial examples might
+  not exist when $h=50$) for the phenomenon to occur. Rather, <em>adversarial examples exist when the classification boundary lies close to the data
+  in image space.</em></p>
+  
+  <hr>
+  
+  <h2> In Linear Classification </h2>
+  
+  <p> Although it sheds some new light on the phenomenon, the previous toy problem is only partially convincing. 
+  For a start, the classes of images considered are very artificial&mdash;does natural data have the right properties for the same phenomenon to occur? 
+  What determines the position of the classification boundary in practice?
+  Why would the boundary lie close to the data in such a deviant way instead of lying between the two classes symmetrically?
+  As we'll see, all these questions can be answered by reinterpreting L2 regularization as a scaling mechanism acting on the loss function.</p>
+	
+  <h3> Scaling the Loss Function </h3>
+  
+  <p> Let $I$ and $J$ be two classes of images and $\mathcal{C}$ a hyperplane boundary defining a linear classifier in $\mathbb{R}^d$. 
+  $\mathcal{C}$ is specified by a normal weight vector $\boldsymbol{w}$ and a bias $b$. For an image $\boldsymbol{x}$ in $\mathbb{R}^d$, 
+  we call <em> raw score </em> of $\boldsymbol{x}$ through $\mathcal{C}$ the value:
+  $$s(\boldsymbol{x}) := \boldsymbol{w} \!\cdot\! \boldsymbol{x} + b \quad\quad\quad \boldsymbol{x} \text{ is classified in } \mathrel{\Bigg|}
+  \begin{array}{@{}c@{}} \text{$I$ if } s(\boldsymbol{x}) \leq 0 \\ \text{$J$ if } s(\boldsymbol{x}) \geq 0 \end{array}$$</p>
+  
+  <p> Now, consider a training set $T$ of $n$ pairs $(\boldsymbol{x},y)$ where $\boldsymbol{x}$ is an image and 
+  $y = \{ -1 \text{ if } \boldsymbol{x} \in I \;|\; 1 \text{ if } \boldsymbol{x} \in J\}$ is its label.
+  For a given <em>loss function</em> $f$, the <em>empirical risk</em> on $T$ for the classifier $\mathcal{C}$ is:
+  $$R(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(y\,s(\boldsymbol{x})\big)$$
+  In general, learning a linear classifier consists in finding a weight vector $\boldsymbol{w}$ and a bias $b$ minimising $R(\boldsymbol{w},b)$ 
+  for a well chosen loss function $f$.</p>
+  
+  <p>Note that the raw score $s(\boldsymbol{x})$ can be seen as a scaled, signed distance. 
+  If $d(\boldsymbol{x})$ is the actual <em> signed euclidean distance </em> between $\boldsymbol{x}$ and $\mathcal{C}$, we have:
+  $$d(\boldsymbol{x}):= \boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{x} + b^\prime \quad\quad\quad \text{where} \quad\quad \textstyle
+  \boldsymbol{\hat{w}} := \frac{\boldsymbol{w}}{\lVert\boldsymbol{w}\rVert}\,,\quad b^\prime := \frac{b}{\lVert\boldsymbol{w}\rVert}$$
+  $$\text{and} \quad s(\boldsymbol{x}) = \lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
+  Hence the norm $\lVert\boldsymbol{w}\rVert$ can be interpreted as a scaling parameter for the loss function. 
+  The term $f\big(y\,s(\boldsymbol{x})\big)$ in the empirical risk can be written:
+  $$f\big(y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})\big)$$
+  and understood as: "$f$ applied to the signed euclidean distance $d(\boldsymbol{x})$, flipped left/right by the label $y = \pm 1$ and scaled by the parameter 
+  $\lVert\boldsymbol{w}\rVert$".
+  
+  <p>In binary classification, three notable loss functions are:</p>
+  
+  <style>
+  .loss-functions {
+	display: -webkit-flex;
+    display: inline-flex;
+	flex-direction: column;
+	width: 100%;
+  }
+  .loss-functions-div {
+    margin-bottom: 10px;
+    display: -webkit-flex;
+    display: flex;
+  }
+  .loss-functions-text {
+    flex-grow: 1;
+	display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  .loss-functions-equations {
+    margin: auto;
+  }
+  .loss-functions-fig {
+    margin-top: 0px;
+    margin-left: auto;
+	margin-right: 10px;
+	width: 180px;
+	height: 120px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(80%,80%,80%);
+  }
+  </style>
+  
+  <ul> 
+  <li>
+  <div class="loss-functions">
+    <div class="loss-functions-div">
+      <div class="loss-functions-text">
+        <div> The <em>0-1 indicator function</em> </div>
+	    <div class="loss-functions-equations">
+          $$f:z \rightarrow
+          \begin{cases}
+          1  \quad & \text{if } z \leq 0\\
+          0        & \text{if } z \gt 0
+          \end{cases}$$
+	    </div>
+      </div>
+	  <div class="loss-functions-fig" id="indicator-01"> </div>
+    </div>
+    <div> With the 0-1 indicator function, the empirical risk $R(\boldsymbol{w},b)$ is simply the <em>error rate</em> on $T$.
+    In a sense, this is the optimal loss function as minimizing the error rate is often the desired objective in practice. However, it cannot be 
+    used with gradient descent (there is no gradient to descend: the devivative is null everywhere).</div>
+  </div>
+  </li>
+  <li>
+  <div class="loss-functions">
+    <div class="loss-functions-div">
+      <div class="loss-functions-text">
+        <div> The <em>hinge loss</em> </div>
+	    <div class="loss-functions-equations">
+          $$f:z \rightarrow \max(1-z,0)$$
+	    </div>
+      </div>
+	  <div class="loss-functions-fig" id="hinge-loss"> </div>
+    </div>
+  </div>
+  <div> The hinge loss is used in Support Vector Machines (SVM). It penalises the misclassified data linearly while encouraging a safety margin of 1.</div> 
+  </li>
+  <li>
+  <div class="loss-functions">
+    <div class="loss-functions-div">
+      <div class="loss-functions-text">
+        <div> The <em>softplus loss</em> </div>
+	    <div class="loss-functions-equations">
+          $$f:z \rightarrow \ln\left(1+e^{-z}\right)$$
+	    </div>
+      </div>
+	  <div class="loss-functions-fig" id="softplus-loss"> </div>
+    </div>
+  </div>
+  <div> The softplus loss is used in logistic regression. It can be seen as a smooth version of the hinge loss. </div>
+  </li>
+  </ul>
+  
+  <script>
+    loss_functions();
+  </script>
+  
+  <p> The 0-1 indicator function is invariant to rescaling, but the hinge loss and the softplus loss are strongly affected: </p>
+  
+  <style>
+  #fig3 {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  #fig3-controler {
+    margin-bottom: 20px;
+    display: -webkit-flex;
+    display: flex;
+	justify-content: center;
+  }
+  .fig3-caption0 {
+    margin-top: 3px;
+  }
+  #fig3-controler-input {
+    margin-top: 5px;
+    margin-left: 10px;
+	margin-right: 10px;
+  }
+  #fig3-controler-value {
+	margin-left: 15px;
+	margin-right: auto;
+    margin-top: 0px;
+	margin-bottom: 0px;
+    font-family: Computer Modern;
+  }
+  #fig3-content {
+	margin-bottom: 10px;
+    display: -webkit-flex;
+    display: flex;
+	justify-content: space-between;
+	
+  }
+  .fig3-subfig {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	align-items: center;
+  }
+  .fig3-subfig-content {
+    margin-top: 10px;
+	width: 240px;
+	height: 160px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(80%,80%,80%);
+  }
+  </style>
+  
+  <figure class="l-middle">
+    <div id="fig3">
+      <div id="fig3-controler">
+	    <figcaption class="fig3-caption0"> $\lVert\boldsymbol{w}\rVert:$ </figcaption>
+		<input id="fig3-controler-input" type="range" min="-1" max="2" step="0.01"> </input>
+		<figcaption class="fig3-caption0"> $\displaystyle 10$ <sup> <span id="fig3-value-w">...</span> </sup> </figcaption>
+	  </div>
+	  <div id="fig3-content">
+	    <div class="fig3-subfig">
+		  <figcaption> 0-1 indicator function </figcaption>
+          <div class="fig3-subfig-content" id="fig3-subfig1"> </div>
+		</div>
+	    <div class="fig3-subfig">
+		  <figcaption> hinge loss </figcaption>
+          <div class="fig3-subfig-content" id="fig3-subfig2"> </div>
+		</div>
+	    <div class="fig3-subfig">
+		  <figcaption> softplus loss </figcaption>
+          <div class="fig3-subfig-content" id="fig3-subfig3"> </div>
+		</div>
+	  </div>
+	</div>
+	<figcaption> Effect of the scaling parameter $\lVert\boldsymbol{w}\rVert$ on the three loss functions. The histograms represent the values of $d(\boldsymbol{x})$ 
+	over the training data for a given $\boldsymbol{w}$ and $b$ and the full lines represent the values of $f$ (orange: class $I$, blue: class $J$).</figcaption>
+  </figure>
+  
+  <script>
+   fig3();
+  </script>
+  
+  <p> Importantly, the hinge loss and the softplus loss behave in the same way for extreme values of the scaling parameter.</p>
+  
+  <style>
+  .header-div {
+    margin-top: 0px;
+	margin-bottom: 0px;
+    display: -webkit-flex;
+    display: flex;
+  }
+  .header-text {
+    margin-top: auto;
+    margin-bottom: auto;
+	font-style: italic;
+	text-decoration: underline;
+  }
+  .header-fig {
+    margin-top: auto;
+	margin-bottom: 10px;
+    margin-left: 30px;
+	width: 180px;
+	height: 120px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(80%,80%,80%);
+  }
+  </style>
+  
+  <ul> 
+  <li> 
+  <u> When$\;\lVert\boldsymbol{w}\rVert\;$is large</u>, the hinge loss and the softplus loss penalize only the misclassified data. More precisely, both losses satisfy<dt-fn>
+  <u>Hinge loss</u><br>
+  \begin{align}
+    \max(1-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x}),0)& \quad\> \;=\; \quad\> \textstyle\lVert\boldsymbol{w}\rVert \, \max\left(\lVert\boldsymbol{w}\rVert^{-1}-y\,d(\boldsymbol{x}),0\right)\\
+    &\;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\; \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)
+  \end{align}<br>
+  
+  <u>Softplus loss</u><br>
+  \begin{align}
+    \ln\left(1+e^{-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})}\right) &\;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\;
+	  \begin{cases}
+        -y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})  \quad & \text{if } y\,d(\boldsymbol{x}) \leq 0\\
+        0                                                        & \text{if } y\,d(\boldsymbol{x}) \gt 0
+      \end{cases}\\
+	&\;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\; \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)
+  \end{align}
+  </dt-fn>:
+  $$f\big(y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})\big) \;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\; 
+  \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)$$ 
+  For convenience, we name the set of misclassified data:
+  $$M := \{ (\boldsymbol{x},y) \in T \;|\; y\,d(\boldsymbol{x}) \leq 0 \}$$ 
+  and we can then write the empirical risk as:
+  $$R(\boldsymbol{w},b) \;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\; 
+  \lVert\boldsymbol{w}\rVert \, \biggl(\frac{1}{n}\sum_{(\boldsymbol{x},y) \in M}\!\left(-\,y\,d(\boldsymbol{x})\right)\biggr)$$
+  This expression contains a term which we call the <em>error distance</em>:
+  $$d_{\text{err}} := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in M}\!\left(-\,y\,d(\boldsymbol{x})\right)$$
+  It is <u>positive</u> and can be interpreted as the average distance by which each training sample is misclassified by $\mathcal{C}$
+  (with a null contribution for the correctly classified data). It is related&mdash;although not exactly equivalent&mdash;to the training error<dt-fn> 
+	A small $d_{\text{err}}$ does not <em>guarantee</em> the training error to be small: 
+	a large portion of the data could be misclassified with a very small distance ($d_{\text{err}}$ can even be null if all the data lies on the boundary).</dt-fn>.<p>
+  <p> Finally we have:
+  $$\text{minimize: }R(\boldsymbol{w},b) \;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\iff}\; \text{minimize: $d_{\text{err}}$}$$
+  In words, when $\lVert\boldsymbol{w}\rVert$ is large, <em>minimizing the empirical risk for the hinge loss or the softplus loss is equivalent to minimizing the error distance, 
+  which is similar to minimizing the error rate on the training set</em>.
+  </li> 
+  <li> <u> When$\;\lVert\boldsymbol{w}\rVert\;$is small</u>, the hinge loss and the softplus loss penalize the entire training data linearly. More precisely, both losses satisfy<dt-fn>
+  <u>Hinge loss</u><br>
+  $$\max(1-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x}),0) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{=}\; 1-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
+  $$\alpha = 1 \quad\text{and}\quad \beta = 1$$
+  <u>Softplus loss</u><br>
+  $$\ln\left(1+e^{-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})}\right) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\; 
+  \ln(2)-\frac{1}{2}\,y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
+  $$\alpha = \ln(2) \quad\text{and}\quad \beta = \frac{1}{2}$$
+  </dt-fn>:
+  $$f\big(y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})\big) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\; 
+  \alpha - \beta\;y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
+  for some positive values $\alpha$ and $\beta$.</p>
+  <p> We can then write the empirical risk as:
+  $$R(\boldsymbol{w},b) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\;
+  \alpha - \beta\;\lVert\boldsymbol{w}\rVert \, \biggl(\frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}y\,d(\boldsymbol{x})\biggr)$$
+  This expression contains a new term which we call the <em>adversarial distance</em>:
+  $$d_{\text{adv}} := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}y\,d(\boldsymbol{x})$$
+  It is the mean distance between the images in $T$ and the classification boundary $\mathcal{C}$ (with a negative contribution for the misclassified images).
+  It can be viewed as a measure of robustness to adversarial perturbations: when $d_{\text{adv}}$ is high, the number of misclassified images is limited and 
+  the correctly classified images are far from $\mathcal{C}$.
+  </p>
+  <p> Finally we have:
+  $$\text{minimize: }R(\boldsymbol{w},b) \;\underset{\lVert\boldsymbol{w}\rVert \to 0}{\iff}\; \text{maximize: } d_{\text{adv}}$$
+  In words, when $\lVert\boldsymbol{w}\rVert$ is small, <em>minimizing the empirical risk for the hinge loss or the softplus loss is equivalent to maximizing the adversarial distance, 
+  which can be interpreted as minimizing the phenomenon of adversarial examples.</em>
+  </li>
+  </ul>
+  
+  <p>In practice, the value of $\lVert\boldsymbol{w}\rVert$ can be controlled by adding a regularization term to the empirical risk, yielding the <em>regularized loss</em>:
+  $$L(\boldsymbol{w},b) := \underbrace{R(\boldsymbol{w},b)}_{\text{Empirical Risk}} \, + \underbrace{\lambda\,\lVert\boldsymbol{w}\rVert^2}_{\text{L2 Regularization}}$$</p>
+  
+  <p> A small <em>regularization parameter</em> $\lambda$ lets $\lVert\boldsymbol{w}\rVert$ grow unchecked while a larger $\lambda$ encourages $\lVert\boldsymbol{w}\rVert$ to shrink.</p>
+  
+  <style>
+  .sum-paragraph-container {
+    margin: 20px;
+    background-color: rgb(95%,95%,95%);
+	border-top: 15px solid rgb(95%,95%,95%);
+	border-bottom: 15px solid rgb(95%,95%,95%);
+	border-left: 20px solid rgb(95%,95%,95%);
+	border-right: 20px solid rgb(95%,95%,95%);
+	border-radius: 10px;
+	font-size: 17px;
+	font-style: italic;
+	text-align: center;
+  }
+  </style>
+  
+  <div>
+  <div class="sum-paragraph-container">
+    In summary, the two standard models used in linear classification <br>(SVM and logistic regression) balance between two objectives:<br>
+	they <u>minimize the error distance</u> when regularization is low and<br> they <u>maximize the adversarial distance</u> when regularization is high.
+  </div>
+  </div>
+  
+  <h3> Adversarial Distance and Deviation Angle </h3>
+  
+  <p> The adversarial distance $d_{\text{adv}}$ naturally emerged as a measure of robustness to adversarial perturbations.
+  Rather conveniently, it can be expressed as a function of a single parameter.</p>
+
+  <p>If $T_I$ and $T_J$ are the restrictions of $T$ to the elements in $I$ and $J$ respectively, we can write: 
+  \begin{align}
+  d_{\text{adv}} &= \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}y\,d(\boldsymbol{x})\\
+				 &= \frac{1}{n}\,\biggl[\;\sum_{\boldsymbol{x} \in T_I}(-\boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{x} - b^\prime) \;\;+\;\; 
+				 \sum_{\boldsymbol{x} \in T_J}(\boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{x} + b^\prime)\,\biggr]
+  \end{align}
+  If $T_I$ and $T_J$ are balanced $\left(n = 2\,n_I = 2\,n_J\right)$:
+  \begin{align}
+  d_{\text{adv}} &= -\frac{1}{2\,n_I}\sum_{\boldsymbol{x} \in T_I}\boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{x} \;\;+\;\; \frac{1}{2\,n_J}\sum_{\boldsymbol{x} \in T_J}\boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{x}\\
+                 &= \frac{1}{2}\;\boldsymbol{\hat{w}} \!\cdot\! \biggl[\biggl(\frac{1}{n_J} \sum_{\boldsymbol{x} \in T_J}\boldsymbol{x}\biggr) 
+				 - \biggl(\frac{1}{n_I} \sum_{\boldsymbol{x} \in T_I}\boldsymbol{x}\biggr)\biggr]
+  \end{align}
+  If $\boldsymbol{i}$ and $\boldsymbol{j}$ are the centroids of $T_I$ and $T_J$ respectively:
+  $$d_{\text{adv}} = \frac{1}{2}\;\boldsymbol{\hat{w}} \!\cdot\! (\boldsymbol{j}-\boldsymbol{i})$$
+  We now introduce the <em>nearest centroid classifier</em>, which has unit normal vector 
+  $\boldsymbol{\hat{z}} = (\boldsymbol{j}-\boldsymbol{i})/\lVert\boldsymbol{j}-\boldsymbol{i}\rVert$:
+  $$d_{\text{adv}} =\frac{1}{2}\;\lVert\boldsymbol{j}-\boldsymbol{i}\rVert\;\boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{\hat{z}}$$
+  Finally, we call the plane containing $\boldsymbol{\hat{w}}$ and $\boldsymbol{\hat{z}}$ the <em>deviation plane</em> of $\mathcal{C}$ 
+  and we we call the angle $\theta$ between $\boldsymbol{\hat{w}}$ and $\boldsymbol{\hat{z}}$ the <em>deviation angle</em> of $\mathcal{C}$:
+  $$d_{\text{adv}} = \frac{1}{2}\;\lVert\boldsymbol{j}-\boldsymbol{i}\rVert\;\cos(\theta)$$</p>
+
+  <p> Hence, on a given training set $T$ where the distance between the two centroids $\lVert\boldsymbol{j}-\boldsymbol{i}\rVert$ is fixed, 
+  $d_{\text{adv}}$ depends only on the deviation angle $\theta$. Two observations follow:<br>
+  <ul> 
+  <li> The adversarial example phenomenon is minimized by the nearest centroid classifier<dt-fn>
+  ... <u>and</u> the classifiers parallel to it (indeed, $d_{\text{adv}}$ is independent 
+  of the bias $b$). This explains why the biases found by SVM are poorly adjusted when regularization is high, resulting in very high training and test errors 
+  (see for instance the classification of 1s vs 8s when $\lambda = 10^7$ in the next section).</dt-fn> (i.e. $\theta = 0$).</li>
+  <li> Adversarial examples can be arbitrarily strong when $\theta \to \pi/2$ (as was the case with the classifier $H_{\theta}$ in preamble).</li>
+  </ul>
+  
+  <h3> Example: SVM on MNIST </h3>
+  
+  <p> We illustrate the previous considerations on binary classification of MNIST digits. For each possible pair of digit classes, we compute the normalized 
+  weight vector $\boldsymbol{\hat{z}}$ of the nearest centroid classifier and train multiple SVM models $(\boldsymbol{w},b)$ for $\lambda \in [10^{-1}, 10^7]$
+  (using a training set of $3000$ images per class).</p>
+  
+  <p> Then, we look at representative images $\boldsymbol{x}$, $\boldsymbol{y}$ (one per class) and, for each SVM model, their mirror images 
+  $\boldsymbol{x}_m$, $\boldsymbol{y}_m$. We also look at their projections in the deviation plane of $\boldsymbol{\hat{w}}$ along with the 
+  projections of the rest of the training data:</p>
+  
+  <style>
+  #fig4 {
+    display: -webkit-flex;
+    display: flex;
+  }
+  #fig4-left {
+    flex-grow: 1;
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+  }
+  #fig4-left-controler {
+    margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 40px;
+    display: -webkit-flex;
+    display: flex;
+	justify-content: center;
+  }
+  .fig4-left-caption0 {
+    margin-top: 3px;
+  }
+  .fig4-left-caption1 {
+    margin-bottom: 10px;
+  }
+  .fig4-left-caption2 {
+	margin-bottom: 5px;
+	text-align: center;
+  }
+  .fig4-left-caption3 {
+    margin-top: auto;
+	margin-bottom: 33px;
+  }
+  .fig4-span {
+    display: inline-block;
+	width: 30px;
+	text-align: right;
+  }
+  #fig4-left-controler-input {
+    margin-top: 5px;
+    margin-left: 10px;
+	margin-right: 10px;
+  }
+  #fig4-left-line1 {
+	margin-top: 5px;
+	margin-bottom: auto;
+	margin-right: 30px;
+    display: -webkit-flex;
+    display: flex;
+	//justify-content: space-around;
+  }
+  #fig4-left-line1-errors {
+    margin-right: 60px;
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+  }
+  .fig4-left-line {
+	margin-bottom: 20px;
+    display: -webkit-flex;
+    display: flex;
+  }
+  .fig4-left-cell {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  #fig4-right {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  #fig4-right-buttons {
+    flex-grow: 1;
+	margin-bottom: 10px;
+    display: -webkit-flex;
+    display: flex;
+	justify-content: space-between;
+	font-size: 13px;
+  }
+  .top-row {
+    color: rgb(78.07%,51.10%,4.21%);
+  }
+  .bottom-row {
+    color: rgb(36.84%,50.68%,70.98%);
+  }
+  #fig4-right-content {
+	width: 430px;
+	height: 280px;
+  }
+  #fig4-caption {
+    margin-top: 10px;
+  }
+  </style>
+  
+  <figure class="l-middle">
+	<div id="fig4-left-controler">
+	  <figcaption class="fig4-left-caption0"> Regularization parameter $\lambda:$ </figcaption>
+	  <input id="fig4-left-controler-input" type="range" min="0" max="80" step="1"> </input>
+	  <figcaption class="fig4-left-caption0"> $\displaystyle 10$ <sup> <span id="fig4-value-lambda">...</span> </sup> </figcaption>
+    </div>
+    <div id="fig4">
+	  <div id="fig4-left">
+		<div id="fig4-left-line1">
+		  <div id="fig4-left-line1-errors">
+		    <figcaption id="fig4-left-errTrain" class="fig4-left-caption1"> $err_{\text{train}} = $ <span class="fig4-span" id="fig4-value-errTrain">...</span>% </figcaption>
+			<figcaption id="fig4-left-errTest" class="fig4-left-caption1"> $err_{\text{test}} = $ <span class="fig4-span" id="fig4-value-errTest">...</span>% </figcaption>
+	      </div>
+		  <figcaption id="fig4-left-dAdv"> $d_{\text{adv}} =  $ <span class="fig4-span" id="fig4-value-dAdv">...</span> </figcaption>
+		</div>
+		<div class="fig4-left-line">
+		  <div class="fig4-left-cell">
+		    <figcaption class="fig4-left-caption2"> $\boldsymbol{x}$ </figcaption>
+		    <canvas id="fig4-left-canvas-imx" width="90" height="90"> </canvas>
+		  </div>
+		  <figcaption class="fig4-left-caption3"> $\;+$ <span class="fig4-span" id="fig4-value-dx">...</span> $\,\times\,$ </figcaption>
+		  <div class="fig4-left-cell">
+		    <figcaption class="fig4-left-caption2"> $\boldsymbol{\hat{w}}$ </figcaption>
+			<canvas id="fig4-left-canvas-w" width="90" height="90"> </canvas>
+		  </div>
+		  <figcaption class="fig4-left-caption3"> $\;=\;$ </figcaption>
+		  <div class="fig4-left-cell">
+			<figcaption class="fig4-left-caption2"> $\boldsymbol{x}_m$ </figcaption>
+			<canvas id="fig4-left-canvas-imxm" width="90" height="90"> </canvas>
+		  </div>
+		</div>
+		<div class="fig4-left-line">
+		  <div class="fig4-left-cell">
+		    <figcaption class="fig4-left-caption2"> $\boldsymbol{y}$ </figcaption>
+		    <canvas id="fig4-left-canvas-imy" width="90" height="90"> </canvas>
+		  </div>
+		  <figcaption class="fig4-left-caption3"> $\;+$ <span class="fig4-span" id="fig4-value-dy">...</span> $\,\times\,$ </figcaption>
+		  <div class="fig4-left-cell">
+			<figcaption class="fig4-left-caption2"> $-\boldsymbol{\hat{w}}$ </figcaption>
+			<canvas id="fig4-left-canvas-minus-w" width="90" height="90"> </canvas>
+		  </div>
+		  <figcaption class="fig4-left-caption3"> $\;=\;$ </figcaption>
+		  <div class="fig4-left-cell">
+			<figcaption class="fig4-left-caption2"> $\boldsymbol{y}_m$ </figcaption>
+			<canvas id="fig4-left-canvas-imym" width="90" height="90"> </canvas>
+		  </div>
+		</div>
+	  </div>
+	  <div id="fig4-right">
+        <div id="fig4-right-buttons">
+          <div>
+            <span class="top-row"> Left digit:</span> <br>
+	        <span class="bottom-row"> Right digit:</span>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-0" type="radio" name="left-digit" value="0"> <label class="top-row" id="left-label-0" for="0"> 0 </label></input> <br>
+	        <input id="right-input-0" type="radio" name="right-digit" value="0"> <label class="bottom-row" id="right-label-0" for="0"> 0 </label></input>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-1" type="radio" name="left-digit" value="1"> <label class="top-row" id="left-label-1" for="1"> 1 </label></input> <br>
+	        <input id="right-input-1" type="radio" name="right-digit" value="1"> <label class="bottom-row" id="right-label-1" for="1"> 1 </label></input>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-2" type="radio" name="left-digit" value="2"> <label class="top-row" id="left-label-2" for="2"> 2 </label></input> <br>
+	        <input id="right-input-2" type="radio" name="right-digit" value="2"> <label class="bottom-row" id="right-label-2" for="2"> 2 </label></input>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-3" type="radio" name="left-digit" value="3"> <label class="top-row" id="left-label-3" for="3"> 3 </label></input> <br>
+	        <input id="right-input-3" type="radio" name="right-digit" value="3"> <label class="bottom-row" id="right-label-3" for="3"> 3 </label></input>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-4" type="radio" name="left-digit" value="4"> <label class="top-row" id="left-label-4" for="4"> 4 </label></input> <br>
+	        <input id="right-input-4" type="radio" name="right-digit" value="4"> <label class="bottom-row" id="right-label-4" for="4"> 4 </label></input>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-5" type="radio" name="left-digit" value="5"> <label class="top-row" id="left-label-5" for="5"> 5 </label></input> <br>
+	        <input id="right-input-5" type="radio" name="right-digit" value="5"> <label class="bottom-row" id="right-label-5" for="5"> 5 </label></input>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-6" type="radio" name="left-digit" value="6"> <label class="top-row" id="left-label-6" for="6"> 6 </label></input> <br>
+	        <input id="right-input-6" type="radio" name="right-digit" value="6"> <label class="bottom-row" id="right-label-6" for="6"> 6 </label></input>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-7" type="radio" name="left-digit" value="7"> <label class="top-row" id="left-label-7" for="7"> 7 </label></input> <br>
+	        <input id="right-input-7" type="radio" name="right-digit" value="7"> <label class="bottom-row" id="right-label-7" for="7"> 7 </label></input>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-8" type="radio" name="left-digit" value="8"> <label class="top-row" id="left-label-8" for="8"> 8 </label></input> <br>
+	        <input id="right-input-8" type="radio" name="right-digit" value="8"> <label class="bottom-row" id="right-label-8" for="8"> 8 </label></input>
+	      </div>
+	      <div class="digit-div">
+	        <input id="left-input-9" type="radio" name="left-digit" value="9"> <label class="top-row" id="left-label-9" for="9"> 9 </label></input> <br>
+	        <input id="right-input-9" type="radio" name="right-digit" value="9"> <label class="bottom-row" id="right-label-9" for="9"> 9 </label></input>
+	      </div>
+        </div>
+        <div id="fig4-right-content">
+	    </div>
+	  </div>
+	</div>
+	<figcaption id="fig4-caption"> Binary classification by SVM on MNIST as a function of the regularization parameter $\lambda$. The training error $err_{\text{train}}$,
+	the test error $err_{\text{test}}$ and the adversarial distance $d_{\text{adv}}$ are indicated in the top left corner. Below are two representative images $\boldsymbol{x}$ 
+	and $\boldsymbol{y}$ and their mirror images $\boldsymbol{x}_m$ and $\boldsymbol{y}_m$. On the right are their projections in the deviation plane of $\boldsymbol{\hat{w}}$
+	along with the projections of the training data. The horizontal direction is $\boldsymbol{\hat{z}}$ (joining the two centroids) and the vertical direction is 
+	$\boldsymbol{\hat{n}}$ with $\boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$. 
+	The grey area is $[-\frac{1}{\lVert\boldsymbol{w}\rVert},\frac{1}{\lVert\boldsymbol{w}\rVert}]\,\boldsymbol{\hat{w}}$.</figcaption>
+  </figure>
+  
+  <style>
+  #button-0vs1 {
+	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(50%,50%,50%);
+  }
+  #button-7vs9 {
+	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(50%,50%,50%);
+  }
+  </style>
+  
+  <p>We can make several observations:</p>
+  <ul>
+    <li> Minimising the training error and maximizing the adversarial distance are conflicting goals: 
+	$err_{train}$ is minimized when $\lambda$ is small and $d_{adv}$ is maximized when $\lambda$ is large.</li>
+    <li> The test error is minimized for an intermediate level of regularization $\lambda_{\text{optimal}}$.
+	When $\lambda \lt \lambda_{\text{optimal}}$, the classifier is <em>overfitted</em> and when $\lambda \gt \lambda_{\text{optimal}}$, the classifier is <em>underfitted</em>.</li>
+	<li> The training error is minimized by tilting the classification boundary along directions of low variance in the data, effectively overfitting
+	a small number of training samples. This results in a large deviation angle and gives a random aspect to the weight vector.</li>
+	<li> The model is sensitive to strong adverarial examples ($||\boldsymbol{x}_m-\boldsymbol{x}|| \to 0$ and $||\boldsymbol{y}_m-\boldsymbol{y}|| \to 0$)
+	when the deviation angle of $\boldsymbol{\hat{w}}$ is close to $\pi/2$. This is a symptom of strong overfitting, and whether it occurs or not depends on the difficulty 
+	to separate the two classes (compare for instance <button id="button-7vs9"> 7 vs 9 </button> and <button id="button-0vs1"> 0 vs 1 </button>). </li>
+  </ul>
+  
+  <script>
+   fig4();
+  </script>
+  
+  <hr>
+  
+  <h2> In Neural Networks </h2>
+  
+  <p> Thanks to the equivalence between adversarial distance and deviation angle, the linear case is simple enough to be visualized in the plane. In neural networks however, 
+  the class boundary is not flat and the adversarial distance cannot be reduced to a single parameter. Nonetheless, some similarities with the linear case remain.</p>
+  
+  <h3> First Step: a 2-Layer Binary Network </h3>
+  
+  <p> Let $\mathcal{N}$ be a 2-layer network with a single output defining a nonlinear binary classifier in $\mathbb{R}^d$. The first layer of $\mathcal{N}$ is 
+  specified by a weight matrix $W_1$ and a bias vector $b_1$ and the second layer of $\mathcal{N}$ is specified by a weight vector $W_2$ and bias $b_2$. We assume
+  that the two layers are separated by a layer $\phi$ of rectified linear units applying the function $z \rightarrow \max(0,z)$ element-wise.   
+  For an image $x$ in $\mathbb{R}^d$, we call the <em>raw score</em> of $x$ through $\mathcal{N}$ the value:
+  $$s(x) := W_2\;\phi(W_1\,x + b_1) + b_2$$ 
+  Similarly to the linear case, the <em>empirical risk</em> on $T$ for a <em>loss function</em> $f$ can be written:
+  $$R(W_1,b_1;W_2,b_2) := \frac{1}{n}\sum_{(x,y) \in T}f\big(y\,s(x)\big)$$
+  and training $\mathcal{N}$ consists in finding $W_1$, $b_1$, $W_2$ and $b_2$ minimizing $R$ for a well chosen $f$.</p> 
+  
+  <p> $\phi$ is piecewise linear and around each image $x$ there is a local linear region $\mathcal{L}_x$ within which:
+  $$\phi(W_1 \, x + b_1) = W_1^x \, x + b_1^x$$
+  where $W_1^x$ and $b_1^x$ are obtained by zeroing some lines in $W_1$ and $b_1$ respectively<dt-fn>
+  More precisely, the $i^{th}$ lines in $W_1^x$ and $b_1^x$ are:
+  $$\left(W_1^x\,,\,b_1^x\right)_i = 
+  \begin{cases}
+    \left(W_1\,,\,b_1\right)_i  \quad & \text{if } \left(W_1\,x + b_1\right)_i \gt 0\\
+    0                                 & \text{if } \left(W_1\,x + b_1\right)_i \leq 0
+  \end{cases}$$
+  </dt-fn>. Within $\mathcal{L}_x$, the raw score can thus be written:
+  $$s(x) = W_2 W_1^x \, x + W_2 b_1^x + b_2$$
+  and can be seen as the raw score of a local linear classifier $\mathcal{C}_x$.
+  Our analysis of the linear case then applies almost without modifications. First, we observe that $s(x)$ is a scaled distance. 
+  If $d(x)$ is the actual <em>signed euclidean distance</em> between $x$ and $\mathcal{C}_x$, we have:
+  $$s(x) = \lVert W_2 W_1^x \rVert\,d(x)$$</p>
+  
+  <style>
+  #notes-div {
+    display: -webkit-flex;
+    display: flex;
+  }
+  #notes-p {
+    margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 20px;
+  }
+  </style>
+  
+  <div id="notes-div">
+  <div> Notes </div>
+  <p id="notes-p"> &#9656; $d(x)$ can also be viewed as a linear approximation of the distance between $x$ and the boundary defined by 
+  $\mathcal{N}$ (that is, the distance to the nearest adversarial example).<br> 
+  &#9656; $W_2 W_1^x$ is the gradient of $\mathcal{N}$ within $\mathcal{L}_x$. 
+  It is the adversarial direction for $x$, computed by backpropagation in practice.</p>
+  </div>
+  
+  <p> The norm $\lVert W_2 W_1^x \rVert$ can then be interpreted as a scaling parameter for the loss function (the scaling is now local, dependent on $x$).
+  One simple way to control all the local scalings simultaneously is by adding a regularization term to the empirical risk acting on the norms 
+  $\lVert W_1 \rVert$ and $\lVert W_2 \rVert$ independently (remember that the weights in $W_1^x$ are a subset of the weights in $W_1$). 
+  With gradient descent, this ends up being equivalent to decaying the weights $W_1$ and $W_2$ at every iteration.
+  More precisely, for a learning rate $\eta$ and a decaying factor $\lambda$, the <em>weight decay update</em> is:
+  $$W_1 \leftarrow W_1 - \eta\,\lambda\,W_1 \quad \text{and} \quad W_2 \leftarrow W_2 - \eta\,\lambda\,W_2$$
+  
+  <ul> 
+  <li> 
+  <u> With a small decaying factor$\;\lambda$</u>, the scaling parameter $\lVert W_2 W_1^x \rVert$ is allowed to grow unrestricted and the loss penalizes only 
+  the misclassified data. Minimizing the empirical risk is then equivalent to minimizing the error on the training set.
+  </li>
+  <li>
+  <u> As the decaying factor$\;\lambda\;$increases</u>, the scaling parameter $\lVert W_2 W_1^x \rVert$ decreases and the loss starts penalizing more and more of the 
+  correctly classified data, pushing it further away from the boundary. Under this light, L2 weight decay can be seen as a form of <em>adversarial training</em>.
+  </li>
+  </ul>
+  
+  <div>
+  <div class="sum-paragraph-container">
+  In summary, a 2-layer network differs from a linear classifier in <br> that the distances on which the loss function is applied are<br> <u>linear approximations</u> of the 
+  actual distances between the data and<br> the boundary and the scaling parameter $\lVert W_2 W_1^x \rVert$ is <u>local</u>.
+  </div>
+  </div>
+  
+  <h3> Second Step: General Case </h3>
+  
+  <p> The previous analysis can be generalized to more layers and even to non-piecewise-linear activation functions. The important observation is that we always have:
+  $$s(x) = \lVert \nabla_{\!x} \, s \rVert\, d(x)$$
+  Where $\nabla_{\!x} \, s$ is the gradient of the raw score on $x$, and $d(x)$ is a linear approximation of the distance between $x$ and the boundary defined by the network.
+  The norm $\lVert \nabla_{\!x} \, s \rVert$ then acts as a scaling parameter on the loss function.</p> 
+  
+  <p> Another point that needs to be addressed is that, until now, we have only focussed on binary classification using the hinge loss or the softplus loss. 
+  This might appear as a serious restriction, but it's not. In the multiclass case, the raw score simply becomes a vector and each of its components 
+  can be seen as a scaled distance. The multiclass loss then applied is&mdash;in most problems&mdash;the cross-entropy loss, which is nothing more than a 
+  multidimensional version of the softplus loss.</p>
+  
+  <p>The fact that deep networks generally converge to zero training error in practice and the fact that they are often
+  vulnerable to linear attacks of small magnitude <dt-cite key="goodfellow2014explaining"></dt-cite> suggests that they are strongly under-regularized.</p>
+
+  <h3> Example: LeNet on MNIST </h3>
+  
+  <p> Is it possible to regularize a neural network against adversarial examples by only using weight decay? The idea is simple enough and has been considered before:
+  Goodfellow et al. <dt-cite key="goodfellow2014explaining"></dt-cite> have observed that adversarial training is <em>"somewhat similar to L1 regularization"</em> in 
+  the linear case. However, the authors reported that when training maxout networks on MNIST, an L1 weight decay coefficient of $0.0025$ <em>"was too large, and caused 
+  the model to get stuck with over $5\%$ error on the training set. Smaller weight decay coefficients permitted successful training but conferred no regularization benefit."</em><p>
+  
+  <p> We put the idea to the test once again in a simple setup: LeNet on MNIST (10-class problem). As reported in <dt-cite key="goodfellow2014explaining"></dt-cite>, 
+  we initially observed a high training error when using large L2 weight decay, but then found that it could be fixed by disabling momentum (momentum gives a short term
+  memory to the gradient descent algorithm <dt-cite key="goh2017why"></dt-cite>). Further investigation showed that momentum could remain active, as long 
+  as it applied only to the gradient step (and not the decay step). With this modification, we were able to train LeNet on MNIST using a weight decay of $1.0$ on every layer
+  ($50$ epochs, learning rate of $0.0005$). For comparison, we also trained the same network with a standard weight decay of $0.0005$. </p>
+  
+  <p> Below, we submit the two networks to the same evaluation and generate high-confidence adversarial examples (with median confidence scores) targeted to perform a 
+  cyclic permutation of the labels: $0 \to 1$, ..., $9 \to 0$. For convenience, we set the temperature of the softmax layer on each network<dt-fn>
+  If the inputs to the softmax layer are the raw scores $s_i$ and the outputs are the corresponding probabilities $p_i$, then:
+  $$p_i = \frac{\exp(s_i/T)}{\displaystyle \sum_j \exp(s_j/T)}$$
+  where T is the temperature parameter. It was introduced in the context of network distillation and produces softer probability distributions over classes<dt-cite key="hinton2015distilling"></dt-cite>.</dt-fn>
+  to ensure that the median score on the test set is 0.95.</p>
+  
+  <style>
+  #fig5 {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  .fig5-line {
+    margin-bottom: 20px;
+    display: -webkit-flex;
+    display: flex;
+  }
+  .fig5-header {
+    margin-bottom: 10px;
+	font-size: 15px;
+	text-align: center;
+  }
+  .fig5-column1 {
+    margin-right: 20px;
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	width: 90px;
+  }
+  .fig5-caption1 {
+    margin-top: 18px;
+	text-align: center;
+  }
+  .fig5-caption2 {
+    margin-top: 22px;
+	text-align: center;
+  }
+  .fig5-caption3 {
+    margin-top: 30px;
+	text-align: center;
+  }
+  #fig5-img1 {
+    width:500px;
+	height:180px;
+  }
+  #fig5-img2 {
+    margin-left: auto;
+	margin-right: 0px;
+    width:175px;
+	height:184px;
+  }
+  </style>
+  
+  <figure class="l-middle">
+    <div id="fig5">
+	<div class="fig5-header"> Standard weight decay = 0.0005</div>
+	<div class="fig5-line">
+	  <div class="fig5-column1">
+	    <figcaption class="fig5-caption1"> original <br> images</figcaption>
+		<figcaption class="fig5-caption2"> adversarial examples</figcaption>
+		<figcaption class="fig5-caption3"> perturbations</figcaption>
+	  </div>
+	  <img id="fig5-img1" src="assets/adv_weightDecay0.0005.png">
+      <img id="fig5-img2" src="assets/plot0.0005.png">
+	</div>
+	<div class="fig5-header"> High weight decay = 1.0</div>
+	<div class="fig5-line">
+	  <div class="fig5-column1">
+	    <figcaption class="fig5-caption1"> original <br> images</figcaption>
+		<figcaption class="fig5-caption2"> adversarial examples</figcaption>
+		<figcaption class="fig5-caption3"> perturbations</figcaption>
+	  </div>
+	  <img id="fig5-img1" src="assets/adv_weightDecay1.png">
+      <img id="fig5-img2" src="assets/plot1.0.png">
+	</div>
+	</div>
+	<figcaption> LeNet on MNIST trained with two different levels of weight decay. For each network, the first line shows one digit per class (tag: prediction@score),
+	the second line shows the corresponding adversarial example (tag: prediction@score) and the third line shows the corresponding perturbation (tag: L2 norm).
+    On the right are the train and test errors as a function of the epoch number.</figcaption>
+  </figure>
+  
+  <p>The network trained with high weight decay is superior to the comparison network in two ways:</p>
+  <ul> 
+  <li> It is less overfitted (the train and test errors are approximately equal at the end of the training) 
+  and generalizes better (final test error of $1.2\%$ with high weight decay versus $1.5\%$ with low weight decay). </li>
+  <li> It is less vulnerable to adversarial perturbations (the perturbations have higher L2 norms and are more meaningful for human observers). </li>
+  </ul>
+  <hr>
+  
+  <h2>Thoughts Moving Forward</h2>
+  
+  <p> Despite the widespread interest it has generated for several years now, and despite its significance for the field of machine learning (both in theory and in practice), 
+  the adversarial example phenomenon has so far retained much of its intriguing character. Our main goal here was to provide a clear and intuitive picture of the phenomenon 
+  in the linear case, hopefully constituting a solid base from which to move forward and fostering the emergence of new ideas. 
+  Incidentally, we also showed that our analysis could be extended to some extent to nonlinear neural network classifiers.</p>  
+  
+  <p> The result with LeNet on MNIST is encouraging&mdash;but it raises more questions than it answers.
+  For instance, can deeper models be regularized in the same way on more sophisticated datasets (our experiments have been inconclusive so far)? 
+  Why did momentum interfere with weight decay in the experiment? Are regularized solutions harder to converge to? 
+  Is weight decay the right way to control the scaling of the loss function or should the raw score be normalized in some way? 
+  Is it reasonable to regard the raw score as a linear approximation of the distance between the image and the boundary for deeper models?
+  In addressing these questions, one should also keep in mind that it is possible&mdash;likely, even&mdash;that a satisfying solution to the problem
+  will require profoundly new ideas in deep learning.</p>
+
+  <p> The study of the adversarial example phenomenon is a very active research area. For instance, a set of NIPS competitions hosted on Kaggle currently challenges 
+  the community to come up with new attacks
+  (<a href="https://www.kaggle.com/c/nips-2017-targeted-adversarial-attack">targeted</a> and
+  <a href="https://www.kaggle.com/c/nips-2017-non-targeted-adversarial-attack">non-targeted</a>) and
+  <a href="https://www.kaggle.com/c/nips-2017-defense-against-adversarial-attack">new defenses</a>.
+  Interested readers might also want to visit Ian Goodfellow's and Nicolas Papernot's <a href="http://www.cleverhans.io/">cleverhans blog</a>,
+  dedicated to the topic.</p>
+
+<dt-appendix>
+</dt-appendix>
+
+<script type="text/bibliography">
+@article{szegedy2013intriguing,
+  title={Intriguing properties of neural networks},
+  author={Szegedy, Christian and Zaremba, Wojciech and Sutskever, Ilya and Bruna, Joan and Erhan, Dumitru and Goodfellow, Ian and Fergus, Rob},
+  journal={arXiv preprint arXiv:1312.6199},
+  year={2013},
+  url={https://arxiv.org/pdf/1312.6199.pdf}
+}
+@article{goodfellow2014explaining,
+  title={Explaining and harnessing adversarial examples},
+  author={Goodfellow, Ian J and Shlens, Jonathon and Szegedy, Christian},
+  journal={arXiv preprint arXiv:1412.6572},
+  year={2014},
+  url={https://arxiv.org/pdf/1412.6572.pdf}
+}
+@article{kurakin2016adversarial,
+  title={Adversarial examples in the physical world},
+  author={Kurakin, Alexey and Goodfellow, Ian and Bengio, Samy},
+  journal={arXiv preprint arXiv:1607.02533},
+  year={2016},
+  url={https://arxiv.org/pdf/1607.02533.pdf}
+}
+@article{papernot2016practical,
+  title={Practical black-box attacks against deep learning systems using adversarial examples},
+  author={Papernot, Nicolas and McDaniel, Patrick and Goodfellow, Ian and Jha, Somesh and Celik, Z Berkay and Swami, Ananthram},
+  journal={arXiv preprint arXiv:1602.02697},
+  year={2016},
+  url={https://arxiv.org/pdf/1412.6572.pdf}
+}
+@inproceedings{moosavi2016deepfool,
+  title={Deepfool: a simple and accurate method to fool deep neural networks},
+  author={Moosavi-Dezfooli, Seyed-Mohsen and Fawzi, Alhussein and Frossard, Pascal},
+  booktitle={Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition},
+  pages={2574--2582},
+  year={2016},
+  url={https://arxiv.org/pdf/1511.04599.pdf}
+}
+@article{carlini2016towards,
+  title={Towards evaluating the robustness of neural networks},
+  author={Carlini, Nicholas and Wagner, David},
+  journal={arXiv preprint arXiv:1608.04644},
+  year={2016},
+  url={https://arxiv.org/pdf/1608.04644.pdf}
+}
+@inproceedings{bastani2016measuring,
+  title={Measuring neural net robustness with constraints},
+  author={Bastani, Osbert and Ioannou, Yani and Lampropoulos, Leonidas and Vytiniotis, Dimitrios and Nori, Aditya and Criminisi, Antonio},
+  booktitle={Advances in Neural Information Processing Systems},
+  pages={2613--2621},
+  year={2016},
+  url={https://arxiv.org/pdf/1605.07262.pdf}
+}
+@inproceedings{fawzi2016robustness,
+  title={Robustness of classifiers: from adversarial to random noise},
+  author={Fawzi, Alhussein and Moosavi-Dezfooli, Seyed-Mohsen and Frossard, Pascal},
+  booktitle={Advances in Neural Information Processing Systems},
+  pages={1632--1640},
+  year={2016},
+  url={https://arxiv.org/pdf/1608.08967.pdf}
+}
+@article{gu2014towards,
+  title={Towards deep neural network architectures robust to adversarial examples},
+  author={Gu, Shixiang and Rigazio, Luca},
+  journal={arXiv preprint arXiv:1412.5068},
+  year={2014},
+  url={https://arxiv.org/pdf/1412.5068.pdf}
+}
+@inproceedings{papernot2016distillation,
+  title={Distillation as a defense to adversarial perturbations against deep neural networks},
+  author={Papernot, Nicolas and McDaniel, Patrick and Wu, Xi and Jha, Somesh and Swami, Ananthram},
+  booktitle={Security and Privacy (SP), 2016 IEEE Symposium on},
+  pages={582--597},
+  year={2016},
+  organization={IEEE},
+  url={https://arxiv.org/pdf/1511.04508.pdf}
+}
+@article{zhao2016suppressing,
+  title={Suppressing the Unusual: towards Robust CNNs using Symmetric Activation Functions},
+  author={Zhao, Qiyang and Griffin, Lewis D},
+  journal={arXiv preprint arXiv:1603.05145},
+  year={2016},
+  url={https://arxiv.org/pdf/1603.05145.pdf}
+}
+@article{bhagoji2017dimensionality,
+  title={Dimensionality Reduction as a Defense against Evasion Attacks on Machine Learning Classifiers},
+  author={Bhagoji, Arjun Nitin and Cullina, Daniel and Mittal, Prateek},
+  journal={arXiv preprint arXiv:1704.02654},
+  year={2017},
+  url={https://arxiv.org/pdf/1704.02654.pdf}
+}
+@article{feinman2017detecting,
+  title={Detecting Adversarial Samples from Artifacts},
+  author={Feinman, Reuben and Curtin, Ryan R and Shintre, Saurabh and Gardner, Andrew B},
+  journal={arXiv preprint arXiv:1703.00410},
+  year={2017},
+  url={https://arxiv.org/pdf/1703.00410.pdf}
+}
+@article{grosse2017statistical,
+  title={On the (statistical) detection of adversarial examples},
+  author={Grosse, Kathrin and Manoharan, Praveen and Papernot, Nicolas and Backes, Michael and McDaniel, Patrick},
+  journal={arXiv preprint arXiv:1702.06280},
+  year={2017},
+  url={https://arxiv.org/pdf/1702.06280.pdf}
+}
+@article{metzen2017detecting,
+  title={On detecting adversarial perturbations},
+  author={Metzen, Jan Hendrik and Genewein, Tim and Fischer, Volker and Bischoff, Bastian},
+  journal={arXiv preprint arXiv:1702.04267},
+  year={2017},
+  url={https://arxiv.org/pdf/1702.04267.pdf}
+}
+@article{shaham2015understanding,
+  title={Understanding Adversarial Training: Increasing Local Stability of Neural Nets through Robust Optimization},
+  author={Shaham, Uri and Yamada, Yutaro and Negahban, Sahand},
+  journal={arXiv preprint arXiv:1511.05432},
+  year={2015},
+  url={https://arxiv.org/pdf/1511.05432.pdf}
+}
+@article{miyato2017virtual,
+  title={Virtual Adversarial Training: a Regularization Method for Supervised and Semi-supervised Learning},
+  author={Miyato, Takeru and Maeda, Shin-ichi and Koyama, Masanori and Ishii, Shin},
+  journal={arXiv preprint arXiv:1704.03976},
+  year={2017},
+  url={https://arxiv.org/pdf/1704.03976.pdf}
+}
+@article{sankaranarayanan2017regularizing,
+  title={Regularizing deep networks using efficient layerwise adversarial training},
+  author={Sankaranarayanan, Swami and Jain, Arpit and Chellappa, Rama and Lim, Ser Nam},
+  journal={arXiv preprint arXiv:1705.07819},
+  year={2017},
+  url={https://arxiv.org/pdf/1705.07819.pdf}
+}
+
+@article{carlini2017adversarial,
+  title={Adversarial Examples Are Not Easily Detected: Bypassing Ten Detection Methods},
+  author={Carlini, Nicholas and Wagner, David},
+  journal={arXiv preprint arXiv:1705.07263},
+  year={2017},
+  url={https://arxiv.org/pdf/1602.02697.pdf}
+}
+@misc{goodfellow2017attacking,
+  title = {Attacking Machine Learning with Adversarial Examples},
+  author = {Goodfellow, Ian and Papernot, Nicolas and Huang, Sandy and Duan, Yan and Abbeel, Pieter and Clark, Jack},
+  year = {2017},
+  url={https://blog.openai.com/adversarial-example-research}
+}
+@article{carlini2017adversarial,
+  title={Adversarial Examples Are Not Easily Detected: Bypassing Ten Detection Methods},
+  author={Carlini, Nicholas and Wagner, David},
+  journal={arXiv preprint arXiv:1705.07263},
+  year={2017},
+  url={https://arxiv.org/pdf/1705.07263.pdf}
+}
+@inproceedings{parkhi2015deep,
+  title={Deep Face Recognition.},
+  author={Parkhi, Omkar M and Vedaldi, Andrea and Zisserman, Andrew and others},
+  booktitle={BMVC},
+  volume={1},
+  number={3},
+  pages={6},
+  year={2015},
+  url={http://www.robots.ox.ac.uk:5000/~vgg/publications/2015/Parkhi15/parkhi15.pdf}
+}
+@article{goh2017why,
+  author = {Goh, Gabriel},
+  title = {Why Momentum Really Works},
+  journal = {Distill},
+  year = {2017},
+  url = {http://distill.pub/2017/momentum},
+  doi = {10.23915/distill.00006}
+}
+@article{hinton2015distilling,
+  title={Distilling the knowledge in a neural network},
+  author={Hinton, Geoffrey and Vinyals, Oriol and Dean, Jeff},
+  journal={arXiv preprint arXiv:1503.02531},
+  year={2015},
+  url = {https://arxiv.org/pdf/1503.02531.pdf}
+}
+</script>
+
+</body>
+</html>
+
