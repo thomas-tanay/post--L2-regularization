@@ -259,7 +259,7 @@
   when viewed from varied scales and perspectives</a>. Understanding this phenomenon and improving deep networks' robustness has thus become an important 
   research objective.</p>
   
-  <p>Several approaches have been explored already. The phenomenon has been described in details <dt-cite key="moosavi2016deepfool,carlini2016towards"></dt-cite> 
+  <p>Several approaches have been explored already. The phenomenon has been described in detail <dt-cite key="moosavi2016deepfool,carlini2016towards"></dt-cite> 
   and some theoretical analysis has been provided <dt-cite key="bastani2016measuring,fawzi2016robustness"></dt-cite>. Attempts have been made at designing more robust 
   architectures <dt-cite key="gu2014towards,papernot2016distillation,zhao2016suppressing"></dt-cite> or at detecting adversarial examples during evaluation 
   <dt-cite key="bhagoji2017dimensionality,feinman2017detecting,grosse2017statistical,metzen2017detecting"></dt-cite>. <em>Adversarial training</em> has also been 
@@ -518,7 +518,7 @@
   For a given image $\boldsymbol{x}$ in $I \cup J$, the closest image classified into the opposite class is the <em>projected image</em> of 
   $\boldsymbol{x}$ on $H_{\theta}$, defined as:
   $$\boldsymbol{x}_p := \boldsymbol{x} - d(\boldsymbol{x}) \; \boldsymbol{\hat{e}_{\theta}}$$
-  When $\boldsymbol{x}$ and $\boldsymbol{x}_p$ are very close, we say that $\boldsymbol{x}_p$ is an <em>adversarial examples</em> of $\boldsymbol{x}$. 
+  When $\boldsymbol{x}$ and $\boldsymbol{x}_p$ are very close, we say that $\boldsymbol{x}_p$ is an <em>adversarial example</em> of $\boldsymbol{x}$. 
   Observe though that $\boldsymbol{x}_p$ is classified with a low confidence score (it lies on the boundary) and it is
   perhaps more interesting to consider <em>high-confidence adversarial examples</em> <dt-cite key="carlini2017adversarial"></dt-cite>.
   In the following, we focus on the <em>mirror image</em> of $\boldsymbol{x}$ through $H_{\theta}$, defined as:
@@ -724,7 +724,7 @@
   $y = \{ -1 \text{ if } \boldsymbol{x} \in I \;|\; 1 \text{ if } \boldsymbol{x} \in J\}$ is its label.
   For a given <em>loss function</em> $f$, the <em>empirical risk</em> on $T$ for the classifier $\mathcal{C}$ is:
   $$R(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(y\,s(\boldsymbol{x})\big)$$
-  In general, learning a linear classifier consists in finding a weight vector $\boldsymbol{w}$ and a bias $b$ minimising $R(\boldsymbol{w},b)$ 
+  In general, learning a linear classifier consists of finding a weight vector $\boldsymbol{w}$ and a bias $b$ minimising $R(\boldsymbol{w},b)$ 
   for a well chosen loss function $f$.</p>
   
   <p>Note that the raw score $s(\boldsymbol{x})$ can be seen as a scaled, signed distance. 
@@ -1712,4 +1712,3 @@
 
 </body>
 </html>
-
