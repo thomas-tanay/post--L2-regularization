@@ -1,45 +1,30 @@
 var s = d3.scale.linear().domain([-1, 1]).range([10, 245]);
 
-function generate_image(h, min, max) {
+function generate_image(a, b) {
   var img = [];
-  for (var i = 0; i < h; i++) {
-    for (var j = 0; j < h; j++)
-	  img.push(Math.random() * (max-min) + min);
-	for (var j = 0; j < h; j++)
-	  img.push(0);
-  }
-  return img;
-}
-
-function generate_e_theta(h, theta) {
-  var img = [];
-  var cos_theta = Math.cos(Math.PI/2 * theta), sin_theta = Math.sin(Math.PI/2 * theta);
-  for (var i = 0; i < h; i++) {
-    for (var j = 0; j < h; j++)
-	  img.push(cos_theta);
-	for (var j = 0; j < h; j++)
-	  img.push(sin_theta);
-  }
+  img.push(b); img.push(b); img.push(b); img.push(b);
+  img.push(b); img.push(a); img.push(a); img.push(b);
+  img.push(b); img.push(a); img.push(a); img.push(b);
+  img.push(b); img.push(b); img.push(b); img.push(b);
   return img;
 }
 
 function img_to_canvas1(img) {
-  var h = Math.sqrt(img.length/2);
   var canvas = document.createElement("canvas");
-  canvas.setAttribute("width", 2*h);
-  canvas.setAttribute("height", h);
+  canvas.setAttribute("width", 4);
+  canvas.setAttribute("height", 4);
   
   var ctx = canvas.getContext("2d");
-  var imgData = ctx.createImageData(2*h, h);
+  var imgData = ctx.createImageData(4, 4);
   var data = imgData.data;
 
-  for (var i = 0; i < h; i++) {
-	for (var j = 0; j < 2*h; j++) {
-      var value = s(img[i*2*h+j]);
-      data[4*(i*2*h+j)] = value;
-      data[4*(i*2*h+j)+1] = value;
-	  data[4*(i*2*h+j)+2] = value;
-	  data[4*(i*2*h+j)+3] = 255;
+  for (var i = 0; i < 4; i++) {
+	for (var j = 0; j < 4; j++) {
+      var value = s(img[i*4+j]);
+      data[4*(i*4+j)] = value;
+      data[4*(i*4+j)+1] = value;
+	  data[4*(i*4+j)+2] = value;
+	  data[4*(i*4+j)+3] = 255;
     }
   }
   ctx.putImageData(imgData, 0, 0);
@@ -69,31 +54,22 @@ function img_to_canvas2(img) {
   return canvas;
 }
 
-function example_images(h) {
+function example_images_I() {
   for (var i = 0; i < 5; i++) {
     var canvas = document.getElementById("classI_"+i);
     var ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img_to_canvas1(generate_image(h, -1, -0.1)),0,0,90,45);
+    ctx.drawImage(img_to_canvas1(generate_image(-1+0.2*i,0)),0,0,80,80);
   }
+}
+
+function example_images_J() {
   for (var i = 0; i < 5; i++) {
     var canvas = document.getElementById("classJ_"+i);
     var ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img_to_canvas1(generate_image(h, 0.1, 1)),0,0,90,45);
+    ctx.drawImage(img_to_canvas1(generate_image(0.2+0.2*i,0)),0,0,80,80);
   }
-}
-
-function vectors_e1_e2() {
-  var canvas = document.getElementById("e1");
-  var ctx = canvas.getContext("2d");
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img_to_canvas1(generate_e_theta(1,0)),0,0,90,45);
-  
-  var canvas = document.getElementById("e2");
-  var ctx = canvas.getContext("2d");
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img_to_canvas1(generate_e_theta(1,1)),0,0,90,45);
 }
 
 function fig0(){
@@ -462,155 +438,301 @@ function fig0(){
   draw_fig0(left_digit, right_digit);
 }
 
-function fig1(){
-  var width = 420;
-  var height = 280;
-  var x = d3.scale.linear().domain([-150, 150]).range([0, width]);
-  var y = d3.scale.linear().domain([140, -60]).range([0, height]);
-  var init_theta = 0.66;
-  var colorBackground = "rgb(80%,80%,80%)";
-  var colorI = "rgb(25%,25%,25%)";
-  var colorJ = "rgb(99%,99%,99%)";
+function image_space(){
+  var width = 350;
+  var height = 350;
+  var x = d3.scale.linear().domain([-1.3,1.3]).range([0, width]);
+  var y = d3.scale.linear().domain([-1.3,1.3]).range([0, height]);
+  var a = 2 * Math.random() - 1;
+  var b = 2 * Math.random() - 1;
   
-  function translate_x(theta) {return Math.min((y(60)-y(0)) * Math.tan(0.00001 + Math.PI/2 * -theta), x(133-5)-x(0));}
-  function translate_y(theta) {return Math.min((y(60)-y(0)) - (x(133-5)-x(0)) * Math.tan(0.00001 + Math.PI/2 - Math.PI/2 * -theta), 0);}
+  function draw_image(a,b) {
+    var canvas = document.getElementById("image-canvas1");
+    var ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img_to_canvas1(generate_image(a,b)),0,0,150,150);
+  }
+  
+  function init_image_space() {
+    var space_input = d3.select("#space-input1")
+                        .append("svg")
+    		  	        .attr("width", width)
+			            .attr("height", height);
+						
+	// input rect
+	var input_rect = space_input.append("g")
+                                .attr("fill","rgb(100%,100%,100%)")
+			                    .attr("stroke-opacity",0.3)
+			                    .attr('stroke',"rgb(0%,0%,0%)");
+								
+	input_rect.append("rect")
+			  .attr("id","input-rect")
+              .attr("x", x(-1))
+              .attr("y", y(-1))
+              .attr("width", x(1)-x(-1))
+              .attr("height", y(1)-y(-1));
+	   
+	input_rect.append("line")
+              .attr("x1", x(0))
+	          .attr("y1", y(-1))
+	          .attr("x2", x(0))
+	          .attr("y2", y(1));
+			  
+	input_rect.append("line")
+              .attr("x1", x(-1))
+	          .attr("y1", y(0))
+	          .attr("x2", x(1))
+	          .attr("y2", y(0));
+
+    // a and b
+    var ab_bars = space_input.append("g")
+		                     .attr("stroke-width", 1)
+	                         .attr("stroke", "rgb(0%,0%,0%)")
+	                         .attr("stroke-opacity",1);
+	
+    ab_bars.append("line")
+           .attr("x1", x(-1))
+	       .attr("y1", y(1))
+	       .attr("x2", x(1))
+	       .attr("y2", y(1));
+			 
+	ab_bars.append("line")
+           .attr("x1", x(-1))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(-1))
+	       .attr("y2", y(1));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(-0.97))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(-1.03))
+	       .attr("y2", y(-1));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(-0.97))
+	       .attr("y1", y(1))
+	       .attr("x2", x(-1.03))
+	       .attr("y2", y(1));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(-1))
+	       .attr("y1", y(0.97))
+	       .attr("x2", x(-1))
+	       .attr("y2", y(1.03));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(1))
+	       .attr("y1", y(0.97))
+	       .attr("x2", x(1))
+	       .attr("y2", y(1.03));
+		   
+    // labels
+    var labels = space_input.append("g")
+	                        .attr("fill", "rgb(0%,0%,0%)")
+	                        .attr("text-anchor", "middle")
+	                        .attr("font-family","Georgia, serif")
+ 	                        .attr("font-style", "italic")
+	                        .attr("font-size", "15px");
+
+    labels.append("text")
+          .attr("x", x(0))
+	      .attr("y", y(1.15))
+		  .text("a");
+
+    labels.append("text")
+          .attr("x", x(-1))
+	      .attr("y", y(1.15))
+		  .text("-1");
+		  
+    labels.append("text")
+          .attr("x", x(1))
+	      .attr("y", y(1.15))
+		  .text("1");
+		  
+    labels.append("text")
+          .attr("x", x(-1.15))
+	      .attr("y", y(0.03))
+		  .text("b");
+
+    labels.append("text")
+          .attr("x", x(-1.15))
+	      .attr("y", y(1.03))
+		  .text("-1");
+		  
+    labels.append("text")
+          .attr("x", x(-1.15))
+	      .attr("y", y(-0.97))
+		  .text("1");
+			   
+	// dotted lines
+    var dotted_lines = space_input.append("g")
+		                          .attr("stroke-width", 1)
+	                              .attr("stroke", "rgb(0%,0%,0%)")
+	                              .attr("stroke-opacity",1)
+								  .attr("stroke-dasharray", "3, 1");
+
+    dotted_lines.append("line")
+	            .attr("id","x-line")
+                .attr("x1", x(-1.03))
+	            .attr("y1", y(1)-y(b)+y(-1))
+	            .attr("x2", x(a))
+	            .attr("y2", y(1)-y(b)+y(-1));
+
+    dotted_lines.append("line")
+	            .attr("id","y-line")
+                .attr("x1", x(a))
+	            .attr("y1", y(1.03))
+	            .attr("x2", x(a))
+	            .attr("y2", y(1)-y(b)+y(-1));
+				
+	// (a,b)
+    var ab_ticks = space_input.append("g")
+		                      .attr("stroke-width", 1)
+	                          .attr("stroke", "rgb(0%,0%,0%)")
+	                          .attr("stroke-opacity",1);
+
+    ab_ticks.append("line")
+	        .attr("id","ab-ticks-x")
+            .attr("x1", x(a-0.02))
+	        .attr("y1", y(1)-y(b)+y(-1))
+	        .attr("x2", x(a+0.02))
+	        .attr("y2", y(1)-y(b)+y(-1));
+
+    ab_ticks.append("line")
+	        .attr("id","ab-ticks-y")
+            .attr("x1", x(a))
+	        .attr("y1", y(0.98)-y(b)+y(-1))
+	        .attr("x2", x(a))
+	        .attr("y2", y(1.02)-y(b)+y(-1));
+
+    space_input.append("text")
+	           .attr("id","ab-text")
+	           .attr("fill", "rgb(0%,0%,0%)")
+	           .attr("font-family","Georgia, serif")
+ 	           .attr("font-style", "italic")
+			   .attr("font-weight", "bold")
+	           .attr("font-size", "15px")
+               .attr("x", x(a))
+	           .attr("y", y(0.95)-y(b)+y(-1))
+		       .text("x");
+  }
+			 
+  function mousemove() {
+    var a = 2*(d3.mouse(this)[0]-x(-1))/(x(1)-x(-1)) - 1;
+	var b = 2*(y(1)-d3.mouse(this)[1])/(y(1)-y(-1)) - 1;
+	
+    d3.select("#x-line").attr("y1", y(1)-y(b)+y(-1))
+	                   .attr("x2", x(a))
+	                   .attr("y2", y(1)-y(b)+y(-1));
+					   
+    d3.select("#y-line").attr("x1", x(a))
+	                   .attr("x2", x(a))
+	                   .attr("y2", y(1)-y(b)+y(-1))
+					   
+    d3.select("#ab-ticks-x").attr("x1", x(a-0.02))
+	                        .attr("y1", y(1)-y(b)+y(-1))
+	                        .attr("x2", x(a+0.02))
+	                        .attr("y2", y(1)-y(b)+y(-1));
+					   
+    d3.select("#ab-ticks-y").attr("x1", x(a))
+	                        .attr("y1", y(0.98)-y(b)+y(-1))
+	                        .attr("x2", x(a))
+	                        .attr("y2", y(1.02)-y(b)+y(-1));
+							
+    d3.select("#ab-text").attr("x", x(a))
+	                     .attr("y", y(0.95)-y(b)+y(-1));
+	  
+	draw_image(a,b);
+  }
+  
+  init_image_space();
+  draw_image(a,b);
+  d3.select("#input-rect").on("mouseover", function() { focus.style("display", null); })
+                          .on("mouseout", function() { focus.style("display", "none"); })
+                          .on("mousemove", mousemove);
+}
+
+function fig1(){
+  var width = 350;
+  var height = 350;
+  var x = d3.scale.linear().domain([-1.3, 1.3]).range([0, width]);
+  var y = d3.scale.linear().domain([-1.3, 1.3]).range([0, height]);
+  var init_theta = 0.66;
+  var colorI = "rgb(30%,30%,30%)";
+  var colorJ = "rgb(95%,95%,95%)";
+  var colorBackgroundI = "rgb(60%,60%,60%)";
+  var colorBackgroundJ = "rgb(80%,80%,80%)";
+  var red = "rgb(90%,0%,0%)";
+  
+  function translate_x(theta) {return Math.min((y(-0.8)-y(0)) * Math.tan(0.00001 + Math.PI/2 * -theta), x(1)-x(0));}
+  function translate_y(theta) {return Math.min((y(-0.8)-y(0)) - (x(1)-x(0)) * Math.tan(0.00001 + Math.PI/2 - Math.PI/2 * -theta), 0);}
   
   function fig1_right_init(theta){	
-    var fig1_right = d3.select("#fig1-right")
+    var fig1_right = d3.select("#space-input2")
                        .append("svg")
 		  	           .attr("width", width)
 			           .attr("height", height);
 			
     fig1_right.append("rect")
-	          .attr("fill",colorBackground)
+	          .attr("fill","rgb(100%,100%,100%)")
               .attr("x", 0)
               .attr("y", 0)
               .attr("width", width)
               .attr("height", height);
-					 
-    // H1 and H2
-    var line_H1H2 = fig1_right.append("g")
-		                      .attr("stroke-width", 1)
-	                          .attr("stroke", "rgb(0%,0%,0%)")
-	                          .attr("stroke-opacity",0.5);
+			  
+    // background
+    var g_theta1 = fig1_right.append("g")
+	                         .attr("id","fig1-group-theta1")
+                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
 	
-    line_H1H2.append("line")
-             .attr("x1", x(-150))
-	         .attr("y1", y(0))
-	         .attr("x2", x(150))
-	         .attr("y2", y(0));
-			 
-	line_H1H2.append("line")
-             .attr("x1", x(0))
-	         .attr("y1", y(-60))
-	         .attr("x2", x(0))
-	         .attr("y2", y(140))
-			 
-	var text_H1H2 = fig1_right.append("g")
-	                          .attr("text-anchor", "start")
-	                          .attr("font-family","Georgia, serif")
-	                          .attr("fill", "rgb(0%,0%,0%)")
- 	                          .attr("font-style", "italic")
- 	                          .attr("font-weight", "bold")
-	                          .attr("font-size", "15px");
-							  
-    text_H1H2.append("text")
-             .attr("x",x(5))
-		     .attr("y",y(-55))
-		     .attr("font-weight", "normal")
-		     .attr("opacity",0.5)
-		     .text("H")
-		     .append("tspan")
-             .attr("font-size", "10px")
-             .attr("dx", "2px")
-             .attr("dy", "4px")
-             .text("1");
-		 
-    text_H1H2.append("text")
-             .attr("x",x(133))
-		     .attr("y",y(5))
-		     .attr("font-weight", "normal")
-		     .attr("opacity",0.5)
-		     .text("H")
-		     .append("tspan")
-             .attr("font-size", "10px")
-             .attr("dx", "2px")
-             .attr("dy", "4px")
-             .text("2");
-			 
-	// e1 and e2
-	var line_e1e2 = fig1_right.append("g")
-		                      .attr("stroke-width", 1)
-	                          .attr("stroke", "rgb(0%,0%,0%)");
-							  
-	line_e1e2.append("line")
-             .attr("x1", x(0))
-	         .attr("y1", y(0))
-	         .attr("x2", x(97.5))
-	         .attr("y2", y(0));
-			 
-	line_e1e2.append("line")
-             .attr("x1", x(0))
-	         .attr("y1", y(0))
-	         .attr("x2", x(0))
-	         .attr("y2", y(97.5));
-
-    var polygon_e1e2 = fig1_right.append("g")
-	                             .attr("fill", "black")
-  	                             .attr("stroke-width", 1)
-  	                             .attr("stroke", "rgb(0%,0%,0%)");
-
-    polygon_e1e2.append("polygon")
-                .attr("points", x(97.5)+","+y(0)+" "+x(95)+","+y(2)+" "+x(100)+","+y(0)+" "+x(95)+","+y(-2));
-
-    polygon_e1e2.append("polygon")
-                .attr("points", x(0)+","+y(97.5)+" "+x(2)+","+y(95)+" "+x(0)+","+y(100)+" "+x(-2)+","+y(95));
-
-    var text_e1e2 = fig1_right.append("g")
-	                          .attr("text-anchor", "start")
-	                          .attr("font-family","Georgia, serif")
-	                          .attr("fill", "rgb(0%,0%,0%)")
- 	                          .attr("font-style", "italic")
- 	                          .attr("font-weight", "bold")
-	                          .attr("font-size", "15px");
-
-    text_e1e2.append("text")
-             .attr("x", x(106))
-	         .attr("y", y(-3))
-             .text("e")
-	         .append("tspan")
-             .attr("font-size", "10px")
-             .attr("dx", "2px")
-             .attr("dy", "4px")
-             .text("1");
-
-    text_e1e2.append("text")
-             .attr("x", x(106))
-	         .attr("y", y(-3))
-	         .attr("transform", "rotate(-90,"+x(0)+","+y(0)+")")
-             .text("e")
-	         .append("tspan")
-             .attr("font-size", "10px")
-             .attr("dx", "2px")
-             .attr("dy", "4px")
-             .text("2");
-
+	g_theta1.append("rect")
+	        .attr("fill",colorBackgroundI)
+            .attr("x", x(-2))
+            .attr("y", y(-2))
+            .attr("width", x(0)-x(-2))
+            .attr("height", y(2)-y(-2));
+			  
+	g_theta1.append("rect")
+	        .attr("fill",colorBackgroundJ)
+            .attr("x", x(0))
+            .attr("y", y(-2))
+            .attr("width", x(0)-x(-2))
+            .attr("height", y(2)-y(-2));
+	 
+	// inside axes
+	fig1_right.append("line")
+			  .attr("stroke-opacity",0.3)
+			  .attr('stroke',"rgb(0%,0%,0%)")
+              .attr("x1", x(0))
+	          .attr("y1", y(-1))
+	          .attr("x2", x(0))
+	          .attr("y2", y(1));
+			  
+	fig1_right.append("line")
+			  .attr("stroke-opacity",0.3)
+			  .attr('stroke',"rgb(0%,0%,0%)")
+              .attr("x1", x(-1))
+	          .attr("y1", y(0))
+	          .attr("x2", x(1))
+	          .attr("y2", y(0));
+			
     // classes I and J
     var line_IJ = fig1_right.append("g")
 		                    .attr("stroke-width", 4)
-	                        .attr("stroke-opacity",0.75);
+	                        .attr("stroke-opacity",1)
+							.attr("stroke-linecap", "round");
 	  
     line_IJ.append("line")
-           .attr("x1", x(-10))
+           .attr("x1", x(-0.2))
 	       .attr("y1", y(0))
-	       .attr("x2", x(-100))
+	       .attr("x2", x(-1))
 	       .attr("y2", y(0))
 	       .attr("stroke", colorI);
 		   
     line_IJ.append("line")
-           .attr("x1", x(10))
+           .attr("x1", x(0.2))
 	       .attr("y1", y(0))
-	       .attr("x2", x(100))
+	       .attr("x2", x(1))
 	       .attr("y2", y(0))
 	       .attr("stroke", colorJ);
 
@@ -622,8 +744,8 @@ function fig1(){
 	                        .attr("font-size", "20px");
 
     text_IJ.append("text")
-           .attr("x", x(-55))
-	       .attr("y", y(-30))
+           .attr("x", x(-0.6))
+	       .attr("y", y(0.32))
            .attr("fill", colorI)
 		   .text("Class ")
 	       .append("tspan")
@@ -631,8 +753,8 @@ function fig1(){
            .text("I");
 
     text_IJ.append("text")
-           .attr("x", x(55))
-	       .attr("y", y(20))
+           .attr("x", x(0.6))
+	       .attr("y", y(-0.20))
            .attr("fill", colorJ)
 		   .text("Class ")
 	       .append("tspan")
@@ -645,160 +767,644 @@ function fig1(){
 				             .attr("stroke-linecap", "round");
 
     arrow_IJ.append("path")
-            .attr("d", " M "+x(-65)+" "+y(-15)+" L "+x(-55)+" "+y(-10)+" L "+x(-45)+" "+y(-15))
+            .attr("d", " M "+x(-0.7)+" "+y(0.15)+" L "+x(-0.6)+" "+y(0.10)+" L "+x(-0.5)+" "+y(0.15))
 		    .attr("stroke", colorI);
 
     arrow_IJ.append("path")
-            .attr("d", " M "+x(65)+" "+y(15)+" L "+x(55)+" "+y(10)+" L "+x(45)+" "+y(15))
+            .attr("d", " M "+x(0.7)+" "+y(-0.15)+" L "+x(0.6)+" "+y(-0.10)+" L "+x(0.5)+" "+y(-0.15))
 		    .attr("stroke", colorJ);
-
-    // ticks
-    var ticks = fig1_right.append("g")
-	                      .attr("stroke-width", 1)
-	                      .attr("stroke", "rgb(0%,0%,0%)");
-
-    ticks.append("line")
-         .attr("x1", x(-100))
-	     .attr("y1", y(-2))
-	     .attr("x2", x(-100))
-	     .attr("y2", y(2));
-
-    ticks.append("line")
-         .attr("x1", x(-10))
-	     .attr("y1", y(-2))
-	     .attr("x2", x(-10))
-	     .attr("y2", y(2));
-
-    ticks.append("line")
-         .attr("x1", x(10))
-	     .attr("y1", y(-2))
-	     .attr("x2", x(10))
-	     .attr("y2", y(2));
-	  
-    ticks.append("line")
-         .attr("x1", x(100))
-	     .attr("y1", y(-2))
-	     .attr("x2", x(100))
-	     .attr("y2", y(2));
-
-    var labels = fig1_right.append("g")
-	                       .attr("text-anchor", "middle")
-	                       .attr("font-family","sans-serif")
-				           .attr("font-style", "italic")
-				           .attr("font-size", "10px");
-
-    labels.append("text")
-          .attr("x", x(-100))
-	      .attr("y", y(-10))
-	      .text("-h");
-
-    labels.append("text")
-          .attr("x", x(-12))
-	      .attr("y", y(-10))
-	      .text("-0.1h");
-
-    labels.append("text")
-          .attr("x", x(12))
-	      .attr("y", y(-10))
-	      .text("0.1h");
+			  
+	// C_theta
+    var g_theta2 = fig1_right.append("g")
+	                         .attr("id","fig1-group-theta2")
+                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+							 
+    g_theta2.append("line")
+            .attr("x1", x(0))
+		    .attr("y1", y(2))
+		    .attr("x2", x(0))
+		    .attr("y2", y(-2))
+            .attr("stroke-width", 3)
+	        .attr("stroke", red)
+     	    .attr("stroke-opacity",1);
 		
-    labels.append("text")
-          .attr("x", x(100))
-	      .attr("y", y(-10))
-	      .text("h");
-
-	// H_theta
-    var g_theta = fig1_right.append("g")
-	                        .attr("id","fig1-group-theta")
-                            .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-    
-    g_theta.append("line")
-           .attr("x1", x(0))
-		   .attr("y1", y(-200))
-		   .attr("x2", x(0))
-		   .attr("y2", y(200))
-           .attr("stroke-width", 1.5)
-	       .attr("stroke", "rgb(100%,0%,0%)")
-     	   .attr("stroke-opacity",0.5);
-	
-	// e_theta
-    g_theta.append("line")
-           .attr("x1", x(0))
-		   .attr("y1", y(0))
-		   .attr("x2", x(97.5))
-		   .attr("y2", y(0))
-	       .attr("stroke-width", 1)
-	       .attr("stroke", "rgb(100%,0%,0%)");
-		 
-    g_theta.append("polygon")
-           .attr("points", x(97.5)+","+y(0)+" "+x(95)+","+y(2)+" "+x(100)+","+y(0)+" "+x(95)+","+y(-2))
-  	       .attr("fill", "rgb(100%,0%,0%)")
-  	       .attr("stroke-width", 1)
-  	       .attr("stroke", "rgb(100%,0%,0%)");
-		 
-    g_theta.append("text")
-           .attr("x", x(106))
-	       .attr("y", y(-3))
-	       .attr("text-anchor", "start")
-	       .attr("font-family","Georgia, serif")
-	       .attr("fill", "rgb(100%,0%,0%)")
- 	       .attr("font-style", "italic")
- 	       .attr("font-weight", "bold")
-	       .attr("font-size", "15px")
-           .text("e")
-	       .append("tspan")
-           .attr("font-size", "10px")
-           .attr("dx", "2px")
-           .attr("dy", "4px")
-           .text("\u03B8");
-
-	// Label H_theta
     fig1_right.append("text")
 	          .attr("id","fig1-text-theta")
               .attr("transform", "translate("+translate_x(theta)+","+translate_y(theta)+")")
-              .attr("x",x(5))
-              .attr("y",y(-55))
+              .attr("x",x(-0.20))
+              .attr("y",y(0.95))
   	          .attr("text-anchor", "start")
 	          .attr("font-family", "Georgia, serif")
-	          .attr("fill", "rgb(100%,0%,0%)")
+	          .attr("fill", red)
 	          .attr("font-style", "italic")
-              .attr("font-weight", "normal")
+              .attr("font-weight", "bold")
 	          .attr("font-size", "15px")
 	          .attr("opacity", 0.5)
-              .text("H")
+              .text("\u2112")
 	          .append("tspan")
               .attr("font-size", "10px")
               .attr("dx", "2px")
               .attr("dy", "4px")
 	          .text("\u03B8");
+		   
+	// borders			  
+	fig1_right.append("rect")
+	          .attr("fill","rgb(100%,100%,100%)")
+              .attr("x", x(-3))
+              .attr("y", y(-3))
+              .attr("width", x(-1)-x(-3))
+              .attr("height", y(3)-y(-3));
+			  
+	fig1_right.append("rect")
+	          .attr("fill","rgb(100%,100%,100%)")
+              .attr("x", x(-3))
+              .attr("y", y(-3))
+              .attr("width", x(3)-x(-3))
+              .attr("height", y(-1)-y(-3));
+			  
+	fig1_right.append("rect")
+	          .attr("fill","rgb(100%,100%,100%)")
+              .attr("x", x(-3))
+              .attr("y", y(1))
+              .attr("width", x(3)-x(-3))
+              .attr("height", y(1)-y(-3));
+			  
+	fig1_right.append("rect")
+	          .attr("fill","rgb(100%,100%,100%)")
+              .attr("x", x(1))
+              .attr("y", y(-3))
+              .attr("width", x(1)-x(-3))
+              .attr("height", y(3)-y(-3));
+								
+	fig1_right.append("rect")
+			  .attr("id","input-rect")
+              .attr("fill","none")
+			  .attr("stroke-opacity",0.3)
+			  .attr('stroke',"rgb(0%,0%,0%)")
+              .attr("x", x(-1))
+              .attr("y", y(-1))
+              .attr("width", x(1)-x(-1))
+              .attr("height", y(1)-y(-1));
+	
+	// w_theta
+    var g_theta3 = fig1_right.append("g")
+	                         .attr("id","fig1-group-theta3")
+                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+	
+    g_theta3.append("line")
+            .attr("x1", x(0))
+		    .attr("y1", y(0))
+		    .attr("x2", x(0.975))
+		    .attr("y2", y(0))
+	        .attr("stroke-width", 1)
+	        .attr("stroke", red);
+		 
+    g_theta3.append("polygon")
+            .attr("points", x(0.975)+","+y(0)+" "+x(0.95)+","+y(-0.02)+" "+x(1)+","+y(0)+" "+x(0.95)+","+y(0.02))
+  	        .attr("fill", "rgb(100%,0%,0%)")
+  	        .attr("stroke-width", 1)
+  	        .attr("stroke", red);
+		 
+    g_theta3.append("text")
+            .attr("x", x(1.06))
+	        .attr("y", y(0.03))
+	        .attr("text-anchor", "start")
+	        .attr("font-family","Georgia, serif")
+	        .attr("fill", red)
+ 	        .attr("font-style", "italic")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("w")
+	        .append("tspan")
+            .attr("font-size", "10px")
+            .attr("dx", "2px")
+            .attr("dy", "4px")
+            .text("\u03B8");
+			
+    // a and b
+    var ab_bars = fig1_right.append("g")
+		                    .attr("stroke-width", 1)
+	                        .attr("stroke", "rgb(0%,0%,0%)")
+	                        .attr("stroke-opacity",1);
+	
+    ab_bars.append("line")
+           .attr("x1", x(-1))
+	       .attr("y1", y(1))
+	       .attr("x2", x(1))
+	       .attr("y2", y(1));
+			 
+	ab_bars.append("line")
+           .attr("x1", x(-1))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(-1))
+	       .attr("y2", y(1));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(-0.97))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(-1.03))
+	       .attr("y2", y(-1));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(-0.97))
+	       .attr("y1", y(1))
+	       .attr("x2", x(-1.03))
+	       .attr("y2", y(1));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(-1))
+	       .attr("y1", y(0.97))
+	       .attr("x2", x(-1))
+	       .attr("y2", y(1.03));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(1))
+	       .attr("y1", y(0.97))
+	       .attr("x2", x(1))
+	       .attr("y2", y(1.03));
+		   
+    // labels
+    var labels = fig1_right.append("g")
+	                       .attr("fill", "rgb(0%,0%,0%)")
+	                       .attr("text-anchor", "middle")
+	                       .attr("font-family","Georgia, serif")
+ 	                       .attr("font-style", "italic")
+	                       .attr("font-size", "15px");
+
+    labels.append("text")
+          .attr("x", x(0))
+	      .attr("y", y(1.15))
+		  .text("a");
+
+    labels.append("text")
+          .attr("x", x(-1))
+	      .attr("y", y(1.15))
+		  .text("-1");
+		  
+    labels.append("text")
+          .attr("x", x(1))
+	      .attr("y", y(1.15))
+		  .text("1");
+		  
+    labels.append("text")
+          .attr("x", x(-1.15))
+	      .attr("y", y(0.03))
+		  .text("b");
+
+    labels.append("text")
+          .attr("x", x(-1.15))
+	      .attr("y", y(1.03))
+		  .text("-1");
+		  
+    labels.append("text")
+          .attr("x", x(-1.15))
+	      .attr("y", y(-0.97))
+		  .text("1");
   }
   
-  function fig1_e_theta(theta) {
-    var canvas = document.getElementById("fig1-left-canvas");
+  function fig1_w_theta(theta) {
+    var canvas = document.getElementById("image-canvas2");
     var ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img_to_canvas1(generate_e_theta(1,theta)),0,0,150,75);
+    ctx.drawImage(img_to_canvas1(generate_image(Math.cos(Math.PI/2 * theta), Math.sin(Math.PI/2 * theta))),0,0,150,150);
   }
 
   function fig1_update(theta) {
-	fig1_e_theta(theta);
+	fig1_w_theta(theta);
 	d3.select("#fig1-value-theta").text(parseFloat(theta).toFixed(2));
-	d3.select("#fig1-group-theta").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+	d3.select("#fig1-group-theta1").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+	d3.select("#fig1-group-theta2").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+	d3.select("#fig1-group-theta3").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
 	d3.select("#fig1-text-theta").attr("transform","translate("+translate_x(theta)+","+translate_y(theta)+")");
   }
 
-  d3.select("#fig1-left-controler-input").property("value", init_theta);
+  d3.select("#controler-input1").property("value", init_theta);
   d3.select("#fig1-value-theta").text(parseFloat(init_theta).toFixed(2));
 
   fig1_right_init(init_theta);
-  fig1_e_theta(init_theta);
+  fig1_w_theta(init_theta);
 
-  d3.select("#fig1-left-controler-input")
+  d3.select("#controler-input1")
 	.on("input", function() {fig1_update(this.value);});
-  
 }
 
-function fig2(h) {
+function fig2(){
+  var width = 350;
+  var height = 350;
+  var x = d3.scale.linear().domain([-1.3, 1.3]).range([0, width]);
+  var y = d3.scale.linear().domain([-1.3, 1.3]).range([0, height]);
+  var init_theta = 0.;
+  var colorI = "rgb(30%,30%,30%)";
+  var colorJ = "rgb(95%,95%,95%)";
+  var colorBackgroundI = "rgb(60%,60%,60%)";
+  var colorBackgroundJ = "rgb(80%,80%,80%)";
+  var colorImI = "rgb(10%,10%,10%)";
+  var colorImJ = "rgb(30%,30%,30%)";
+  var red = "rgb(90%,0%,0%)";
+  
+  var x_a = -0.8, x_b = 0, y_a = 0.4, y_b = 0; //- 0.75 * Math.random() - 0.25, x_b = 0, y_a = 0.75 * Math.random() + 0.25, y_b = 0;
+  var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
+  var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
+  var ym_a = y_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
+  var ym_b = - 2 * y_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
+  
+  function translate_x(theta) {return Math.min((y(-0.8)-y(0)) * Math.tan(0.00001 + Math.PI/2 * -theta), x(1)-x(0));}
+  function translate_y(theta) {return Math.min((y(-0.8)-y(0)) - (x(1)-x(0)) * Math.tan(0.00001 + Math.PI/2 - Math.PI/2 * -theta), 0);}
+  
+  function fig2_right_init(theta){	
+    var fig2_right = d3.select("#space-input3")
+                       .append("svg")
+		  	           .attr("width", width)
+			           .attr("height", height);
+			
+    fig2_right.append("rect")
+	          .attr("fill","rgb(100%,100%,100%)")
+              .attr("x", 0)
+              .attr("y", 0)
+              .attr("width", width)
+              .attr("height", height);
+			  
+    // background
+    var g_theta1 = fig2_right.append("g")
+	                         .attr("id","fig2-group-theta1")
+                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+	
+	g_theta1.append("rect")
+	        .attr("fill",colorBackgroundI)
+            .attr("x", x(-2))
+            .attr("y", y(-2))
+            .attr("width", x(0)-x(-2))
+            .attr("height", y(2)-y(-2));
+			  
+	g_theta1.append("rect")
+	        .attr("fill",colorBackgroundJ)
+            .attr("x", x(0))
+            .attr("y", y(-2))
+            .attr("width", x(0)-x(-2))
+            .attr("height", y(2)-y(-2));
+	 
+	// inside axes
+	fig2_right.append("line")
+			  .attr("stroke-opacity",0.3)
+			  .attr('stroke',"rgb(0%,0%,0%)")
+              .attr("x1", x(0))
+	          .attr("y1", y(-1))
+	          .attr("x2", x(0))
+	          .attr("y2", y(1));
+			  
+	fig2_right.append("line")
+			  .attr("stroke-opacity",0.3)
+			  .attr('stroke',"rgb(0%,0%,0%)")
+              .attr("x1", x(-1))
+	          .attr("y1", y(0))
+	          .attr("x2", x(1))
+	          .attr("y2", y(0));
+			
+    // classes I and J
+    var line_IJ = fig2_right.append("g")
+		                    .attr("stroke-width", 4)
+	                        .attr("stroke-opacity",1)
+							.attr("stroke-linecap", "round");
+	  
+    line_IJ.append("line")
+           .attr("x1", x(-0.2))
+	       .attr("y1", y(0))
+	       .attr("x2", x(-1))
+	       .attr("y2", y(0))
+	       .attr("stroke", colorI);
+		   
+    line_IJ.append("line")
+           .attr("x1", x(0.2))
+	       .attr("y1", y(0))
+	       .attr("x2", x(1))
+	       .attr("y2", y(0))
+	       .attr("stroke", colorJ);
+			  
+	// C_theta
+    fig2_right.append("line")
+	          .attr("id","fig2-group-theta2")
+			  .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")")
+              .attr("x1", x(0))
+		      .attr("y1", y(2))
+		      .attr("x2", x(0))
+		      .attr("y2", y(-2))
+              .attr("stroke-width", 3)
+	          .attr("stroke", red)
+     	      .attr("stroke-opacity",1);
+		   
+	// borders			  
+	fig2_right.append("rect")
+	          .attr("fill","rgb(100%,100%,100%)")
+              .attr("x", x(-3))
+              .attr("y", y(-3))
+              .attr("width", x(-1)-x(-3))
+              .attr("height", y(3)-y(-3));
+			  
+	fig2_right.append("rect")
+	          .attr("fill","rgb(100%,100%,100%)")
+              .attr("x", x(-3))
+              .attr("y", y(-3))
+              .attr("width", x(3)-x(-3))
+              .attr("height", y(-1)-y(-3));
+			  
+	fig2_right.append("rect")
+	          .attr("fill","rgb(100%,100%,100%)")
+              .attr("x", x(-3))
+              .attr("y", y(1))
+              .attr("width", x(3)-x(-3))
+              .attr("height", y(1)-y(-3));
+			  
+	fig2_right.append("rect")
+	          .attr("fill","rgb(100%,100%,100%)")
+              .attr("x", x(1))
+              .attr("y", y(-3))
+              .attr("width", x(1)-x(-3))
+              .attr("height", y(3)-y(-3));
+								
+	fig2_right.append("rect")
+			  .attr("id","input-rect")
+              .attr("fill","none")
+			  .attr("stroke-opacity",0.3)
+			  .attr('stroke',"rgb(0%,0%,0%)")
+              .attr("x", x(-1))
+              .attr("y", y(-1))
+              .attr("width", x(1)-x(-1))
+              .attr("height", y(1)-y(-1));
+			
+    // a and b
+    var ab_bars = fig2_right.append("g")
+		                    .attr("stroke-width", 1)
+	                        .attr("stroke", "rgb(0%,0%,0%)")
+	                        .attr("stroke-opacity",1);
+	
+    ab_bars.append("line")
+           .attr("x1", x(-1))
+	       .attr("y1", y(1))
+	       .attr("x2", x(1))
+	       .attr("y2", y(1));
+			 
+	ab_bars.append("line")
+           .attr("x1", x(-1))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(-1))
+	       .attr("y2", y(1));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(-0.97))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(-1.03))
+	       .attr("y2", y(-1));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(-0.97))
+	       .attr("y1", y(1))
+	       .attr("x2", x(-1.03))
+	       .attr("y2", y(1));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(-1))
+	       .attr("y1", y(0.97))
+	       .attr("x2", x(-1))
+	       .attr("y2", y(1.03));
+		   
+	ab_bars.append("line")
+           .attr("x1", x(1))
+	       .attr("y1", y(0.97))
+	       .attr("x2", x(1))
+	       .attr("y2", y(1.03));
+		   
+    // labels
+    var labels = fig2_right.append("g")
+	                       .attr("fill", "rgb(0%,0%,0%)")
+	                       .attr("text-anchor", "middle")
+	                       .attr("font-family","Georgia, serif")
+ 	                       .attr("font-style", "italic")
+	                       .attr("font-size", "15px");
+
+    labels.append("text")
+          .attr("x", x(0))
+	      .attr("y", y(1.15))
+		  .text("a");
+
+    labels.append("text")
+          .attr("x", x(-1))
+	      .attr("y", y(1.15))
+		  .text("-1");
+		  
+    labels.append("text")
+          .attr("x", x(1))
+	      .attr("y", y(1.15))
+		  .text("1");
+		  
+    labels.append("text")
+          .attr("x", x(-1.15))
+	      .attr("y", y(0.03))
+		  .text("b");
+
+    labels.append("text")
+          .attr("x", x(-1.15))
+	      .attr("y", y(1.03))
+		  .text("-1");
+		  
+    labels.append("text")
+          .attr("x", x(-1.15))
+	      .attr("y", y(-0.97))
+		  .text("1");
+		  
+	// x y xm ym
+	fig2_right.append("circle")
+	          .attr("cx",x(x_a))
+			  .attr("cy",y(-x_b))
+			  .attr("r",3)
+			  .attr("fill",colorImI);
+			  
+	fig2_right.append("text")
+              .attr("x",x(x_a)+5)
+              .attr("y",y(-x_b)+15)
+  	          .attr("text-anchor", "start")
+	          .attr("font-family", "Georgia, serif")
+	          .attr("fill",colorImI)
+	          .attr("font-style", "italic")
+              .attr("font-weight", "bold")
+	          .attr("font-size", "12px")
+              .text("x");
+			  
+	fig2_right.append("circle")
+	          .attr("cx",x(y_a))
+			  .attr("cy",y(-y_b))
+			  .attr("r",3)
+			  .attr("fill",colorImJ);
+			  
+	fig2_right.append("text")
+              .attr("x",x(y_a)-5)
+              .attr("y",y(-y_b)-10)
+  	          .attr("text-anchor", "end")
+	          .attr("font-family", "Georgia, serif")
+	          .attr("fill",colorImJ)
+	          .attr("font-style", "italic")
+              .attr("font-weight", "bold")
+	          .attr("font-size", "12px")
+              .text("y");
+			  
+	fig2_right.append("circle")
+	          .attr("id","fig2-xm")
+	          .attr("cx",x(xm_a))
+			  .attr("cy",y(-xm_b))
+			  .attr("r",3)
+			  .attr("fill",colorImJ);
+			  
+	fig2_right.append("text")
+	          .attr("id","fig2-xm-text")
+              .attr("x",x(xm_a)+5)
+              .attr("y",y(-xm_b)-10)
+  	          .attr("text-anchor", "start")
+	          .attr("font-family", "Georgia, serif")
+	          .attr("fill",colorImJ)
+	          .attr("font-style", "italic")
+              .attr("font-weight", "bold")
+	          .attr("font-size", "12px")
+              .text("x")
+		      .append("tspan")
+              .attr("font-size", "10px")
+              .attr("dx", "1px")
+              .attr("dy", "2px")
+              .text("m");
+
+	fig2_right.append("circle")
+	          .attr("id","fig2-ym")
+	          .attr("cx",x(ym_a))
+			  .attr("cy",y(-ym_b))
+			  .attr("r",3)
+			  .attr("fill",colorImI);
+
+	fig2_right.append("text")
+	          .attr("id","fig2-ym-text")
+              .attr("x",x(ym_a)-5)
+              .attr("y",y(-ym_b)+15)
+  	          .attr("text-anchor", "end")
+	          .attr("font-family", "Georgia, serif")
+	          .attr("fill",colorImI)
+	          .attr("font-style", "italic")
+              .attr("font-weight", "bold")
+	          .attr("font-size", "12px")
+              .text("y")
+		      .append("tspan")
+              .attr("font-size", "10px")
+              .attr("dx", "1px")
+              .attr("dy", "2px")
+              .text("m");
+			  
+	fig2_right.append("line")
+	          .attr("id","fig2-lineI1")
+              .attr("x1", x(x_a))
+	          .attr("y1", y(-x_b))
+	          .attr("x2", (x(x_a)+x(xm_a))/2)
+	          .attr("y2", (y(-x_b)+y(-xm_b))/2)
+              .attr("stroke-width", 1)
+			  .attr("stroke-dasharray", "3, 1")
+	          .attr("stroke",colorImI);
+			  
+	fig2_right.append("line")
+	          .attr("id","fig2-lineI2")
+              .attr("x1", x(xm_a))
+	          .attr("y1", y(-xm_b))
+	          .attr("x2", (x(x_a)+x(xm_a))/2)
+	          .attr("y2", (y(-x_b)+y(-xm_b))/2)
+              .attr("stroke-width", 1)
+			  .attr("stroke-dasharray", "3, 1")
+	          .attr("stroke",colorImJ);
+
+	fig2_right.append("line")
+	          .attr("id","fig2-lineJ1")
+              .attr("x1", x(y_a))
+	          .attr("y1", y(-y_b))
+	          .attr("x2", (x(y_a)+x(ym_a))/2)
+	          .attr("y2", (y(-y_b)+y(-ym_b))/2)
+              .attr("stroke-width", 1)
+			  .attr("stroke-dasharray", "3, 1")
+	          .attr("stroke",colorImJ);
+			  
+	fig2_right.append("line")
+	          .attr("id","fig2-lineJ2")
+              .attr("x1", x(ym_a))
+	          .attr("y1", y(-ym_b))
+	          .attr("x2", (x(y_a)+x(ym_a))/2)
+	          .attr("y2", (y(-y_b)+y(-ym_b))/2)
+              .attr("stroke-width", 1)
+			  .attr("stroke-dasharray", "3, 1")
+	          .attr("stroke",colorImI);
+  }
+  
+  function fig2_xy() {
+    var canvas = document.getElementById("image-canvas-x");
+    var ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img_to_canvas1(generate_image(x_a,x_b)),0,0,80,80);
+	
+    var canvas = document.getElementById("image-canvas-y");
+    var ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img_to_canvas1(generate_image(y_a,y_b)),0,0,80,80);
+  }
+  
+  function fig2_xym(theta) {
+    //var canvas = document.getElementById("image-canvas-wtheta");
+    //var ctx = canvas.getContext("2d");
+    //ctx.imageSmoothingEnabled = false;
+    //ctx.drawImage(img_to_canvas1(generate_image(Math.cos(Math.PI/2 * theta),Math.sin(Math.PI/2 * theta))),0,0,80,80);
+	
+    //var canvas = document.getElementById("image-canvas-minus-wtheta");
+    //var ctx = canvas.getContext("2d");
+    //ctx.imageSmoothingEnabled = false;
+    //ctx.drawImage(img_to_canvas1(generate_image(- Math.cos(Math.PI/2 * theta),- Math.sin(Math.PI/2 * theta))),0,0,80,80);
+	
+    var canvas = document.getElementById("image-canvas-xm");
+    var ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img_to_canvas1(generate_image(xm_a,xm_b)),0,0,80,80);
+	
+    var canvas = document.getElementById("image-canvas-ym");
+    var ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img_to_canvas1(generate_image(ym_a,ym_b)),0,0,80,80);
+  }
+  
+  function fig2_update(theta) {	
+    xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * theta) * Math.cos(Math.PI/2 * theta));
+    xm_b = - 2 * x_a * Math.cos(Math.PI/2 * theta) * Math.sin(Math.PI/2 * theta);
+    ym_a = y_a * (1 - 2 * Math.cos(Math.PI/2 * theta) * Math.cos(Math.PI/2 * theta));
+    ym_b = - 2 * y_a * Math.cos(Math.PI/2 * theta) * Math.sin(Math.PI/2 * theta);
+
+	fig2_xym(theta);
+	
+	d3.select("#fig2-value-theta").text(parseFloat(theta).toFixed(2));
+	d3.select("#fig2-group-theta1").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+	d3.select("#fig2-group-theta2").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+	//d3.select("#fig2-value-dx").text(parseFloat(math.abs(2*math.dot(imxm,e_theta)/(h*h))).toFixed(2));
+	//d3.select("#fig2-value-dy").text(parseFloat(math.abs(2*math.dot(imym,e_theta)/(h*h))).toFixed(2));
+	
+	d3.select("#fig2-xm").attr("cx",x(xm_a)).attr("cy",y(-xm_b));
+	d3.select("#fig2-xm-text").attr("x",x(xm_a)+5).attr("y",y(-xm_b)-10);
+	d3.select("#fig2-lineI1").attr("x2", (x(x_a)+x(xm_a))/2).attr("y2", (y(-x_b)+y(-xm_b))/2);
+	d3.select("#fig2-lineI2").attr("x1", x(xm_a)).attr("y1", y(-xm_b)).attr("x2", (x(x_a)+x(xm_a))/2).attr("y2", (y(-x_b)+y(-xm_b))/2);
+	d3.select("#fig2-ym").attr("cx",x(ym_a)).attr("cy",y(-ym_b));
+	d3.select("#fig2-ym-text").attr("x",x(ym_a)-5).attr("y",y(-ym_b)+15);
+	d3.select("#fig2-lineJ1").attr("x2", (x(y_a)+x(ym_a))/2).attr("y2", (y(-y_b)+y(-ym_b))/2);
+	d3.select("#fig2-lineJ2").attr("x1", x(ym_a)).attr("y1", y(-ym_b)).attr("x2", (x(y_a)+x(ym_a))/2).attr("y2", (y(-y_b)+y(-ym_b))/2);
+  }
+  
+  d3.select("#controler-input2").property("value", init_theta);
+  d3.select("#fig2-value-theta").text(parseFloat(init_theta).toFixed(2));
+  
+  fig2_right_init(init_theta);
+  fig2_xy();
+  fig2_xym(init_theta);
+
+  d3.select("#controler-input2")
+	.on("input", function() {fig2_update(this.value);});
+}
+
+function fig2bis(h) {
   var width = 420;
   var height = 280;
   var x = d3.scale.linear().domain([-150, 150]).range([0, width]);

@@ -223,34 +223,11 @@
   
   <h2> Context </h2>
   
-  <style>
-  #Carell_Deschanel {
-    display: -webkit-flex;
-    display: flex;
-	justify-content: space-between;
-  }
-  .Carell_Deschanel_caption1 {
-    display: inline-block;
-	width: 180px;
-	text-align: center;
-  }
-  #Carell_Deschanel_caption2 {
-    display: inline-block;
-	width: 200px;
-	text-align: center;
-  }
-  </style>
-  
   <p> Deep neural networks have been shown to be vulnerable to the adversarial example phenomenon <dt-cite key="szegedy2013intriguing,goodfellow2014explaining"></dt-cite>:
   all models tested so far can have their classifications dramatically altered by small image perturbations. The following predictions were for instance made by
   a state-of-the-art network trained to recognize celebrities <dt-cite key="parkhi2015deep"></dt-cite>: <p>
-  <figure class="l-body">
+  <figure class="l-middle">
     <img src="assets/Carell_Deschanel.png">
-	<div id="Carell_Deschanel">
-	  <figcaption class="Carell_Deschanel_caption1"> Steve Carell (score: 0.966)</figcaption>
-	  <figcaption id="Carell_Deschanel_caption2"> Zooey Deschanel (score: 0.968)</figcaption>
-	  <figcaption class="Carell_Deschanel_caption1"> perturbation </figcaption>
-	</div>
   </figure>
   
   <p> This result is puzzling for two reasons. First, it challenges conventional wisdom on generalization in machine learning.
@@ -269,27 +246,98 @@
 
   <hr>
   
-  <h2> Preamble </h2>
+  <h2> A Toy Problem </h2>
   
-  <p>In linear classification, adversarial perturbations are often understood as a property of the dot product in high dimension:
+  <p> In linear classification, adversarial perturbations are often understood as a property of the dot product in high dimension. A widespread intuition is that:
   "for high dimensional problems, we can make many infinitesimal changes to the input that add up to one large change to the output" 
-  <dt-cite key="goodfellow2014explaining"></dt-cite>. Yet, this view is misleading&mdash; consider for instance the following toy problem.</p>
-
-  <p> For a given pixel height $h$, let's define two classes of images in the space $[-1, 1]^{h \times 2h}$: </p>
+  <dt-cite key="goodfellow2014explaining"></dt-cite>. </p>
+  
+  <p> Here, we challenge this intuition. We argue instead that adversarial examples exist when the classification boundary lies close the data manifold&mdash;independently of the 
+  image space dimension. This change of perspective will raise new questions, but it will prove very useful eventually. </p>
+  
+  <p> Let us start with a minimal toy problem. We consider a 2-dimensional image space $[-1,1]^2$ where each image $\boldsymbol{x}=(a,b)$ is such that: <br>
+  &#8226; $\;a \in [-1,1]$ is the gray level of a central square and <br>
+  &#8226; $\;b \in [-1,1]$ is the gray level of the outer background. </p>
   
   <style>
+  .image-space {
+    display: -webkit-flex;
+    display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	margin-bottom: 40px;
+  }
+  .image {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	justify-content: center;
+	align-items: center;
+  }
+  #image-canvas1 {
+    margin-top: 20px;
+  }
+  .image-header {
+    font-size: 15px;
+	margin-top: 20px;
+  }
+  .image-space-arrow {
+    font-size: 50px;
+	margin-bottom: 42px;
+  }
+  .space {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	margin-left: 50px;
+	align-items: center;
+  }
+  .space-header {
+    font-size: 15px;
+  }
+  .space-input {
+	width: 350px;
+	height: 350px;
+  }
+  </style>
+  
+  <div class="l-middle image-space">
+	<div class="image">
+	  <canvas id="image-canvas1" width="150" height="150"> </canvas>
+	  <div class="image-header"> Image $\boldsymbol{x}$ </div>
+	</div>
+	<div class="image-space-arrow"> &#8594; </div>
+    <div class="space">
+	  <div class="space-input" id="space-input1"> </div>
+	  <div class="space-header"> Image Space </div>
+	</div>
+  </div>
+  
+  <script>
+    image_space();
+  </script>
+
+  <p> In this simple image space, we define two classes of images: </p>
+  
+  <style>
+  .classesIJ {
+    margin-bottom: 20px;
+  }
   .classesIJ-row {
     display: -webkit-flex;
     display: flex;
+	align-items: center;
+	margin-bottom: 5px;
   }
   .classesIJ-cell1 {
-    margin-left: 0px;
-	margin-right: 20px;
-    margin-top: auto;
-	margin-bottom: auto;
+    width: 110px;
+  }
+  .classesIJ-cell1-content {
+    display: inline-block;
+    margin: auto;
 	font-weight: bold;
 	border-radius: 5px;
-	background-color: rgb(80%,80%,80%)
   }
   .classesIJ-cell2 {
 	margin: 0px;
@@ -300,407 +348,210 @@
     margin-bottom: 10px;
   }
   .imIJ {
-	vertical-align: text-bottom;
+	vertical-align: middle;
     -ms-interpolation-mode: nearest-neighbor;
     image-rendering: optimizeSpeed;
     image-rendering: pixelated;
   }
-  #classesIJ-buttons {
-    margin-top: 20px;
-	margin-bottom: 30px;
-	width: 350px;
-    text-align: center;
-	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	color: rgb(50%,50%,50%);
-	background: rgb(95%,95%,95%);
-    border-radius: 25px;
-  }
-  .classesIJ-one-button {
-    margin: 5px;
-	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	color: rgb(50%,50%,50%);
+  #classesIJ-margin-bottom {
+    margin-bottom: 40px;
   }
   </style>
 
+  <div class="classesIJ">
   <div class="classesIJ-row">
-    <p class="classesIJ-cell1" style="color: rgb(25%,25%,25%)"> &nbsp;Class $I$&nbsp; </p>
-	<p class="classesIJ-cell2"> Left half-image: random values in $[-1, -0.1]$ <br> Right half-image: constant value $0$</p>
-  </div>
-  <p class="classesIJ-examples"> Ex:
-    <canvas class="imIJ" id="classI_0" width="90" height="45"> </canvas>,&nbsp;&nbsp;
-	<canvas class="imIJ" id="classI_1" width="90" height="45"> </canvas>,&nbsp;&nbsp;
-	<canvas class="imIJ" id="classI_2" width="90" height="45"> </canvas>,&nbsp;&nbsp;
-	<canvas class="imIJ" id="classI_3" width="90" height="45"> </canvas>,&nbsp;&nbsp;
-	<canvas class="imIJ" id="classI_4" width="90" height="45"> </canvas>,&nbsp;&nbsp;etc.
-  </p>
-  <div class="classesIJ-row">
-    <p class="classesIJ-cell1" style="color: rgb(99%,99%,99%)"> &nbsp;Class $J$&nbsp; </p>
-	<p class="classesIJ-cell2"> Left half-image: random values in $[0.1, 1]$ <br> Right half-image: constant value $0$</p>
-  </div>
-  <p class="classesIJ-examples"> Ex:
-    <canvas class="imIJ" id="classJ_0" width="90" height="45"> </canvas>,&nbsp;&nbsp;
-	<canvas class="imIJ" id="classJ_1" width="90" height="45"> </canvas>,&nbsp;&nbsp;
-	<canvas class="imIJ" id="classJ_2" width="90" height="45"> </canvas>,&nbsp;&nbsp;
-	<canvas class="imIJ" id="classJ_3" width="90" height="45"> </canvas>,&nbsp;&nbsp;
-	<canvas class="imIJ" id="classJ_4" width="90" height="45"> </canvas>,&nbsp;&nbsp;etc.
-  </p>
-  <div id="classesIJ-buttons"> Pixel height:
-    <button class="classesIJ-one-button" onclick="example_images(1)"> $h=1$ </button>
-	<button class="classesIJ-one-button" onclick="example_images(10)"> $h=10$ </button>
-	<button class="classesIJ-one-button" onclick="example_images(50)"> $h=50$ </button>
-  </div>
-  
-  <script>
-    example_images(10);
-  </script>
-  
-  <p> Then, let's consider the following two vectors in $[-1, 1]^{h \times 2h}$: </p>
-  
-  <style>
-  .vectors-row {
-    display: -webkit-flex;
-    display: flex;
-	margin-bottom: 20px;
-  }
-  .vectors-cell1 {
-    margin-top: 0px;
-	margin-bottom: 0px;
-	margin-right: 20px
-  }
-  .vectors-cell2 {
-    margin-top: 0px;
-	margin-bottom: 0px;
-	width: 375px;
-	border-right-style: solid;
-	border-right-width: 1px;
-  }
-  .vectors-cell3 {
-	margin-left: 30px;
-	margin-top: auto;
-	margin-bottom: auto;
-  }
-  </style>
-  
-  <div class="vectors-row">
-	<p class="vectors-cell1"> $\boldsymbol{e_1}$ </p>
-	<p class="vectors-cell2"> Left half-image: constant value $1$ <br> Right half-image: constant value $0$ </p>
-	<div class="vectors-cell3"> <canvas class="imIJ" id="e1" width="90" height="45"> </canvas> </div>
-  </div>
-  <div class="vectors-row">
-	<p class="vectors-cell1"> $\boldsymbol{e_2}$ </p>
-    <p class="vectors-cell2"> Left half-image: constant value $0$ <br> Right half-image: constant value $1$ </p>
-	<div class="vectors-cell3"> <canvas class="imIJ" id="e2" width="90" height="45"> </canvas> </div>
-  </div>
-  
-  <script>
-    vectors_e1_e2();
-  </script>
-  
-  <p> We observe that: <br>
-  1) $\boldsymbol{e_1} \!\cdot\! \boldsymbol{e_2} = 0. \quad$ $\boldsymbol{e_1}$ and $\boldsymbol{e_2}$ are orthogonal. <br>
-  2) $\forall \boldsymbol{x} \in I\;\; \boldsymbol{e_1} \!\cdot\! \boldsymbol{x} &lt; 0 \quad \text{and} \quad \forall \boldsymbol{x} \in J\;\; \boldsymbol{e_1} \!\cdot\! \boldsymbol{x} > 0. \quad$ The hyperplane $H_1$ defined by $\boldsymbol{e_1}$ separates the classes $I$ and $J$ perfectly. <br>
-  3) $\forall \boldsymbol{x} \in I \cup J\;\; \boldsymbol{e_2} \!\cdot\! \boldsymbol{x} = 0. \quad$ The hyperplane $H_2$ defined by $\boldsymbol{e_2}$ lies on the classes $I$ and $J$, it does not separate them. </p>
-	  
-  <p> Finally let's define $\boldsymbol{e_\theta}$, a version of $\boldsymbol{e_1}$ rotated towards $\boldsymbol{e_2}$ by an angle $\theta$:
-		$$\boldsymbol{e_\theta} := \cos(\theta)\,\boldsymbol{e_1} + \sin(\theta)\,\boldsymbol{e_2}$$
-	  For all $\theta$ in $[0,\pi/2)$, we have: <br>
-	  4) $\forall \boldsymbol{x} \in I \cup J\;\; \boldsymbol{e_\theta} \!\cdot\! \boldsymbol{x} = \cos(\theta)\,\boldsymbol{e_1} \!\cdot\! \boldsymbol{x}$ <br>
-	  In the range considered, $\,\cos(\theta) > 0\,$ and the hyperplane $H_\theta$ defined by $\boldsymbol{e_\theta}$ separates $I$ and $J$ just like $H_1$. </p>
-	  
-  <p> These observations are straightforward when we consider the projections of the classes $I$ and $J$ into the plane spanned by $\boldsymbol{e_1}$ and $\boldsymbol{e_2}$: </p>
-
-  <style>
-  #fig1 {
-    display: -webkit-flex;
-    display: flex;
-  }
-  #fig1-left {
-    margin-left: auto;
-	margin-right: auto;
-	margin-top: auto;
-	margin-bottom: 60px;
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-  }
-  #fig1-left-controler {
-    margin-left: auto;
-	margin-right: auto;
-	margin-top: auto;
-	margin-bottom: 20px;
-    display: -webkit-flex;
-    display: flex;
-  }
-  #fig1-left-controler-input {
-    margin-top: 5px;
-    margin-left: 10px;
-	margin-right: 10px;
-  }
-  #fig1-left-caption1 {
-    margin-top: 3px;
-  }
-  #fig1-left-caption2 {
-    margin-top: auto;
-	margin-bottom: auto;
-	margin-right: 10px;
-  }
-  #fig1-left-content {
-    margin-left: 10px;
-	margin-right: auto;
-	margin-top: 20px;
-	margin-bottom: auto;
-    display: -webkit-flex;
-    display: flex;
-  }
-  #fig1-left-canvas {
-    margin-top: auto;
-    margin-bottom: auto;
-	margin-left: 0px;
-    margin-right: auto;
-    -ms-interpolation-mode: nearest-neighbor;
-    image-rendering: optimizeSpeed;
-    image-rendering: pixelated;
-  }
-  #fig1-right {
-    margin-left: auto;
-	margin-right: 0px;
-	width: 420px;
-	height: 280px;
-	border-style: solid;
-	border-width: 1px;
-	border-color: rgb(80%,80%,80%);
-  }
-  #fig1-caption {
-	margin-top: 10px;
-  }
-  </style>
-  
-  <figure class="l-middle">
-    <div id="fig1">
-      <div id="fig1-left">
-	    <div id="fig1-left-controler">
-		  <figcaption id="fig1-left-caption1"> $\theta:$ </figcaption>
-		  <input id="fig1-left-controler-input" type="range" min="0" max="0.99" step="0.01"> </input>
-		  <figcaption> <span id="fig1-value-theta">...</span>$ \; \dfrac{\pi}{2}$ </figcaption>
-		</div>
-	    <div id="fig1-left-content">
-		  <figcaption id="fig1-left-caption2"> $\boldsymbol{e_\theta}:$ </figcaption>
-		  <canvas id="fig1-left-canvas" width="150" height="75"> </canvas>
-		</div>
-	  </div>
-	  <div id="fig1-right"> </div>
+    <div class="classesIJ-cell1">
+      <p class="classesIJ-cell1-content" style="color: rgb(30%,30%,30%); background-color: rgb(60%,60%,60%);"> &nbsp;Class $I$&nbsp; </p>
 	</div>
-	<figcaption id="fig1-caption"> It is apparent in the plane $(\boldsymbol{e_1}, \boldsymbol{e_2})$ that: 
-	1) $\boldsymbol{e_1}$ and $\boldsymbol{e_2}$ are orthogonal,
-    2) $H_1$ separates the classes $I$ and $J$ perfectly, 
-	3) $H_2$ does not separate the classes $I$ and $J$ and 
-	4) $H_{\theta}$ separates the classes $I$ and $J$ perfectly for all $\theta$ in $[0,\pi/2)$. </figcaption>
-  </figure>
+	<p class="classesIJ-cell2"> The set of images $\boldsymbol{x}=(a,b)$ with: <br>
+	$a \in [-1,-0.2] \quad \text{and} \quad b = 0$</p>
+  </div>
+  <div class="classesIJ-row">
+    <p class="classesIJ-cell1"> Examples: </p>
+    <p class="classesIJ-examples">
+      <canvas class="imIJ" id="classI_0" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
+	  <canvas class="imIJ" id="classI_1" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
+	  <canvas class="imIJ" id="classI_2" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
+	  <canvas class="imIJ" id="classI_3" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
+	  <canvas class="imIJ" id="classI_4" width="80" height="80"> </canvas>
+    </p>
+  </div>
+  </div>
+  <div id="classesIJ-margin-bottom" class="classesIJ">
+  <div class="classesIJ-row">
+    <div class="classesIJ-cell1">
+      <p class="classesIJ-cell1-content" style="color: rgb(95%,95%,95%); background-color: rgb(80%,80%,80%);"> &nbsp;Class $J$&nbsp; </p>
+	</div>
+	<p class="classesIJ-cell2"> The set of images  $\boldsymbol{x}=(a,b)$ with: <br>
+	$a \in [0.2,1] \quad \text{and} \quad b = 0$</p>
+  </div>
+  <div class="classesIJ-row">
+    <p class="classesIJ-cell1"> Examples: </p>
+    <p class="classesIJ-examples">
+      <canvas class="imIJ" id="classJ_0" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
+	  <canvas class="imIJ" id="classJ_1" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
+	  <canvas class="imIJ" id="classJ_2" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
+	  <canvas class="imIJ" id="classJ_3" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
+	  <canvas class="imIJ" id="classJ_4" width="80" height="80"> </canvas>
+    </p>
+  </div>
+  </div>
+  
+  <script>
+    example_images_I();
+    example_images_J();
+  </script>
+
+  <p> The two classes just defined can be separated by an infinite number of linear classifiers in image space. For instance, 
+  the line $\mathscr{L}_{\theta}$ defined by its normal weight vector $\boldsymbol{w_{\theta}} = (\cos\theta, \sin\theta)$ 
+  separates $I$ and $J$ for all $\theta \in [0,\pi/2)$: </p>
+  
+  <style>
+  .image-space-controler {
+    display: -webkit-flex;
+    display: flex;
+  }
+  #image-space-controler1 {
+	justify-content: center;
+	margin-bottom: 30px;
+    margin-left: 30px;
+  }
+  .image-space-text {
+	font-size: 15px;
+  }
+  #controler-input1 {
+    margin-top: 7px;
+    margin-left: 10px;
+	margin-right: 10px;
+  }
+  #fig1-value-theta {
+	font-size: 15px;
+  }
+  </style>
+  
+  <div class="l-middle image-space">
+	<div class="image">
+      <div class="image-space-controler" id="image-space-controler1">
+        <div class="image-space-text"> $\theta:$ </div>
+        <input id="controler-input1" type="range" min="0" max="0.99" step="0.01"> </input>
+        <div class="image-space-text"> <span id="fig1-value-theta">...</span>$ \; \dfrac{\pi}{2}$ </div>
+      </div>
+	  <canvas id="image-canvas2" width="150" height="150"> </canvas>
+	  <div class="image-header"> weight vector $\boldsymbol{w_{\theta}}$ </div>
+	</div>
+	<div class="image-space-arrow"> &#8594; </div>
+    <div class="space">
+	  <div class="space-input" id="space-input2"> </div>
+	  <div class="space-header"> Image Space </div>
+	</div>
+  </div>
   
   <script>
    fig1();
   </script>
   
-  <p> The two classes we have defined form large clusters in image space (both extending into half the dimensions of the space). 
-  At the same time, they occupy clearly distinct regions and can be separated by an infinite number of hyperplanes (in particular, $H_\theta$ for all $\theta$ in $[0,\pi/2)$).
-  This raises an interesting question: if all the linear classifiers $H_{\theta}$ perform equally well on clean data, are they all equally robust to image perturbations? </p>
+  <p> In general, the quality of a classifier is estimated by evaluating by its performance on a test set. Since all the linear classifiers $\mathscr{L}_{\theta}$ 
+  perform equally well on $I$ and $J$, should they all be regarded as equivalent? Or is there some other measure according to which they differ?
+  In image space, we see that the line $\mathscr{L}_{\theta}$ approaches $I$ and $J$ when $\theta$ tends to $\pi/2$. 
+  Hence, the classifier $\mathscr{L}_{\theta}$ is expected to become increasingly vulnerable to image perturbations when $\theta$ tends to $\pi/2$. </p>
   
-  <p> For an image $\boldsymbol{x}$ in $[-1, 1]^{h \times 2h}$, the <em>signed euclidean distance</em> between $\boldsymbol{x}$ and $H_{\theta}$ is: 
-  $$d(\boldsymbol{x}) = \boldsymbol{x} \!\cdot\! \boldsymbol{\hat{e}_{\theta}}$$
-  with: $\displaystyle \boldsymbol{\hat{e}_{\theta}} = \frac{\boldsymbol{e_{\theta}}}{\lVert\boldsymbol{e_{\theta}}\rVert}\;$ 
-  (here and in the following, $\lVert\cdot\rVert$ refers to the L2-norm).</p>
-  
-  <p>If $\boldsymbol{x}$ is in $I \cup J$, we can write:
-  $$d(\boldsymbol{x}) = \cos(\theta)\,\boldsymbol{x} \!\cdot\! \boldsymbol{\hat{e}_1}$$ 
-  and we see that $d(\boldsymbol{x}) \to 0$ when $\theta \to \pi/2$. Hence, $H_{\theta}$ becomes increasingly vulnerable to image perturbations as $\theta \to \pi/2$.</p>
-  
-  <p>As an illustration, let's consider some adversarial examples affecting $H_{\theta}$.
-  For a given image $\boldsymbol{x}$ in $I \cup J$, the closest image classified into the opposite class is the <em>projected image</em> of 
-  $\boldsymbol{x}$ on $H_{\theta}$, defined as:
-  $$\boldsymbol{x}_p := \boldsymbol{x} - d(\boldsymbol{x}) \; \boldsymbol{\hat{e}_{\theta}}$$
+  <p> For an image $\boldsymbol{x}$ in $I \cup J$, the closest image classified in the opposite class is the <em>projected image</em> of $\boldsymbol{x}$ 
+  on $\mathscr{L}_{\theta}$, defined as:
+  $$\boldsymbol{x}_p := \boldsymbol{x} - (\boldsymbol{x} \!\cdot\! \boldsymbol{w_{\theta}}) \; \boldsymbol{w_{\theta}}$$
   When $\boldsymbol{x}$ and $\boldsymbol{x}_p$ are very close, we say that $\boldsymbol{x}_p$ is an <em>adversarial example</em> of $\boldsymbol{x}$. 
   Observe though that $\boldsymbol{x}_p$ is classified with a low confidence score (it lies on the boundary) and it is
   perhaps more interesting to consider <em>high-confidence adversarial examples</em> <dt-cite key="carlini2017adversarial"></dt-cite>.
-  In the following, we focus on the <em>mirror image</em> of $\boldsymbol{x}$ through $H_{\theta}$, defined as:
-  $$\boldsymbol{x}_m := \boldsymbol{x} - 2\,d(\boldsymbol{x}) \; \boldsymbol{\hat{e}_{\theta}}$$
-  $\boldsymbol{x}_m$ is the nearest image classified in the opposite class with the same confidence level as $\boldsymbol{x}$ 
-  (or such that: $d(\boldsymbol{x}_m) = -d(\boldsymbol{x})$).
+  In the following, we focus on the <em>mirror image</em> of $\boldsymbol{x}$ through $\mathscr{L}_{\theta}$, defined as:
+  $$\boldsymbol{x}_m := \boldsymbol{x} - 2\,(\boldsymbol{x} \!\cdot\! \boldsymbol{w_{\theta}}) \; \boldsymbol{w_{\theta}}$$
+  $\boldsymbol{x}_m$ is the nearest image classified in the opposite class with the same confidence level as $\boldsymbol{x}$.</p>
   
-  <p> We can show that the mirror image through $H_{\theta}$ satisfies the following two properties: <br>
-  1) $\theta = 0\; \implies\; \forall \boldsymbol{x} \in I\;\; \boldsymbol{x}_m \in J\;$ and 
-  $\;\forall \boldsymbol{x} \in J\;\; \boldsymbol{x}_m \in I$. <br>
-  2) $\theta \to \pi/2\; \implies\; \forall \boldsymbol{x} \in I \cup J\;\; ||\boldsymbol{x}_m – \boldsymbol{x}|| \to 0$.</p>
-  
-  <p> Consider for instance two images $\boldsymbol{x} \in I$ and $\boldsymbol{y} \in J$: </p>
+  <p> Consider for instance two images $\boldsymbol{x} \in I$, $\boldsymbol{y} \in J$ and their mirror images $\boldsymbol{x}_m$, $\boldsymbol{y}_m$ as a function of $\theta$: </p>
   
   <style>
-  #fig2 {
-    display: -webkit-flex;
-    display: flex;
+  #image-space-controler2 {
+    margin-top: 30px;
+    margin-bottom: 30px;
   }
-  #fig2-left {
-    margin-left: 0px;
-	margin-right: auto;
-	margin-top: 0px;
-	margin-bottom: auto;
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-  }
-  #fig2-left-controler {
-    margin-left: auto;
-	margin-right: auto;
-	margin-top: 40px;
-	margin-bottom: 0px;
-    display: -webkit-flex;
-    display: flex;
-  }
-  #fig2-left-controler-input {
-    margin-top: 5px;
+  #controler-input2 {
+    margin-top: 7px;
     margin-left: 10px;
 	margin-right: 10px;
   }
-  #fig2-left-caption1 {
-    margin-top: 3px;
-  }
-  .fig2-left-caption2 {
-	margin-bottom: 5px;
-	text-align: center;
-  }
-  .fig2-left-caption3 {
-    margin-top: auto;
-	margin-bottom: 13px;
-  }
-  #fig2-left-content {
-    margin-left: 0px;
+  #image-xy {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
 	margin-right: auto;
-	margin-top: 20px;
-	margin-bottom: auto;
+	justify-content: center;
+	align-items: center;
+  }
+  .image-space-line {
     display: -webkit-flex;
     display: flex;
-	flex-direction: column;
-  }
-  .fig2-left-content-line {
-    margin-left: 0px;
-	margin-top: 15px;
 	margin-bottom: 5px;
-    display: -webkit-flex;
-    display: flex;
   }
-  .fig2-left-content-image {
+  .image-space-block {
     display: -webkit-flex;
     display: flex;
 	flex-direction: column;
+	align-items: center;
   }
-  #fig2-right {
-    margin-left: auto;
-	margin-right: 0px;
-	width: 420px;
-	height: 280px;
-	border-style: solid;
-	border-width: 1px;
-	border-color: rgb(80%,80%,80%);
-  }
-  #fig2-caption {
-	margin-top: 10px;
-  }
-  #fig2-buttons {
-    margin-top: 10px;
-	margin-bottom: 30px;
-	width: 350px;
-    text-align: center;
-	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	color: rgb(50%,50%,50%);
-	background: rgb(95%,95%,95%);
-    border-radius: 25px;
-  }
-  .fig2-one-button {
-    margin: 5px;
-	font: 14px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	color: rgb(50%,50%,50%);
+  .image-space-equal {
+    margin-left: 10px;
+	margin-right: 10px;
+	margin-top: 55px;
   }
   </style>
   
-  <figure class="l-middle" id="fig2-margin">
-    <div id="fig2">
-      <div id="fig2-left">
-	    <div id="fig2-left-controler">
-		  <figcaption id="fig2-left-caption1"> $\theta:$ </figcaption>
-		  <input id="fig2-left-controler-input" type="range" min="0" max="0.99" step="0.01"> </input>
-		  <figcaption> <span id="fig2-value-theta">...</span>$ \; \dfrac{\pi}{2}$ </figcaption>
+  <div class="l-middle image-space">
+	<div id="image-xy">
+      <div class="image-space-controler" id="image-space-controler2">
+        <div class="image-space-text"> $\theta:$ </div>
+        <input id="controler-input2" type="range" min="0" max="0.99" step="0.01"> </input>
+        <div class="image-space-text"> <span id="fig2-value-theta">...</span>$ \; \dfrac{\pi}{2}$ </div>
+      </div>
+	  <div class="image-space-line">
+	    <div class="image-space-block">
+	      <div class="image-space-text"> $\boldsymbol{x}$ </div>
+	      <canvas id="image-canvas-x" width="80" height="80"> </canvas>
 		</div>
-		<div id="fig2-left-content">
-		  <div class="fig2-left-content-line">
-		    <div class="fig2-left-content-image">
-			  <figcaption class="fig2-left-caption2"> $\boldsymbol{x}$ </figcaption>
-			  <canvas id="fig2-left-canvas-x" width="90" height="45"> </canvas>
-			</div>
-			<figcaption class="fig2-left-caption3"> $\,+\,$ <span id="fig2-value-dx">...</span> $\,\times\,$ </figcaption>
-		    <div class="fig2-left-content-image">
-			  <figcaption class="fig2-left-caption2"> $\boldsymbol{e_{\theta}}$ </figcaption>
-			  <canvas id="fig2-left-canvas-etheta" width="90" height="45"> </canvas>
-			</div>
-			<figcaption class="fig2-left-caption3"> $\;=\;$ </figcaption>
-		    <div class="fig2-left-content-image">
-			  <figcaption class="fig2-left-caption2"> $\boldsymbol{x}_m$ </figcaption>
-			  <canvas id="fig2-left-canvas-xm" width="90" height="45"> </canvas>
-			</div>
-		  </div>
-		  <div class="fig2-left-content-line">
-		    <div class="fig2-left-content-image">
-			  <figcaption class="fig2-left-caption2"> $\boldsymbol{y}$ </figcaption>
-			  <canvas id="fig2-left-canvas-y" width="90" height="45"> </canvas>
-			</div>
-			<figcaption class="fig2-left-caption3"> $\;+$ <span id="fig2-value-dy">...</span> $\,\times\,$ </figcaption>
-		    <div class="fig2-left-content-image">
-			  <figcaption class="fig2-left-caption2"> $-\boldsymbol{e_{\theta}}$ </figcaption>
-			  <canvas id="fig2-left-canvas-minus-etheta" width="90" height="45"> </canvas>
-			</div>
-			<figcaption class="fig2-left-caption3"> $\;=\;$ </figcaption>
-		    <div class="fig2-left-content-image">
-			  <figcaption class="fig2-left-caption2"> $\boldsymbol{y}_m$ </figcaption>
-			  <canvas id="fig2-left-canvas-ym" width="90" height="45"> </canvas>
-			</div>
-		  </div>
+		<div class="image-space-text image-space-equal"> $- \;2\,(\boldsymbol{x} \!\cdot\! \boldsymbol{w_{\theta}})\;\boldsymbol{w_{\theta}} \; =$ </div>
+		<div class="image-space-block">
+		  <div class="image-space-text"> $\boldsymbol{x}_m$ </div>
+		  <canvas id="image-canvas-xm" width="80" height="80"> </canvas>
 		</div>
 	  </div>
-	  <div id="fig2-right"> </div>
+      <div class="image-space-line">
+	    <div class="image-space-block">
+	      <div class="image-space-text"> $\boldsymbol{y}$ </div>
+	      <canvas id="image-canvas-y" width="80" height="80"> </canvas>
+		</div>
+		<div class="image-space-text image-space-equal"> $- \;2\,(\boldsymbol{y} \!\cdot\! \boldsymbol{w_{\theta}})\;\boldsymbol{w_{\theta}} \; =$ </div>
+	    <div class="image-space-block">
+	      <div class="image-space-text"> $\boldsymbol{y}_m$ </div>
+	      <canvas id="image-canvas-ym" width="80" height="80"> </canvas>
+		</div>
+	  </div>
+	  <div class="image-header"> Two images and their mirror images </div>
 	</div>
-	<figcaption id="fig2-caption"> Two images $\boldsymbol{x} \in I$ and $\boldsymbol{y} \in J$, their mirror images $\boldsymbol{x}_m$ and $\boldsymbol{y}_m$
-                 and their projections in the plane $(\boldsymbol{e_1}, \boldsymbol{e_2})$.<br>
-				 1) When $\theta = 0$, $\boldsymbol{x}_m \in J$ and $\boldsymbol{y}_m \in I$.
-				 2) When $\theta \to \pi/2$, $||\boldsymbol{x}_m-\boldsymbol{x}|| \to 0$ and $||\boldsymbol{y}_m-\boldsymbol{y}|| \to 0$. 
-    </figcaption>
-  </figure>
+	<div class="image-space-arrow"> &#8594; </div>
+    <div class="space">
+	  <div class="space-input" id="space-input3"> </div>
+	  <div class="space-header"> Image Space </div>
+	</div>
+  </div>
   
   <script>
-   fig2(10);
+   fig2();
   </script>
   
-  <p  id="fig2-buttons"> Pixel height:
-    <button class="fig2-one-button" onclick="fig2(1)"> $h=1$ </button>
-	<button class="fig2-one-button" onclick="fig2(10)"> $h=10$ </button>
-	<button class="fig2-one-button" onclick="fig2(50)"> $h=50$ </button>
-  </p>
-
-  <style>
-  .p-header {
-    margin-bottom: 10px;
-	font-style: italic;
-	text-decoration: underline;
-  }
-  </style>
-  
+  <p> We can make two observations.</p>
   <ul> 
-  <li> <div class="p-header"> When$\; \theta = 0$,$\;H_{\theta}\;$does not suffer from adversarial examples: </div>
+  <li> <b> When $\theta = 0$, $\mathscr{L}_{\theta}$ does not suffer from adversarial examples: </b>
   $\boldsymbol{x}_m$ and $\boldsymbol{y}_m$ actually belong to the opposite class according to human observers. </li>
-  <li> <div class="p-header"> When$\; \theta \to \pi/2$,$\;H_{\theta}\;$suffers from strong adversarial examples: </div>
-  $\boldsymbol{x}_m$ and $\boldsymbol{y}_m$ are visually indistinguishable from their original images (and yet they are classified differently with high confidence).</li>
+  <li> <b> When $\theta \to \pi/2$, $\mathscr{L}_{\theta}$ suffers from strong adversarial examples: </b>
+  $\boldsymbol{x}_m$ and $\boldsymbol{y}_m$ are visually indistinguishable from their original images, and yet they are classified differently with high confidence.</li>
   </ul>
-  
-  <p> Importantly, high dimensionality is neither necessary (adversarial examples might exist when $h=1$) nor sufficient (adversarial examples might
-  not exist when $h=50$) for the phenomenon to occur. Rather, <em>adversarial examples exist when the classification boundary lies close to the data
-  in image space.</em></p>
   
   <hr>
   
@@ -1271,9 +1122,9 @@
 	    </div>
 	  </div>
 	</div>
-	<figcaption id="fig4-caption"> Binary classification by SVM on MNIST as a function of the regularization parameter $\lambda$. The training error $err_{\text{train}}$,
-	the test error $err_{\text{test}}$ and the adversarial distance $d_{\text{adv}}$ are indicated in the top left corner. Below are two representative images $\boldsymbol{x}$ 
-	and $\boldsymbol{y}$ and their mirror images $\boldsymbol{x}_m$ and $\boldsymbol{y}_m$. On the right are their projections in the deviation plane of $\boldsymbol{\hat{w}}$
+	<figcaption id="fig4-caption"> Binary classification with SVM on MNIST as a function of the regularization parameter $\lambda$. The training error $err_{\text{train}}$,
+	the test error $err_{\text{test}}$ and the adversarial distance $d_{\text{adv}}$ are indicated in the top left corner. Below are two representative images $\boldsymbol{x}$,
+	$\boldsymbol{y}$ and their mirror images $\boldsymbol{x}_m$, $\boldsymbol{y}_m$. On the right are their projections in the deviation plane of $\boldsymbol{\hat{w}}$
 	along with the projections of the training data. The horizontal direction is $\boldsymbol{\hat{z}}$ (joining the two centroids) and the vertical direction is 
 	$\boldsymbol{\hat{n}}$ with $\boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$. 
 	The grey area is $[-\frac{1}{\lVert\boldsymbol{w}\rVert},\frac{1}{\lVert\boldsymbol{w}\rVert}]\,\boldsymbol{\hat{w}}$.</figcaption>
