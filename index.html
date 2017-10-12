@@ -3,8 +3,23 @@
 <meta charset="utf-8">
 <script src="http://distill.pub/template.v1.js"></script>
 
-<script src="https://d3js.org/d3.v3.min.js"></script>
-<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+<script src="https://d3js.org/d3-format.v1.min.js"></script>
+<script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+<script src="https://d3js.org/d3-collection.v1.min.js"></script>
+<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+<script src="https://d3js.org/d3-request.v1.min.js"></script>
+<script src="https://d3js.org/d3-queue.v3.min.js"></script>
+<script src="https://d3js.org/d3-path.v1.min.js"></script>
+<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+<script src="https://d3js.org/d3-selection.v1.min.js"></script>
+<script src="https://d3js.org/d3-drag.v1.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.12.1/math.min.js"> </script>
 
@@ -29,7 +44,7 @@
   description: "Adversarial Examples in Linear Classification and Beyond"
   authors:
   - Thomas Tanay: http://thomastanay.com/
-  - Lewis Griffin: https://sites.google.com/site/lewisdgriffin/home
+  - Lewis D Griffin: https://sites.google.com/site/lewisdgriffin/home
   affiliations:
   - CoMPLEX, UCL: http://www.ucl.ac.uk/complex
   - CoMPLEX, UCL: http://www.ucl.ac.uk/complex
@@ -42,192 +57,83 @@
 <body>
 <dt-article class="centered">
   <h1 class="l-middle">A New Angle on L2 Regularization</h1>
-  <h2 class="l-middle"> <i>Adversarial Examples in Linear Classification and Beyond</i> </h2>
-  <dt-byline></dt-byline>
-  
-  <p>Classifiers are prone to adversarial examples when the average distance between the data and the boundary (or <em>adversarial distance</em>) is small.</p>
-  
-  <p> <span style="color: rgb(60%,60%,60%); font-style: italic;">In linear classification... </span> <br>
-  Minimizing the training error and maximizing the adversarial distance are conflicting objectives.
-  L2 regularization balances them out by acting on the scaling of the loss function. </p>
   
   <style>
-  #fig0-title {
-    margin-bottom: 30px;
-	text-align: center;
-	font-size: 15px;
-  }
-  #play-button {
-    margin-left: 15px;
-	font: 12px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	color: rgb(50%,50%,50%);
-  }
-  .fig0-span {
-    display: inline-block;
-	width: 30px;
-	text-align: right;
-  }
-  #fig0-line1 {
-    margin-left: 60px;
-	margin-right: 60px;
-    margin-bottom: 15px;
-    display: -webkit-flex;
-    display: flex;
-	justify-content: center;
-  }
-  #fig0-line2 {
-    margin-left: 60px;
-	margin-right: 60px;
-    margin-bottom: 15px;
-    display: -webkit-flex;
-    display: flex;
-	justify-content: space-between;
-  }
-  #fig0 {
-    display: -webkit-flex;
-    display: flex;
-	justify-content: space-between;
-  }
-  .fig0-subfig {
+  #abstract {
     display: -webkit-flex;
     display: flex;
 	flex-direction: column;
-	justify-content: center;
+	margin-top: 50px;
+	margin-bottom: 30px;
   }
-  .fig0-subfig-content {
-	width: 300px;
-	height: 200px;
-	border-style: solid;
-	border-width: 1px;
-	border-color: rgb(80%,80%,80%);
+  #abstract-fig {
+	width: 816px;
+	height: 300px;
+	margin-right: 20px;
   }
-  .fig0-caption {
-    margin-top: 5px;
-	text-align: center;
+  #abstract-rest {
+    margin-top: 20px;
+    display: -webkit-flex;
+    display: flex;
+	justify-content: space-between;	
   }
-  #fig0-canvas {
-    margin-right: 20px;
+  #abstract-controler {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
   }
-  #fig0-input {
-    margin-top: 3px;
+  #abstract-input {
+    margin-left: 0px;
+	margin-top: 18px;
+	margin-bottom: 28px;
+  }
+  .abstract-text-content {
+	font: 15px/1.55em "Roboto";
+	line-height: 1.5em;
+	color: rgb(60%,60%,60%);
+  }
+  #abstract-text {
+    width: 540px;
+	font: 15px/1.55em "Roboto";
+	line-height: 1.5em;
+	color: rgb(60%,60%,60%);
   }
   </style>
   
-  <figure class="l-middle">
-    <div class="l-body">
-	  <div id="fig0-title"> SVM on the 2 vs 3 MNIST problem trained with varying levels of L2 regularization: <button id="play-button"> PLAY </button> </div>
-	  <div id="fig0-line1">
-	    <figcaption> Regularization parameter : &ensp; $\lambda = 10$ <sup> <span id="fig0-value-lambda">...</span> </sup> &ensp; </figcaption>
+  <div class="l-middle">
+  <div id="abstract">
+    <div id="abstract-fig"> </div>
+	<div id="abstract-rest">
+	  <div id="abstract-controler">
+	    <div class="abstract-text-content"> Regularization: </div>
+        <input id="abstract-input" type="range" min="0" max="80" step="1"> </input>
+		<div class="abstract-text-content"> <span id="abstract_err_train"> ... </span> </div>
+		<div class="abstract-text-content"> <span id="abstract_adv_distance"> ... </span> </div>
 	  </div>
-      <div id="fig0-line2">
-	    <figcaption id="fig0-errTrain"> Training error : &ensp; $err_{\text{train}} = $ <span class="fig0-span" id="fig0-value-errTrain">...</span> % </figcaption>
-	    <figcaption id="fig0-dAdv"> Adversarial distance : &ensp; $d_{\text{adv}} =  $ <span class="fig0-span" id="fig0-value-dAdv">...</span> </figcaption>
-	  </div>
+	  <div id="abstract-text">
+		In linear models and small neural nets, L2 regularization can be understood as a balancing mechanism between two objectives:
+		minimizing the training error and maximizing the distance between the data and the boundary. <br>
+		<br>
+		In practice, using an appropriate level of regularization helps avoid overfitting and constitutes a good defence against adversarial attacks.	
+	  </div> 
 	</div>
-    <div id="fig0">
-	  <div class="fig0-subfig">
-	    <canvas id="fig0-canvas" width="150" height="150"> </canvas>
-		<figcaption class="fig0-caption"> weight vector $\boldsymbol{w}$</figcaption>
-	  </div>
-	  <div class="fig0-subfig">
-	    <div class="fig0-subfig-content" id="fig0-subfig-content1"> </div>
-		<figcaption class="fig0-caption"> Projection of the training data on $\boldsymbol{\hat{w}}$ (histograms) <br> and loss function used during training (solid lines).</figcaption>
-	  </div>
-	  <div class="fig0-subfig">
-	    <div class="fig0-subfig-content" id="fig0-subfig-content2"> </div>
-		<figcaption class="fig0-caption"> Projection of the training data in the tilting <br> plane of $\boldsymbol{\hat{w}}$.</figcaption>
-	  </div>
-	</div>
-  </figure>
+  </div>
+  <dt-byline></dt-byline>
+  </div>
   
   <script>
-   fig0();
+    abstract_fig();
   </script>
   
-  <p> <span style="color: rgb(60%,60%,60%); font-style: italic;">In neural networks... </span> <br>
-  Weight decay can be reinterpreted as a simple form of adversarial training.
-  Its potential appears underexploited in practice.</p>
-  
-  <style>
-  #fig0bis {
-    display: -webkit-flex;
-    display: flex;
-  }
-  #fig0bis-title {
-    margin-bottom: 20px;
-	text-align: center;
-	font-size: 15px;
-  }
-  #fig0bis-subfig1 {
-    margin-right: 10px;
-  }
-  #fig0bis-subfig2 {
-    margin-left: 10px;
-  }
-  #fig0bis-column1 {
-    margin-right: 10px;
-	margin-top: 0px;
-	margin-bottom: 35px;
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-  }
-  #fig0bis-caption11 {
-    margin-top: 4px;
-	margin-bottom: 5.5px;
-	text-align: center;
-	font-size: 10px;
-	line-height: 130%;
-  }
-  #fig0bis-caption12 {
-    margin-top: 5.5px;
-	margin-bottom: 8.5px;
-	text-align: center;
-	font-size: 10px;
-	line-height: 130%;	
-  }
-  #fig0bis-caption13 {
-    margin-top: 8.5px;
-	margin-bottom: auto;
-	text-align: center;
-	font-size: 10px;
-	line-height: 130%;
-  }
-  .fig0bis-caption2 {
-    margin-top: 5px;
-	text-align: center;
-  }
-  </style>
-
-  <figure class="l-middle">
-    <div id="fig0bis-title"> LeNet on MNIST trained with two different levels of weight decay: </div>
-    <div id="fig0bis">
-	  <div id="fig0bis-column1">
-	    <figcaption id="fig0bis-caption11"> original images</figcaption>
-		<figcaption id="fig0bis-caption12"> adversarial examples</figcaption>
-		<figcaption id="fig0bis-caption13"> perturbations</figcaption>
-	  </div>
-	  <div id="fig0bis-subfig1">
-        <img src="assets/adv_weightDecay0.0005_abstract.png">
-	    <figcaption class="fig0bis-caption2"> weight decay $= 0.0005$</figcaption>
-	  </div>
-	  <div id="fig0bis-subfig2">
-	    <img src="assets/adv_weightDecay1_abstract.png">
-	    <figcaption class="fig0bis-caption2"> weight decay $= 1.0$</figcaption>
-	  </div>
-	</div>
-  </figure>
-  
-  <hr>
-  
-  <h2> Context </h2>
-  
-  <p> Deep neural networks have been shown to be vulnerable to the adversarial example phenomenon <dt-cite key="szegedy2013intriguing,goodfellow2014explaining"></dt-cite>:
-  all models tested so far can have their classifications dramatically altered by small image perturbations. The following predictions were for instance made by
+  <p> Deep neural networks have been shown to be vulnerable to the adversarial example phenomenon: all models tested so far can have their classifications dramatically 
+  altered by small image perturbations <dt-cite key="szegedy2013intriguing,goodfellow2014explaining"></dt-cite>. The following predictions were for instance made by
   a state-of-the-art network trained to recognize celebrities <dt-cite key="parkhi2015deep"></dt-cite>: <p>
-  <figure class="l-middle">
-    <img src="assets/Carell_Deschanel.png">
-  </figure>
+  
+  <div id="Carell-Deschanel"></div>
+  
+  <script>
+    Carell_Deschanel();
+  </script>
   
   <p> This result is puzzling for two reasons. First, it challenges conventional wisdom on generalization in machine learning.
   Second, it constitutes a potential threat to real-world applications <dt-cite key="papernot2016practical,kurakin2016adversarial"></dt-cite>. Researchers at 
@@ -249,260 +155,93 @@
   
   <p> In linear classification, adversarial perturbations are often understood as a property of the dot product in high dimension. A widespread intuition is that:
   "for high dimensional problems, we can make many infinitesimal changes to the input that add up to one large change to the output" 
-  <dt-cite key="goodfellow2014explaining"></dt-cite>. </p>
+  <dt-cite key="goodfellow2014explaining"></dt-cite>.
+  Here, we challenge this intuition and argue instead that adversarial examples exist when the classification boundary lies close the data manifold&mdash;independently 
+  of the image space dimension. </p>
   
-  <p> Here, we challenge this intuition. We argue instead that adversarial examples exist when the classification boundary lies close the data 
-  manifold&mdash;independently of the image space dimension. As we'll see, this change of perspective raises new questions, but it will prove very useful eventually. </p>
+  <p> Let's start with a minimal toy problem: a two-dimensional image space where each image is a function of $a$ and $b$. </p>
   
-  <p> Let us start with a minimal toy problem. We consider a 2-dimensional image space $[-1,1]^2$ where each image $\boldsymbol{x}=(a,b)$ is such that: <br>
-  &#8226; $\;a \in [-1,1]$ is the gray level of a central square and <br>
-  &#8226; $\;b \in [-1,1]$ is the gray level of the outer background. </p>
-  
-  <style>
-  .image-space {
-    display: -webkit-flex;
-    display: flex;
-	justify-content: flex-end;
-	align-items: center;
-	margin-bottom: 40px;
-  }
-  .image {
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-	flex-grow: 1;
-	justify-content: center;
-	align-items: center;
-  }
-  #image-canvas1 {
-    margin-top: 20px;
-  }
-  .image-header {
-    font-size: 15px;
-	margin-top: 20px;
-  }
-  .image-space-arrow {
-    font-size: 50px;
-	margin-bottom: 42px;
-  }
-  .space {
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-	margin-left: 50px;
-	align-items: center;
-  }
-  .space-header {
-    font-size: 15px;
-  }
-  .space-input {
-	width: 350px;
-	height: 350px;
-  }
-  </style>
-  
-  <div class="l-middle image-space">
-	<div class="image">
-	  <canvas id="image-canvas1" width="150" height="150"> </canvas>
-	  <div class="image-header"> Image $\boldsymbol{x}$ </div>
-	</div>
-	<div class="image-space-arrow"> &#8594; </div>
-    <div class="space">
-	  <div class="space-input" id="space-input1"> </div>
-	  <div class="space-header"> Image Space </div>
-	</div>
+  <div id="toy-problem1">
   </div>
   
   <script>
-    image_space();
+    toy_problem1();
   </script>
 
-  <p> In this simple image space, we define two classes of images: </p>
+  <p> In this simple image space, we define two classes of images that we will soon try to separate with a linear classifier. </p>
   
-  <style>
-  .classesIJ {
-    margin-bottom: 20px;
-  }
-  .classesIJ-row {
-    display: -webkit-flex;
-    display: flex;
-	align-items: center;
-	margin-bottom: 5px;
-  }
-  .classesIJ-cell1 {
-    width: 110px;
-  }
-  .classesIJ-cell1-examples {
-    font-size: 15px;
-  }
-  .classesIJ-cell1-content {
-    display: inline-block;
-    margin: auto;
-	font-weight: bold;
-	border-radius: 5px;
-  }
-  .classesIJ-cell2 {
-	margin: 0px;
-  }
-  .classesIJ-examples {
-    margin-left: 0px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-  }
-  .imIJ {
-	vertical-align: middle;
-    -ms-interpolation-mode: nearest-neighbor;
-    image-rendering: optimizeSpeed;
-    image-rendering: pixelated;
-  }
-  #classesIJ-margin-bottom {
-    margin-bottom: 40px;
-  }
-  </style>
-
-  <div class="classesIJ">
-  <div class="classesIJ-row">
-    <div class="classesIJ-cell1">
-      <p class="classesIJ-cell1-content" style="color: rgb(30%,30%,30%); background-color: rgb(60%,60%,60%);"> &nbsp;Class $I$&nbsp; </p>
-	</div>
-	<p class="classesIJ-cell2"> The set of images $\boldsymbol{x}=(a,b)$ with: <br>
-	$a \in [-1,-0.2] \quad \text{and} \quad b = 0$</p>
-  </div>
-  <div class="classesIJ-row">
-    <div class="classesIJ-cell1 classesIJ-cell1-examples"> Examples: </div>
-    <p class="classesIJ-examples">
-      <canvas class="imIJ" id="classI_0" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
-	  <canvas class="imIJ" id="classI_1" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
-	  <canvas class="imIJ" id="classI_2" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
-	  <canvas class="imIJ" id="classI_3" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
-	  <canvas class="imIJ" id="classI_4" width="80" height="80"> </canvas>
-    </p>
-  </div>
-  </div>
-  <div id="classesIJ-margin-bottom" class="classesIJ">
-  <div class="classesIJ-row">
-    <div class="classesIJ-cell1">
-      <p class="classesIJ-cell1-content" style="color: rgb(95%,95%,95%); background-color: rgb(80%,80%,80%);"> &nbsp;Class $J$&nbsp; </p>
-	</div>
-	<p class="classesIJ-cell2"> The set of images  $\boldsymbol{x}=(a,b)$ with: <br>
-	$a \in [0.2,1] \quad \text{and} \quad b = 0$</p>
-  </div>
-  <div class="classesIJ-row">
-    <div class="classesIJ-cell1 classesIJ-cell1-examples"> Examples: </div>
-    <p class="classesIJ-examples">
-      <canvas class="imIJ" id="classJ_0" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
-	  <canvas class="imIJ" id="classJ_1" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
-	  <canvas class="imIJ" id="classJ_2" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
-	  <canvas class="imIJ" id="classJ_3" width="80" height="80"> </canvas>&nbsp;,&nbsp;&nbsp;
-	  <canvas class="imIJ" id="classJ_4" width="80" height="80"> </canvas>
-    </p>
-  </div>
+  <div id="toy-problem2">
   </div>
   
   <script>
-    example_images_I();
-    example_images_J();
+    toy_problem2();
   </script>
 
-  <p> The two classes just defined can be separated by an infinite number of linear classifiers. For instance, 
-  the line $\mathscr{L}_{\theta}$ defined by its normal weight vector $\boldsymbol{w_{\theta}} = (\cos\theta, \sin\theta)$ 
-  separates $I$ and $J$ for all $\theta \in [0,\pi/2)$: </p>
+  <p> The two classes just defined can be separated by an infinite number of linear classifiers. Consider for instance the following line $\mathscr{L}_{\theta}$: </p>
   
-  <style>
-  .image-space-controler {
-    display: -webkit-flex;
-    display: flex;
-  }
-  #image-space-controler1 {
-	justify-content: center;
-	margin-bottom: 30px;
-    margin-left: 30px;
-  }
-  .image-space-text {
-	font-size: 15px;
-  }
-  #controler-input1 {
-    margin-top: 7px;
-    margin-left: 10px;
-	margin-right: 10px;
-  }
-  #fig1-value-theta {
-	font-size: 15px;
-  }
-  </style>
-  
-  <div class="l-middle image-space">
-	<div class="image">
-      <div class="image-space-controler" id="image-space-controler1">
-        <div class="image-space-text"> $\theta:$ </div>
-        <input id="controler-input1" type="range" min="0" max="0.99" step="0.01"> </input>
-        <div class="image-space-text"> <span id="fig1-value-theta">...</span>$ \; \dfrac{\pi}{2}$ </div>
-      </div>
-	  <canvas id="image-canvas2" width="150" height="150"> </canvas>
-	  <div class="image-header"> weight vector $\boldsymbol{w_{\theta}}$ </div>
-	</div>
-	<div class="image-space-arrow"> &#8594; </div>
-    <div class="space">
-	  <div class="space-input" id="space-input2"> </div>
-	  <div class="space-header"> Image Space </div>
-	</div>
+  <div id="toy-problem3">
   </div>
   
   <script>
-   fig1();
+    toy_problem3();
   </script>
   
   <style>
-  .question-div {
-    display: -webkit-flex;
-    display: flex;
-	justify-content: center;
-  }
-  .question {
-    margin-top: 0px;
-	margin-bottom: 0px;
-    font: 18px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	font-weight: bold;
-  }
   .projected-mirror {
     display: -webkit-flex;
     display: flex;
+	justify-content: flex-start;
 	align-items: center;
-	justify-content: space-between;
-  }
-  .projected-mirror-def {
-    //flex-grow: 1;
-	margin-left: auto;
-	margin-right: auto;
   }
   .projected-mirror-input {
-	width: 180px;
-	height: 120px;
-	margin-right: 0px;
+	width: 130px;
+	height: 130px;
+  }
+  .projected-mirror-text {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+    margin-left: 40px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+  }
+  .projected-mirror-def {
+    font-size: 17px;
+    margin-bottom: 0px;
+  }
+  .projected-mirror-label {
+    margin-top: -10px;
+	margin-bottom: 20px;
+    font: 15px "Roboto";
+	color: rgb(60%,60%,60%);
   }
   </style>
   
-  <p> This raises a first question: </p>
-  <div class="question-div">
-    <p class="question"> If all the linear classifiers $\mathscr{L}_{\theta}$ perform equally well on clean data, <br>
+  <p> This raises a first question. If all the linear classifiers $\mathscr{L}_{\theta}$ perform equally well on clean data,
     are they all equally robust to image perturbations? </p>
-  </div>
   
-  <p> To answer, let's consider some adversarial examples affecting $\mathscr{L}_{\theta}$. </p>
-  <p> For an image $\boldsymbol{x}$ in $I \cup J$, the closest image classified in the opposite class is the <em>projected image</em> of $\boldsymbol{x}$ 
-  on $\mathscr{L}_{\theta}$, defined as: </p>
+  <h4> Projected and mirror images </h4>
+  
+  <p> Consider an image $\boldsymbol{x}$ in class $I$. The closest image classified in the opposite class is <em>the projected image</em> of $\boldsymbol{x}$
+  on $\mathscr{L}_{\theta}$: </p>
   <div class="l-body projected-mirror">
-    <p class="projected-mirror-def"> $$\boldsymbol{x}_p := \boldsymbol{x} - (\boldsymbol{x} \!\cdot\! \boldsymbol{w_{\theta}}) \; \boldsymbol{w_{\theta}}$$ </p>
-	<div class="projected-mirror-input" id="projected-mirror-input1"> </div>
+    <div class="projected-mirror-input" id="projected-mirror-input1"> </div>
+	<div class="projected-mirror-text">
+	  <div class="projected-mirror-def"> $$\boldsymbol{x}_p := \boldsymbol{x} - (\boldsymbol{x} \!\cdot\! \boldsymbol{w_{\theta}}) \; \boldsymbol{w_{\theta}}$$ </div>
+	  <div class="projected-mirror-label"> Low confidence adversarial example </div>
+	</div>
   </div>
-  <p> When $\boldsymbol{x}$ and $\boldsymbol{x}_p$ are very close from each other, we say that $\boldsymbol{x}_p$ is an <em>adversarial example</em> of $\boldsymbol{x}$. 
-  Observe though that $\boldsymbol{x}_p$ is classified with a low confidence score (it lies on the boundary) and it is perhaps more interesting to 
-  consider <em>high-confidence adversarial examples</em> <dt-cite key="carlini2017adversarial"></dt-cite>. </p>
-
-  <p> In the following, we focus on the <em>mirror image</em> of $\boldsymbol{x}$ through $\mathscr{L}_{\theta}$, <br> defined as: </p>
+  <p> When $\boldsymbol{x}$ and $\boldsymbol{x}_p$ are very close to each other, we say that $\boldsymbol{x}_p$ is an <em>adversarial example</em> of $\boldsymbol{x}$. 
+  Observe though that $\boldsymbol{x}_p$ is classified with a <br>low confidence score (it lies on the boundary) and it is perhaps more interesting to 
+  consider <em>high-confidence adversarial examples</em> <dt-cite key="carlini2017adversarial"></dt-cite>. <br>
+  In the following, we focus on the <em>mirror image</em> of $\boldsymbol{x}$ through $\mathscr{L}_{\theta}$: </p>
   <div class="l-body projected-mirror">
-    <p class="projected-mirror-def"> $$\boldsymbol{x}_m := \boldsymbol{x} - 2\,(\boldsymbol{x} \!\cdot\! \boldsymbol{w_{\theta}}) \; \boldsymbol{w_{\theta}}$$ </p>
-	<div class="projected-mirror-input" id="projected-mirror-input2"> </div>
+    <div class="projected-mirror-input" id="projected-mirror-input2"> </div>
+	<div class="projected-mirror-text">
+	  <div class="projected-mirror-def"> $$\boldsymbol{x}_m := \boldsymbol{x} - 2\,(\boldsymbol{x} \!\cdot\! \boldsymbol{w_{\theta}}) \; \boldsymbol{w_{\theta}}$$ </div>
+	  <div class="projected-mirror-label"> High confidence adversarial example </div>
+	</div>
   </div>
   <p> By construction, $\boldsymbol{x}$ and $\boldsymbol{x}_m$ are at the same distance from the boundary and are classified with the same confidence level. </p>
   
@@ -511,145 +250,94 @@
    mirror_image();
   </script>
   
-  <p> Consider this image $\boldsymbol{x} \in I$ and its mirror image $\boldsymbol{x}_m$ as a function of $\theta$: </p>
+  <h4> A mirror image as a function of $\theta$ </h4>
   
-  <style>
-  #image-space-controler2 {
-    margin-top: 30px;
-    margin-bottom: 30px;
-  }
-  #controler-input2 {
-    margin-top: 7px;
-    margin-left: 10px;
-	margin-right: 10px;
-  }
-  #image-xy {
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-	margin-right: auto;
-	justify-content: center;
-	align-items: center;
-  }
-  .image-space-line {
-    display: -webkit-flex;
-    display: flex;
-	margin-bottom: 5px;
-  }
-  .image-space-block {
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-	align-items: center;
-  }
-  .image-space-equal {
-    margin-left: 10px;
-	margin-right: 10px;
-	margin-top: 55px;
-  }
-  </style>
+  <p> Coming back to our original toy problem, we can now plot an image $\boldsymbol{x}$ and its mirror image $\boldsymbol{x}_m$ as a function of $\theta$. </p>
   
-  <div class="l-middle image-space">
-	<div id="image-xy">
-      <div class="image-space-controler" id="image-space-controler2">
-        <div class="image-space-text"> $\theta:$ </div>
-        <input id="controler-input2" type="range" min="0" max="0.99" step="0.01"> </input>
-        <div class="image-space-text"> <span id="fig2-value-theta">...</span>$ \; \dfrac{\pi}{2}$ </div>
-      </div>
-	  <div class="image-space-line">
-	    <div class="image-space-block">
-	      <div class="image-space-text"> $\boldsymbol{x}$ </div>
-	      <canvas id="image-canvas-x" width="80" height="80"> </canvas>
-		</div>
-		<div class="image-space-text image-space-equal"> $- \;2\,(\boldsymbol{x} \!\cdot\! \boldsymbol{w_{\theta}})\;\boldsymbol{w_{\theta}} \; =$ </div>
-		<div class="image-space-block">
-		  <div class="image-space-text"> $\boldsymbol{x}_m$ </div>
-		  <canvas id="image-canvas-xm" width="80" height="80"> </canvas>
-		</div>
-	  </div>
-	  <div class="image-header"> Image $\boldsymbol{x}$ and its mirror image $\boldsymbol{x}_m$ </div>
-	</div>
-	<div class="image-space-arrow"> &#8594; </div>
-    <div class="space">
-	  <div class="space-input" id="space-input3"> </div>
-	  <div class="space-header"> Image Space </div>
-	</div>
+  <div id="toy-problem4">
   </div>
   
   <script>
-   fig2();
+    toy_problem4();
   </script>
   
+  <p> We see that the distance between $\boldsymbol{x}$ and $\boldsymbol{x}_m$ varies. 
+  The two borderline cases are of particular interest.</p>
+  
   <style>
-  .x-xm {
+  #x-xm {
+    margin-top: 40px;
+	margin-bottom: 40px;
+  }
+  .horizontal-line {
     margin-top: 20px;
+	margin-bottom: 20px;
+  }
+  .x-xm-div {
     display: -webkit-flex;
     display: flex;
 	align-items: center;
-	justify-content: space-between;
-  }
-  .x-xm-div {
-    //margin-top: 20px;
-    margin-right: 30px;
-  }
-  .x-xm-header {
-    margin-top: 0px;
-	//margin-bottom: 10px;
-    font: 18px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	font-weight: bold;
+	margin-right: 0px;
   }
   .x-xm-text {
-    //margin-top: 10px;
-    margin-bottom: 0px;
-	//font: 18px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	font-style: italic;
-  }
-  .x-xm-input {
-	width: 180px;
     display: -webkit-flex;
     display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	margin-right: 0px;
+	flex-direction: column;
+	margin-left: 20px;
+  }
+  .x-xm-text-header {
+    font: 15px "Roboto";
+	font-weight: bold;
+  }
+  .x-xm-text-subheader {
+	margin-top: 10px;
+	margin-bottom: 5px;
+    font: 15px "Roboto";
+	font-style: italic;
+	color: rgb(60%,60%,60%);
+  }
+  .x-xm-text-content {
+    width: 330px;
+    font: 15px "Roboto";
+	color: rgb(60%,60%,60%);
+  }
+  .x-xm-input {
+    width: 250px;
+	height: 130px;
+	margin-left: auto;
+	margin-right: auto;
   }
   </style>
   
-  <p> We see that the distance between $\boldsymbol{x}$ and $\boldsymbol{x}_m$ depends on the value of $\theta$. Two cases are of particular interest...</p>
-  <div class="l-body x-xm">
-    <div class="x-xm-div">
-      <p class="x-xm-header"> When $\theta = 0$: </p>
-	  <p class="x-xm-text"> $\mathscr{L}_{\theta}$ does not suffer from adversarial examples.</p>
-	</div>
-	<div class="x-xm-input">
-      <div class="image-space-block">
-	    <div class="image-space-text"> $\boldsymbol{x}$ </div>
-	    <canvas id="image-canvas-x1" width="80" height="80"> </canvas>
+  <div class="l-body" id="x-xm">
+    <hr class="horizontal-line">
+	<div class="x-xm-div">
+	  <div class="x-xm-text">
+	    <div class="x-xm-text-header"> When $\theta = 0$: </div>
+		<div class="x-xm-text-subheader"> $\mathscr{L}_{\theta}$ does not suffer from adversarial examples. </div>
+		<div class="x-xm-text-content">
+		$\boldsymbol{x}$ is classified in $I$ with high confidence and <br>
+		$\boldsymbol{x}_m$ is classified in $J$ with high confidence, <br>
+		in agreement with human observers.
+		</div>
 	  </div>
-      <div class="image-space-block">
-	    <div class="image-space-text"> $\boldsymbol{x}_m$ </div>
-	    <canvas id="image-canvas-xm1" width="80" height="80"> </canvas>
-	  </div>
+	  <div class="x-xm-input" id="x-xm-small-theta"> </div>
 	</div>
+	<hr class="horizontal-line">
+	<div class="x-xm-div">
+	  <div class="x-xm-text">
+	    <div class="x-xm-text-header"> When $\theta \to \pi/2$: </div>
+		<div class="x-xm-text-subheader"> $\mathscr{L}_{\theta}$ suffers from strong adversarial examples. </div>
+		<div class="x-xm-text-content">
+		$\boldsymbol{x}$ is classified in $I$ with high confidence and <br>
+		$\boldsymbol{x}_m$ is classified in $J$ with high confidence, <br>
+		yet $\boldsymbol{x}_m$ is visually indistinguishable from $\boldsymbol{x}$.
+		</div>
+	  </div>
+	  <div class="x-xm-input" id="x-xm-large-theta"> </div>
+	</div>
+	<hr class="horizontal-line">
   </div>
-  <p> $\boldsymbol{x}$ is classified in $I$ with high confidence and $\boldsymbol{x}_m$ is classified in $J$ with high confidence, in agreement with human observers. </p>
-  <div class="l-body x-xm">
-    <div class="x-xm-div">
-      <p class="x-xm-header"> When $\theta \to \pi/2$: </p>
-	  <p class="x-xm-text"> $\mathscr{L}_{\theta}$ suffers from strong adversarial examples. </p>
-	</div>
-	<div class="x-xm-input">
-      <div class="image-space-block">
-	    <div class="image-space-text"> $\boldsymbol{x}$ </div>
-	    <canvas id="image-canvas-x2" width="80" height="80"> </canvas>
-	  </div>
-      <div class="image-space-block">
-	    <div class="image-space-text"> $\boldsymbol{x}_m$ </div>
-	    <canvas id="image-canvas-xm2" width="80" height="80"> </canvas>
-	  </div>
-	</div>
-  </div>
-  <p>  $\boldsymbol{x}$ is classified in $I$ with high confidence and $\boldsymbol{x}_m$ is classified in $J$ with high confidence, yet $\boldsymbol{x}_m$ is visually
-  indistinguishable from $\boldsymbol{x}$. </p>
   
   <script>
    images_x1_xm1();
@@ -660,77 +348,103 @@
   This is what happens when $\theta$ tends to $\pi/2$: the line $\mathscr{L}_{\theta}$ tilts towards $I$ and $J$ and becomes increasingly 
   vulnerable to image perturbations. </p>
   
-  <p> This raises a second question:</p>
-  <div class="question-div">
-    <p class="question"> 
-	Adversarial examples exist when $\mathscr{L}_{\theta}$ is strongly tilted&mdash; <br>
-	but why would $\mathscr{L}_{\theta}$ behave in this way in practice? </p>
-  </div>
+  <h4> The role played by L2 regularization </h4>
+  
+  <p> Adversarial examples exist when $\mathscr{L}_{\theta}$ is strongly tilted&mdash;but why would $\mathscr{L}_{\theta}$ behave in this way in practice? </p>
+  
   <p> Our working hypothesis is that the classification boundary defined by standard linear learning algorithms such as Support Vector Machines (SVM) 
   or logistic regression tilts by overfitting noisy data points in the training set. 
-  A testable corrolary of this hypothesis is that techniques designed to reduce overfitting such as L2 regularization should also mitigate the adversarial example phenomenon. </p>
+  This hypothesis has a corrollary that can be easily tested: regularization techniques designed to reduce overfitting are expected 
+  to mitigate the adversarial example phenomenon. </p>
 
   <style>
-  .noisy-data {
+  #noisy-data {
+    margin-top: 40px;
+	margin-bottom: 40px;
+  }
+  .noisy-data-div {
     display: -webkit-flex;
     display: flex;
 	align-items: center;
-	justify-content: space-between;
-  }
-  .noisy-data-div {
-    //margin-top: 20px;
-    margin-right: 30px;
-  }
-  .noisy-data-header {
-    margin-top: 0px;
-	//margin-bottom: 10px;
-    font: 18px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	font-weight: bold;
+	margin-right: 0px;
   }
   .noisy-data-text {
-    //margin-top: 10px;
-    margin-bottom: 0px;
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	margin-left: 20px;
+  }
+  .noisy-data-text-header {
+    font: 15px "Roboto";
+	font-weight: bold;
+  }
+  .noisy-data-text-subheader {
+	margin-top: 10px;
+	margin-bottom: 5px;
+    font: 15px "Roboto";
 	font-style: italic;
+	color: rgb(60%,60%,60%);
+  }
+  .noisy-data-text-content {
+    width: 400px;
+    font: 15px "Roboto";
+	color: rgb(60%,60%,60%);
+  }
+  .noisy-data-input {
+    width: 130px;
+    height: 130px;
+	margin-left: auto;
+	margin-right: auto;
   }
   #noisy-data-input0 {
-	width: 350px;
-	height: 140px;
+	width: 280px;
+	height: 150px;
 	text-align:center;
 	margin-bottom: 0px;
   }
-  .noisy-data-input {
-	width: 180px;
-	height: 120px;
-  }
   </style>
   
-  <p> Consider for instance a training set constituted of a large number of images from $I$ and $J$, plus the noisy data point $\boldsymbol{p}$ 
-  labelled in $I$:</p>
-  <div id="noisy-data-input0"> </div>
+  <p> Consider for instance a training set containing one noisy data point $\boldsymbol{p}$. </p>
+  <!--constituted of a large number of images from $I$ and $J$, plus the noisy data point $\boldsymbol{p}$ labelled in $I$:-->
+  
+  <div id="toy-problem5">
+  </div>
+  
+  <script>
+    toy_problem5();
+  </script>
 
   <p> If we train an SVM or a logistic regression model on this training set, we observe two possible behaviours. </p>
   
-  <div class="l-body noisy-data">
-    <div class="noisy-data-div">
-      <p class="noisy-data-header"> Without regularization: </p>
-	  <p class="noisy-data-text"> The classification boundary is strongly titled.</p>
+  <div class="l-body" id="noisy-data">
+    <hr class="horizontal-line">
+	<div class="noisy-data-div">
+	  <div class="noisy-data-text">
+	    <div class="noisy-data-text-header"> Without L2 regularization: </div>
+		<div class="noisy-data-text-subheader"> The classification boundary is strongly titled. </div>
+		<div class="noisy-data-text-content"> 
+        Most of the leeway available to fit the training data resides in the tilting angle of the boundary.
+        Here, the data point $\boldsymbol{p}$ can be classified correctly, but the classifier obtained is then vulnerable to adversarial examples.
+		</div>
+	  </div>
+	  <div class="noisy-data-input" id="noisy-data-input1"> </div>
 	</div>
-	<div class="noisy-data-input" id="noisy-data-input1"> </div>
-  </div>
-  <p> For a linear classifier, most of the leeway available to fit the training data resides in the tilting angle of the classification boundary.
-  In this example, the data point $\boldsymbol{p}$ can be classified correctly, but the classifier obtained is then vulnerable to adversarial examples. </p>
-  <div class="l-body noisy-data">
-    <div class="noisy-data-div">
-      <p class="noisy-data-header"> With regularization: </p>
-	  <p class="noisy-data-text"> The classification boundary is not tilted.</p>
+	<hr class="horizontal-line">
+	<div class="noisy-data-div">
+	  <div class="noisy-data-text">
+	    <div class="noisy-data-text-header"> With L2 regularization: </div>
+		<div class="noisy-data-text-subheader"> The classification boundary is not tilted. </div>
+		<div class="noisy-data-text-content">
+		L2 regularization reduces overfitting by allowing some training samples to be misclassified. 
+        When enough regularization is used, the data point $\boldsymbol{p}$ is ignored and the classifier obtained is robust to adversarial examples.
+		</div>
+	  </div>
+	  <div class="noisy-data-input" id="noisy-data-input2"> </div>
 	</div>
-	<div class="noisy-data-input" id="noisy-data-input2"> </div>
+	<hr class="horizontal-line">
   </div>
-  <p> L2 regularization reduces overfitting by allowing some training samples to be misclassified. 
-  When enough regularization is used, the data point $\boldsymbol{p}$ is ignored and the classifier obtained is robust to adversarial examples. </p>
   
   <script>
-  noisy_data0();
   noisy_data1();
   noisy_data2();
   </script>
@@ -739,11 +453,11 @@
   
   <h2> In Linear Classification </h2>
   
-  <p> We considered in the previous toy problem a 1-dimensional data manifold in a 2-dimensional image space. 
-  It is unclear for the moment how this basic setup can generalize to high-dimensional natural data. 
-  Yet, it helped us introduce an important intuition: <br>
-  L2 regularization controls the tilting angle of the classification boundary and adversarial examples exist when the boundary is strongly tilted. <br>
-  In the following, we formalize this intuition by first reinterpreting L2 regularization as a scaling mechanism acting on the loss function.
+  <p> At this point, one might legitimately wonder&mdash;what does a 1-dimensional data manifold lying in a 2-dimensional image space have to do with the 
+  high-dimensional images of the real world? </p>
+  
+  <p> In the following, we show that the two main ideas introduced in the previous toy problem stay valid in the general case:
+  adversarial examples exist when the classification boundary lies close to the data manifold and L2 regularization controls the tilting angle of the boundary.
   </p>
 	
   <h3> Scaling the Loss Function </h3>
@@ -761,7 +475,16 @@
   In general, learning a linear classifier consists of finding a weight vector $\boldsymbol{w}$ and a bias $b$ minimising $R(\boldsymbol{w},b)$ 
   for a well chosen loss function $f$.</p>
   
-  <p>Note that the raw score $s(\boldsymbol{x})$ can be seen as a scaled, signed distance. 
+  <style>
+  #small-bottom-margin {
+    margin-bottom: 5px;
+  }
+  #small-top-margin {
+    margin-top: 5px;
+  }
+  </style>
+  
+  <p id="small-bottom-margin"> Note that the raw score $s(\boldsymbol{x})$ can be seen as a scaled, signed distance. 
   If $d(\boldsymbol{x})$ is the actual <em> signed euclidean distance </em> between $\boldsymbol{x}$ and $\mathcal{C}$, we have:
   $$d(\boldsymbol{x}):= \boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{x} + b^\prime \quad\quad\quad \text{where} \quad\quad \textstyle
   \boldsymbol{\hat{w}} := \frac{\boldsymbol{w}}{\lVert\boldsymbol{w}\rVert}\,,\quad b^\prime := \frac{b}{\lVert\boldsymbol{w}\rVert}$$
@@ -769,8 +492,10 @@
   Hence the norm $\lVert\boldsymbol{w}\rVert$ can be interpreted as a scaling parameter for the loss function. 
   The term $f\big(y\,s(\boldsymbol{x})\big)$ in the empirical risk can be written:
   $$f\big(y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})\big)$$
-  and understood as: "$f$ applied to the signed euclidean distance $d(\boldsymbol{x})$, flipped left/right by the label $y = \pm 1$ and scaled by the parameter 
-  $\lVert\boldsymbol{w}\rVert$".
+  and understood as: </p>
+  
+  <p id="small-top-margin"> <em>"$f$ applied to the signed euclidean distance $d(\boldsymbol{x})$, flipped left/right by the label $y = \pm 1$ and scaled by the parameter 
+  $\lVert\boldsymbol{w}\rVert$"</em>. </p>
   
   <p>In binary classification, three notable loss functions are:</p>
   
@@ -1071,15 +796,15 @@
 	border-right: 20px solid rgb(95%,95%,95%);
 	border-radius: 10px;
 	font-size: 17px;
-	font-style: italic;
+	//font-style: italic;
 	text-align: center;
   }
   </style>
   
   <div>
   <div class="sum-paragraph-container">
-    In summary, the two standard models used in linear classification <br>(SVM and logistic regression) balance between two objectives:<br>
-	they <u>minimize the error distance</u> when regularization is low and<br> they <u>maximize the adversarial distance</u> when regularization is high.
+    <i>In summary, the two standard models used in linear classification <br>(SVM and logistic regression) balance between two objectives:<br>
+	they</i> <b>minimize the error distance</b> <i>when regularization is low and<br> they </i><b>maximize the adversarial distance</b> <i>when regularization is high.</i>
   </div>
   </div>
   
@@ -1110,10 +835,10 @@
   $$d_{\text{adv}} = \frac{1}{2}\;\lVert\boldsymbol{j}-\boldsymbol{i}\rVert\;\cos(\theta)$$</p>
 
   <p> Hence, on a given training set $T$ where the distance between the two centroids $\lVert\boldsymbol{j}-\boldsymbol{i}\rVert$ is fixed, 
-  $d_{\text{adv}}$ depends only on the tilting angle $\theta$. Two observations follow:<br>
+  $d_{\text{adv}}$ depends only on the tilting angle $\theta$. <br>Two observations follow:<br>
   <ul> 
   <li> The adversarial example phenomenon is minimized by the nearest centroid classifier<dt-fn>
-  ... <u>and</u> the classifiers parallel to it (indeed, $d_{\text{adv}}$ is independent 
+  ... <u>and</u> the classifiers parallel to it ($d_{\text{adv}}$ is independent 
   of the bias $b$). This explains why the biases found by SVM are poorly adjusted when regularization is high, resulting in very high training and test errors 
   (see for instance the classification of 1s vs 8s when $\lambda = 10^7$ in the next section).</dt-fn> (i.e. $\theta = 0$).</li>
   <li> Adversarial examples can be arbitrarily strong when $\theta \to \pi/2$ (as was the case with the classifier $\mathscr{L}_{\theta}$ in the introductory toy problem).</li>
@@ -1335,7 +1060,7 @@
 	$\boldsymbol{y}$ and their mirror images $\boldsymbol{x}_m$, $\boldsymbol{y}_m$. On the right are their projections in the tilting plane of $\boldsymbol{\hat{w}}$
 	along with the projections of the training data. The horizontal direction is $\boldsymbol{\hat{z}}$ (joining the two centroids) and the vertical direction is 
 	$\boldsymbol{\hat{n}}$ with $\boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$. 
-	The grey area is $[-\frac{1}{\lVert\boldsymbol{w}\rVert},\frac{1}{\lVert\boldsymbol{w}\rVert}]\,\boldsymbol{\hat{w}}$.</figcaption>
+	The grey area is the SVM margin of width $\frac{2}{\lVert\boldsymbol{w}\rVert}$.</figcaption>
   </figure>
   
   <style>
@@ -1574,18 +1299,18 @@
   
   <h2>Thoughts Moving Forward</h2>
   
-  <p> Despite the widespread interest it has generated for several years now, and despite its significance for the field of machine learning (both in theory and in practice), 
+  <p> Despite the widespread interest it has generated for several years now, and despite its significance for the field of machine learning both in theory and in practice, 
   the adversarial example phenomenon has so far retained much of its intrigue. Our main goal here was to provide a clear and intuitive picture of the phenomenon 
-  in the linear case, hopefully constituting a solid base from which to move forward. We then showed that our analysis could be extended to some extent 
-  to nonlinear neural network classifiers.</p>  
+  in the linear case, hopefully constituting a solid base from which to move forward. We also showed that our approach generalizes to some extent 
+  to nonlinear neural network classifiers.</p>
   
   <p> The result with LeNet on MNIST is encouraging&mdash;but it raises more questions than it answers.
   For instance, can deeper models be regularized in the same way on more sophisticated datasets (our experiments have been inconclusive so far)? 
   Why did momentum interfere with weight decay in the experiment? Are regularized solutions harder to converge to? 
   Is weight decay the right way to control the scaling of the loss function or should the raw score be normalized in some way? 
   Is it reasonable to regard the raw score as a linear approximation of the distance between the image and the boundary for deeper models?
-  In addressing these questions, one should also keep in mind that a satisfying solution to the adversarial example phenomenon might require 
-  profoundly new ideas in deep learning. </p>
+  In addressing these questions, one should also keep in mind that it is possible&mdash;likely, even&mdash;that a satisfying solution to the problem
+  will require profoundly new ideas in deep learning.</p>
 
   <p> The study of the adversarial example phenomenon is a very active research area. For instance, a set of NIPS competitions hosted on Kaggle currently challenges 
   the community to come up with new attacks

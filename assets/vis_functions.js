@@ -1,899 +1,1743 @@
-var s = d3.scale.linear().domain([-1, 1]).range([10, 245]);
-
-function generate_image(a, b) {
-  var img = [];
-  img.push(b); img.push(b); img.push(b); img.push(b);
-  img.push(b); img.push(a); img.push(a); img.push(b);
-  img.push(b); img.push(a); img.push(a); img.push(b);
-  img.push(b); img.push(b); img.push(b); img.push(b);
-  return img;
-}
-
-function img_to_canvas1(img) {
-  var canvas = document.createElement("canvas");
-  canvas.setAttribute("width", 4);
-  canvas.setAttribute("height", 4);
-  
-  var ctx = canvas.getContext("2d");
-  var imgData = ctx.createImageData(4, 4);
-  var data = imgData.data;
-
-  for (var i = 0; i < 4; i++) {
-	for (var j = 0; j < 4; j++) {
-      var value = s(img[i*4+j]);
-      data[4*(i*4+j)] = value;
-      data[4*(i*4+j)+1] = value;
-	  data[4*(i*4+j)+2] = value;
-	  data[4*(i*4+j)+3] = 255;
-    }
-  }
-  ctx.putImageData(imgData, 0, 0);
-  return canvas;
-}
-
-function img_to_canvas2(img) {
-  var h = Math.sqrt(img.length);
-  var canvas = document.createElement("canvas");
-  canvas.setAttribute("width", h);
-  canvas.setAttribute("height", h);
-  
-  var ctx = canvas.getContext("2d");
-  var imgData = ctx.createImageData(h, h);
-  var data = imgData.data;
-
-  for (var i = 0; i < h; i++) {
-	for (var j = 0; j < h; j++) {
-      var value = s(img[j*h+i]);
-      data[4*(i*h+j)] = value;
-      data[4*(i*h+j)+1] = value;
-	  data[4*(i*h+j)+2] = value;
-	  data[4*(i*h+j)+3] = 255;
-    }
-  }
-  ctx.putImageData(imgData, 0, 0);
-  return canvas;
-}
-
-function example_images_I() {
-  for (var i = 0; i < 5; i++) {
-    var canvas = document.getElementById("classI_"+i);
-    var ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img_to_canvas1(generate_image(-1+0.2*i,0)),0,0,80,80);
-  }
-}
-
-function example_images_J() {
-  for (var i = 0; i < 5; i++) {
-    var canvas = document.getElementById("classJ_"+i);
-    var ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img_to_canvas1(generate_image(0.2+0.2*i,0)),0,0,80,80);
-  }
-}
-
-function fig0(){
-  var width = 300;
-  var height = 200;
-  var x = d3.scale.linear().domain([-19.5,19.5]).range([0, width]);
-  var y = d3.scale.linear().domain([13,-13]).range([0, height]);
-  var h = d3.scale.linear().domain([5,-1]).range([0, height]);
+function abstract_fig(){
+  var width = 816;
+  var height = 300;
+  var x = d3.scaleLinear().domain([-19.5,19.5]).range([0, height*3/2]);
+  var y = d3.scaleLinear().domain([13,-13]).range([0, height]);
   var left_digit = 2;
   var right_digit = 3;
-  var requestId;
-  var animationCount = 0;
-  var currentIndex = 30;
-  var dir = 1;
+  var left_color = d3.interpolateBlues(0.3);
+  var right_color = d3.interpolateBlues(0.7);
+  var reg_index = 40;
   var animationRunning = false;
   var requestId;
+  var orange = "rgb(255,102,0)";
   
-  function draw_fig0(digit0, digit1) {
-    queue().defer(d3.text,"assets/data/fig0_data0_"+digit0+digit1+".csv","text/csv")
-           .defer(d3.text,"assets/data/fig0_data1_"+digit0+digit1+".csv","text/csv")
-		   .defer(d3.text,"assets/data/fig0_extras_"+digit0+digit1+".csv","text/csv")
-		   .defer(d3.text,"assets/data/fig0_w_"+digit0+digit1+".csv","text/csv")
-		   .defer(d3.text,"assets/data/fig0_bins0_"+digit0+digit1+".csv","text/csv")
-		   .defer(d3.text,"assets/data/fig0_bins1_"+digit0+digit1+".csv","text/csv")
-           .await(draw_all);
+  var mean2 = new Image();
+  var mean3 = new Image();
+  mean2.src = "assets/mean2_black.png";
+  mean3.src = "assets/mean3_black.png";
+  
+  function draw_fig(digit0, digit1) {
+    d3.queue().defer(d3.text,"assets/data/fig0_data0_"+digit0+digit1+".csv")
+              .defer(d3.text,"assets/data/fig0_data1_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/fig0_extras_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/fig0_w_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/fig0_bins0_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/fig0_bins1_"+digit0+digit1+".csv")
+              .await(draw_all);
 
     function draw_all(error, text_data0, text_data1, text_extras, text_w, text_bins0, text_bins1) {
 	  
-      var data0 = d3.csv.parseRows(text_data0).map(function(row) {return row.map(function(value) {return +value;});});
-	  var data1 = d3.csv.parseRows(text_data1).map(function(row) {return row.map(function(value) {return +value;});});
-	  var extras = d3.csv.parseRows(text_extras).map(function(row) {return row.map(function(value) {return +value;});});
-	  var w = d3.csv.parseRows(text_w).map(function(row) {return row.map(function(value) {return +value;});});
-	  var bins0 = d3.csv.parseRows(text_bins0).map(function(row) {return row.map(function(value) {return +value;});});
-	  var bins1 = d3.csv.parseRows(text_bins1).map(function(row) {return row.map(function(value) {return +value;});});
+      var data0 = d3.csvParseRows(text_data0).map(function(row) {return row.map(function(value) {return +value;});});
+	  var data1 = d3.csvParseRows(text_data1).map(function(row) {return row.map(function(value) {return +value;});});
+	  var extras = d3.csvParseRows(text_extras).map(function(row) {return row.map(function(value) {return +value;});});
+	  var w = d3.csvParseRows(text_w).map(function(row) {return row.map(function(value) {return +value;});});
+	  var bins0 = d3.csvParseRows(text_bins0).map(function(row) {return row.map(function(value) {return +value;});});
+	  var bins1 = d3.csvParseRows(text_bins1).map(function(row) {return row.map(function(value) {return +value;});});
 	  
 	  var max_dAdv = Math.round( Math.max.apply(null, extras[14]) * 10) / 10;
       var min_errTrain = Math.round( Math.min.apply(null, extras[15]) * 10) / 10;
 	  
-      var fig0_subfig1 = d3.select("#fig0-subfig-content1");
-      if (!fig0_subfig1.select("canvas").empty()) {
-	    fig0_subfig1.select("canvas").remove()
-	  }
-      var canvas1 = fig0_subfig1.append("canvas")
-                                .attr("width", width)
-                                .attr("height", height);
-      var context1 = canvas1.node().getContext("2d");
-      var container1 = fig0_subfig1.append("custom");
+      var fig = d3.select("#abstract-fig");
+	  fig.style("position","relative");
 	  
-      var fig0_subfig2 = d3.select("#fig0-subfig-content2");
-      if (!fig0_subfig2.select("canvas").empty()) {
-	    fig0_subfig2.select("canvas").remove()
-	  }
-      var canvas2 = fig0_subfig2.append("canvas")
-                                .attr("width", width)
-                                .attr("height", height);
-      var context2 = canvas2.node().getContext("2d");
-      var container2 = fig0_subfig2.append("custom");
-
-	  function init_canvas1() {
-        container1.selectAll("rect0")
-                  .data(bins0)
-	              .enter()
-	              .append("rect0")
-                  .attr("x", function(d, i) {return x(i * 0.5 - 18);})
-		          .attr("y", function(d) {return h(0) - d[0] * 1.4 * height;})
-		          .attr("width", 4.5)
-				  .attr("height", function(d) {return d[0] * 1.4 * height;})
-			      .attr("fillStyle", "rgba(88.07%, 61.10%, 14.21%,30%)");
-				  
-        container1.selectAll("rect1")
-                  .data(bins1)
-	              .enter()
-	              .append("rect1")
-                  .attr("x", function(d, i) {return x(i * 0.5 - 18);})
-		          .attr("y", function(d) {return h(0) - d[0] * 1.4 * height;})
-		          .attr("width", 4.5)
-				  .attr("height", function(d) {return d[0] * 1.4 * height;})
-			      .attr("fillStyle", "rgba(36.84%,50.68%,70.98%,30%)");
-	  }
+      var foreground = fig.append("canvas")
+                          .attr("width", height*3/2)
+                          .attr("height", height)
+						  .style("position","absolute")
+						  .style("top", "0px")
+						  .style("left", (width-height*3/2)/2 + "px");
+	  var ctx_fg = foreground.node().getContext("2d");
 	  
-      function init_canvas2() {
-        container2.selectAll("circle0")
-                  .data(data0)
-	              .enter()
-	              .append("circle0")
-                  .attr("x", function (d) { return x(d[0]);})
-		          .attr("y", function (d) { return y(d[currentIndex+1]);})
-		          .attr("r", 0.25)
-	              .attr("lineWidth", 0.75)
-                  .attr("strokeStyle", "rgb(88.07%, 61.10%, 14.21%)")
-			      .attr("fillStyle", "rgb(88.07%, 61.10%, 14.21%)");
+	  var background = fig.append("canvas")
+                          .attr("width", width)
+                          .attr("height", height)
+						  .style("position","absolute")
+						  .style("top", "0px")
+						  .style("left", "0px");
+	  var ctx_bg = background.node().getContext("2d");
+	  
+      var container = fig.append("custom");
+	  
+      var im_size = 90;
+      var mean2_x = 0, mean3_x = 0;
+      for(var i=0; i < 1500; i++){
+        mean2_x += data0[i][0];
+		mean3_x += data1[i][0];
+      }
+      mean2_x = (width-height*3/2)/2 + x(mean2_x/1500);
+	  mean3_x = (width-height*3/2)/2 + x(mean3_x/1500);
+		
+	  var mean2_y = y(0), mean3_y = y(0);
+	  var mean2_im_x = 1*width/12, mean2_im_y = height/2;  
+	  var mean3_im_x = 11*width/12, mean3_im_y = height/2;
+	  
+	  function init_canvas() {	
+        container.selectAll("circle0")
+                 .data(data0)
+	             .enter()
+	             .append("circle0")
+                 .attr("x", function (d) { return x(d[0]);})
+		         .attr("y", function (d) { return y(d[80-reg_index+1]);})
+		         .attr("r", 1)
+	             .attr("lineWidth", 0.6)
+                 .attr("strokeStyle", left_color)
+			     .attr("fillStyle", left_color);
   				 
-	    container2.selectAll("circle1")
-                  .data(data1)
-		          .enter()
-		          .append("circle1")
-                  .attr("x", function (d) { return x(d[0]);})
-		          .attr("y", function (d) { return y(d[currentIndex+1]);})
-		          .attr("r", 0.25)
-			      .attr("lineWidth", 0.75)
-                  .attr("strokeStyle", "rgb(36.84%,50.68%,70.98%)")
-			      .attr("fillStyle", "rgb(36.84%,50.68%,70.98%)");
+	    container.selectAll("circle1")
+                 .data(data1)
+		         .enter()
+		         .append("circle1")
+                 .attr("x", function (d) { return x(d[0]);})
+		         .attr("y", function (d) { return y(d[80-reg_index+1]);})
+		         .attr("r", 1)
+			     .attr("lineWidth", 0.6)
+                 .attr("strokeStyle", right_color)
+			     .attr("fillStyle", right_color);
 	  }
-
-	  function draw_canvas1() {
-        //Clear canvas
-        context1.beginPath();
-	    context1.fillStyle = "rgb(100%,100%,100%)";
-	    context1.strokeStyle = "rgb(100%,100%,100%)";
-        context1.rect(0,0,canvas1.attr("width"),canvas1.attr("height"));
-	    context1.fill();
-	    context1.stroke();
-	    context1.closePath();
-
-		// x-axis
-	    context1.beginPath();
-        context1.strokeStyle = "rgb(0%,0%,0%)";
-	    context1.lineWidth = 0.3;
-        context1.moveTo(x(-20),h(0));
-        context1.lineTo(x(20),h(0));
-        context1.stroke();
-	    context1.closePath();
+	  
+      function draw_background() {
+        ctx_bg.beginPath();
+	    ctx_bg.strokeStyle = "rgb(60%,60%,60%)";
+		ctx_bg.lineWidth = 1;
+        ctx_bg.rect((width - height*3/2)/2, 1, height*3/2, height-2);
+	    ctx_bg.stroke();
+	    ctx_bg.closePath();
 		
-        container1.selectAll("rect0")
-                  .each(function(d) {
-                         var node = d3.select(this);
-			             context1.beginPath();
-	                     context1.fillStyle = node.attr("fillStyle");
-                         context1.rect(node.attr("x"), node.attr("y"), node.attr("width"), node.attr("height"));
-					     context1.fill();
-                         context1.closePath();
-                       });
-					   
-        container1.selectAll("rect1")
-                  .each(function(d) {
-                         var node = d3.select(this);
-			             context1.beginPath();
-	                     context1.fillStyle = node.attr("fillStyle");
-                         context1.rect(node.attr("x"), node.attr("y"), node.attr("width"), node.attr("height"));
-					     context1.fill();
-                         context1.closePath();
-                       });
-					   
-		// Hyperplane
-	    context1.beginPath();
-        context1.strokeStyle = "rgba(100%,0%,0%,40%)";
-	    context1.lineWidth = 2;
-        context1.moveTo(x(0),h(-2));
-        context1.lineTo(x(0),h(6));
-        context1.stroke();
-	    context1.closePath();
+        //ctx_bg.beginPath();
+	    //ctx_bg.strokeStyle = "rgb(60%,60%,60%)";
+		//ctx_bg.fillStyle = "rgb(97.5%,97.5%,97.5%)";
+		//ctx_bg.lineWidth = 1;
+        //ctx_bg.rect(1, 1, (width - height*3/2)/2, height-2);
+		//ctx_bg.fill();
+		//ctx_bg.stroke();
+	    //ctx_bg.closePath();
 		
-		// path0
-	    context1.beginPath();
-	    context1.lineWidth = 1.5;
-        context1.strokeStyle = "rgb(36.84%,50.68%,70.98%)";
-        context1.moveTo(x(-20),h(1 + 20/extras[0][currentIndex]));
-        context1.lineTo(x(extras[0][currentIndex]),h(0));
-		context1.lineTo(x(20),h(0));
-        context1.stroke();
-	    context1.closePath();
+        //ctx_bg.beginPath();
+	    //ctx_bg.strokeStyle = "rgb(60%,60%,60%)";
+		//ctx_bg.fillStyle = "rgb(97.5%,97.5%,97.5%)";
+		//ctx_bg.lineWidth = 1;
+        //ctx_bg.rect((width - height*3/2)/2 + height*3/2 - 1, 1, (width - height*3/2)/2, height-2);
+		//ctx_bg.fill();
+		//ctx_bg.stroke();
+	    //ctx_bg.closePath();
 		
-		// path1
-	    context1.beginPath();
-	    context1.lineWidth = 1.5;
-        context1.strokeStyle = "rgb(88.07%, 61.10%, 14.21%)";
-        context1.moveTo(x(-20),h(0));
-        context1.lineTo(x(-extras[0][currentIndex]),h(0));
-		context1.lineTo(x(20),h(1 + 20/extras[0][currentIndex]));
-        context1.stroke();
-	    context1.closePath();
+		//mean image
+	    ctx_bg.beginPath();
+		ctx_bg.fillStyle = "rgb(0%,0%,0%)";
+	    ctx_bg.lineWidth = 1;
+        ctx_bg.arc(mean2_im_x, mean2_im_y, 0.6*im_size, 0, 2 * Math.PI);
+        ctx_bg.fill();
+        ctx_bg.closePath();
 		
-		// tick
-	    context1.beginPath();
-        context1.strokeStyle = "rgb(100%,0%,0%)";
-	    context1.lineWidth = 1;
-        context1.moveTo(x(extras[0][currentIndex]),h(-0.05));
-        context1.lineTo(x(extras[0][currentIndex]),h(0.05));
-        context1.stroke();
-	    context1.closePath();
-
-		context1.font = "italic 10px Georgia, serif";
-		context1.fillStyle = "rgb(100%,0%,0%)";
-        context1.textAlign = "center";
-        context1.fillText("1",x(extras[0][currentIndex]),h(-0.3));
-		context1.fillText("|| \u00A0\u00A0 ||",x(extras[0][currentIndex]),h(-0.7));
+	    ctx_bg.beginPath();
+		ctx_bg.fillStyle = "rgb(0%,0%,0%)";
+	    ctx_bg.lineWidth = 1;
+        ctx_bg.arc(mean3_im_x, mean3_im_y, 0.6*im_size, 0, 2 * Math.PI);
+        ctx_bg.fill();
+        ctx_bg.closePath();
 		
-		context1.font = "italic bold 10px Georgia, serif";
-		context1.fillText("w",x(extras[0][currentIndex]),h(-0.7));
-
-		context1.beginPath();
-        context1.strokeStyle = "rgb(100%,0%,0%)";
-	    context1.lineWidth = 1;
-        context1.moveTo(x(extras[0][currentIndex] - 1.5),h(-0.4));
-        context1.lineTo(x(extras[0][currentIndex] + 1.5),h(-0.4));
-        context1.stroke();
-	    context1.closePath();
+        ctx_bg.drawImage(mean2, mean2_im_x - im_size/2, mean2_im_y - im_size/2, im_size, im_size);
+		ctx_bg.drawImage(mean3, mean3_im_x - im_size/2, mean3_im_y - im_size/2, im_size, im_size);
+		
+	    ctx_bg.beginPath();
+        ctx_bg.strokeStyle = "rgb(30%,30%,30%)";
+	    ctx_bg.lineWidth = 2;
+        ctx_bg.arc(mean2_im_x, mean2_im_y, 0.6*im_size, 0, 2 * Math.PI);
+        ctx_bg.stroke();
+        ctx_bg.closePath();
+		
+	    ctx_bg.beginPath();
+        ctx_bg.strokeStyle = "rgb(100%,100%,100%)";
+	    ctx_bg.lineWidth = 10;
+        ctx_bg.arc(mean2_im_x, mean2_im_y, 0.6*im_size + 6, 0, 2 * Math.PI);
+        ctx_bg.stroke();
+        ctx_bg.closePath();
+		
+	    ctx_bg.beginPath();
+        ctx_bg.strokeStyle = "rgb(30%,30%,30%)";
+	    ctx_bg.lineWidth = 2;
+        ctx_bg.arc(mean3_im_x, mean3_im_y, 0.6*im_size, 0, 2 * Math.PI);
+        ctx_bg.stroke();
+        ctx_bg.closePath();
+		
+	    ctx_bg.beginPath();
+        ctx_bg.strokeStyle = "rgb(100%,100%,100%)";
+	    ctx_bg.lineWidth = 10;
+        ctx_bg.arc(mean3_im_x, mean3_im_y, 0.6*im_size + 6, 0, 2 * Math.PI);
+        ctx_bg.stroke();
+        ctx_bg.closePath();
+		
+	    ctx_bg.beginPath();
+        ctx_bg.strokeStyle = "rgb(0%,0%,0%)";
+		ctx_bg.setLineDash([6, 3]);
+	    ctx_bg.lineWidth = 1;
+        ctx_bg.moveTo(mean2_im_x + 0.6*im_size, mean2_im_y);
+        ctx_bg.lineTo(mean2_x, mean2_y);
+        ctx_bg.stroke();
+	    ctx_bg.closePath();
+		
+	    ctx_bg.beginPath();
+        ctx_bg.strokeStyle = "rgb(0%,0%,0%)";
+	    ctx_bg.lineWidth = 1;
+        ctx_bg.moveTo(mean3_im_x - 0.6*im_size, mean3_im_y);
+        ctx_bg.lineTo(mean3_x, mean3_y);
+        ctx_bg.stroke();
+		ctx_bg.setLineDash([]);
+	    ctx_bg.closePath();
+		
+		ctx_bg.beginPath();
+		ctx_bg.strokeStyle = "rgb(20%,20%,20%)";
+		ctx_bg.fillStyle = "rgb(20%,20%,20%)";
+		ctx_bg.lineWidth = 0.5;
+        ctx_bg.moveTo(mean2_x-4, mean2_y);
+        ctx_bg.lineTo(mean2_x-14, mean2_y + 5);
+		ctx_bg.lineTo(mean2_x-11, mean2_y);
+		ctx_bg.lineTo(mean2_x-14, mean2_y - 5);
+		ctx_bg.stroke();
+		ctx_bg.fill();
+	    ctx_bg.closePath();
+		
+		ctx_bg.beginPath();
+		ctx_bg.strokeStyle = "rgb(20%,20%,20%)";
+		ctx_bg.fillStyle = "rgb(20%,20%,20%)";
+		ctx_bg.lineWidth = 1;
+        ctx_bg.moveTo(mean3_x+4, mean3_y);
+        ctx_bg.lineTo(mean3_x+14, mean3_y + 5);
+		ctx_bg.lineTo(mean3_x+11, mean3_y);
+		ctx_bg.lineTo(mean3_x+14, mean3_y - 5);
+		ctx_bg.stroke();
+		ctx_bg.fill();
+	    ctx_bg.closePath();
+		
+	    //ctx_bg.beginPath();
+        //ctx_bg.strokeStyle = "rgb(30%,30%,30%)";
+	    //ctx_bg.lineWidth = 1;
+		//ctx_bg.setLineDash([3, 3]);
+        //ctx_bg.moveTo(mean2_im_x + 5, mean2_im_y + 0.6*im_size);
+        //ctx_bg.lineTo(mean2_x, mean2_y);
+		//ctx_bg.lineTo(mean2_im_x + 5, mean2_im_y - 0.6*im_size);
+        //ctx_bg.stroke();
+	    //ctx_bg.closePath();
+		
+	    //ctx_bg.beginPath();
+        //ctx_bg.strokeStyle = "rgb(30%,30%,30%)";
+	    //ctx_bg.lineWidth = 1;
+        //ctx_bg.moveTo(mean3_im_x - 5, mean3_im_y + 0.6*im_size);
+        //ctx_bg.lineTo(mean3_x, mean3_y);
+		//ctx_bg.lineTo(mean3_im_x - 5, mean3_im_y - 0.6*im_size);
+        //ctx_bg.stroke();
+		//ctx_bg.setLineDash([]);
+	    //ctx_bg.closePath();
+		
+	    ctx_bg.beginPath();
+        ctx_bg.strokeStyle = "rgb(30%,30%,30%)";
+		ctx_bg.fillStyle = "rgb(100%,100%,100%)";
+	    ctx_bg.lineWidth = 2;
+        ctx_bg.arc(mean2_x, mean3_y, 3, 0, 2 * Math.PI);
+        ctx_bg.stroke();
+		ctx_bg.fill();
+        ctx_bg.closePath();
+		
+	    ctx_bg.beginPath();
+        ctx_bg.strokeStyle = "rgb(30%,30%,30%)";
+		ctx_bg.fillStyle = "rgb(100%,100%,100%)";
+	    ctx_bg.lineWidth = 2;
+        ctx_bg.arc(mean3_x, mean3_y, 3, 0, 2 * Math.PI);
+        ctx_bg.stroke();
+		ctx_bg.fill();
+        ctx_bg.closePath();
 	  }
-
-      function draw_canvas2() {
-		var theta = -Math.acos(extras[2][currentIndex]);  
+	  
+      function draw_foreground() {
+        var theta = -Math.acos(extras[2][80-reg_index]);
 		
-        //Clear canvas
-        context2.beginPath();
-	    context2.fillStyle = "rgb(100%,100%,100%)";
-	    context2.strokeStyle = "rgb(100%,100%,100%)";
-        context2.rect(0,0,canvas2.attr("width"),canvas2.attr("height"));
-	    context2.fill();
-	    context2.stroke();
-	    context2.closePath();
+	    ctx_fg.translate(x(0),y(0));
+	    ctx_fg.rotate(theta);
+	    ctx_fg.translate(-x(0),-y(0));
+		
+        ctx_fg.beginPath();
+	    ctx_fg.fillStyle = "rgb(95%,95%,95%)";
+        ctx_fg.rect(x(-extras[1][80-reg_index]) - height*3/2, -height/2, height*3/2, 2*height);
+	    ctx_fg.fill();
+	    ctx_fg.closePath();
+		
+        ctx_fg.beginPath();
+	    ctx_fg.fillStyle = "rgb(85%,85%,85%)";
+        ctx_fg.rect(x(-extras[1][80-reg_index]), -height/2, height*3/2, 2*height);
+	    ctx_fg.fill();
+	    ctx_fg.closePath();
+		
+	    ctx_fg.translate(x(0),y(0));
+	    ctx_fg.rotate(-theta);
+	    ctx_fg.translate(-x(0),-y(0));
 	
 	    //Class 0
-        container2.selectAll("circle0")
-                  .each(function(d) {
+        container.selectAll("circle0")
+                 .each(function(d) {
                          var node = d3.select(this);
-			             context2.beginPath();
-                         context2.strokeStyle = node.attr("strokeStyle");
-	                     context2.lineWidth = node.attr("lineWidth");
-	                     context2.fillStyle = node.attr("fillStyle");
-                         context2.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
-					     context2.fill();
-                         context2.stroke();
-                         context2.closePath();
+			             ctx_fg.beginPath();
+                         ctx_fg.strokeStyle = node.attr("strokeStyle");
+	                     ctx_fg.lineWidth = node.attr("lineWidth");
+	                     ctx_fg.fillStyle = node.attr("fillStyle");
+                         ctx_fg.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
+					     ctx_fg.fill();
+                         ctx_fg.stroke();
+                         ctx_fg.closePath();
                        });
 			 
 	    //Class 1
-        container2.selectAll("circle1")
-                  .each(function(d) {
+        container.selectAll("circle1")
+                 .each(function(d) {
                          var node = d3.select(this);
-			             context2.beginPath();
-	                     context2.strokeStyle = node.attr("strokeStyle");
-		                 context2.lineWidth = node.attr("lineWidth");
-	                     context2.fillStyle = node.attr("fillStyle");
-                         context2.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
-                         context2.fill();
-					     context2.stroke();
-                         context2.closePath();
+			             ctx_fg.beginPath();
+	                     ctx_fg.strokeStyle = node.attr("strokeStyle");
+		                 ctx_fg.lineWidth = node.attr("lineWidth");
+	                     ctx_fg.fillStyle = node.attr("fillStyle");
+                         ctx_fg.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
+                         ctx_fg.fill();
+					     ctx_fg.stroke();
+                         ctx_fg.closePath();
                        });
-
-	    context2.translate(x(0),y(0));
-	    context2.rotate(theta);
-	    context2.translate(-x(0),-y(0));
 		
-	    //Margin
-        context2.beginPath();	  
-	    context2.fillStyle = "rgba(50%, 50%, 50%, 10%)";
-	    context2.fillRect(x(-extras[0][currentIndex]-extras[1][currentIndex]),-200,2*Math.abs(x(extras[0][currentIndex])-x(0)),width+200);
-	    context2.closePath();
-
+	    ctx_fg.translate(x(0),y(0));
+	    ctx_fg.rotate(theta);
+	    ctx_fg.translate(-x(0),-y(0));
+		
 		//H
-	    context2.beginPath();
-        context2.strokeStyle = "rgba(100%,0%,0%,30%)";
-	    context2.lineWidth = 2;
-        context2.moveTo(x(-extras[1][currentIndex]),-200);
-        context2.lineTo(x(-extras[1][currentIndex]),width+200);
-        context2.stroke();
-	    context2.closePath();
+	    ctx_fg.beginPath();
+        ctx_fg.strokeStyle = orange;
+	    ctx_fg.lineWidth = 2.5;
+        ctx_fg.moveTo(x(-extras[1][80-reg_index]),-150);
+        ctx_fg.lineTo(x(-extras[1][80-reg_index]),height + 150);
+        ctx_fg.stroke();
+	    ctx_fg.closePath();
 		
 		//w
-		context2.beginPath();
-        context2.strokeStyle = "rgba(100%,0%,0%,100%)";
-	    context2.lineWidth = 1;
-        context2.moveTo(x(-extras[1][currentIndex]),y(0));
-        context2.lineTo(x(-extras[1][currentIndex])+x(3)-x(0),y(0));
-        context2.stroke();
-	    context2.closePath();
-
-		context2.beginPath();
-        context2.fillStyle = "rgba(100%,0%,0%,100%)";
-        context2.moveTo(x(-extras[1][currentIndex])+x(3)-x(0),y(0));
-        context2.lineTo(x(-extras[1][currentIndex])+x(3)-x(0)-4,y(0)+3);
-		context2.lineTo(x(-extras[1][currentIndex])+x(3)-x(0)+4,y(0));
-		context2.lineTo(x(-extras[1][currentIndex])+x(3)-x(0)-4,y(0)-3);
-		context2.closePath();
-        context2.fill();
-
-		context2.fillStyle = "rgba(100%,0%,0%,100%)";
-		context2.font = "italic bold 12.5px Georgia, serif";
-        context2.fillText("\u0175",x(-extras[1][currentIndex])+x(3)-x(0)+10,y(0)+2); 
+		//ctx_fg.beginPath();
+        //ctx_fg.strokeStyle = orange;
+	    //ctx_fg.lineWidth = 2.5;
+		//ctx_fg.setLineDash([6, 3]);
+        //ctx_fg.moveTo(x(-extras[1][80-reg_index]),y(0));
+        //ctx_fg.lineTo(x(-extras[1][80-reg_index])+x(4.5)-x(0),y(0));
+        //ctx_fg.stroke();
+		//ctx_fg.setLineDash([]);
+	    //ctx_fg.closePath();
+		//
+		//ctx_fg.beginPath();
+        //ctx_fg.fillStyle = orange;
+        //ctx_fg.moveTo(x(-extras[1][80-reg_index])+x(4.5)-x(0),y(0));
+        //ctx_fg.lineTo(x(-extras[1][80-reg_index])+x(4.25)-x(0),y(-0.5));
+		//ctx_fg.lineTo(x(-extras[1][80-reg_index])+x(5)-x(0),y(0));
+		//ctx_fg.lineTo(x(-extras[1][80-reg_index])+x(4.25)-x(0),y(0.5));
+		//ctx_fg.closePath();
+        //ctx_fg.fill();
 		
-	    context2.translate(x(0),y(0));
-	    context2.rotate(-theta);
-	    context2.translate(-x(0),-y(0));
+	    ctx_fg.translate(x(0),y(0));
+	    ctx_fg.rotate(-theta);
+	    ctx_fg.translate(-x(0),-y(0));
 	  }
+	  
+	  function update() {
+        container.selectAll("circle0")
+	             .attr("y", function (d) {return y(d[80-reg_index+1]);});
 
-      function draw_weight_vector() {
-        var thisCanvas = document.getElementById("fig0-canvas");
-        var thisContext = thisCanvas.getContext("2d");
-        thisContext.imageSmoothingEnabled = false;
-        thisContext.drawImage(img_to_canvas2(w[currentIndex]),0,0,150,150);
-      }
+	    container.selectAll("circle1")
+	             .attr("y", function (d) {return y(d[80-reg_index+1]);});
+
+	    if (Math.round( extras[15][80-reg_index] * 10) / 10 == min_errTrain)
+		  d3.select("#abstract_err_train").style("font-weight","bold")
+			                              .style("color","rgba(100%,0%,0%,0.6)");
+	    else
+		  d3.select("#abstract_err_train").style("font-weight","normal")
+			                              .style("color","rgba(60%,60%,60%)");			 
+	    if (Math.round( extras[14][80-reg_index] * 10) / 10 == max_dAdv)
+		  d3.select("#abstract_adv_distance").style("font-weight","bold")
+			                                 .style("color","rgba(100%,0%,0%,0.6)");
+	    else
+		  d3.select("#abstract_adv_distance").style("font-weight","normal")
+			                                 .style("color","rgba(60%,60%,60%)");	
+				 
+	    d3.select("#abstract_err_train").text(" Training error:\u00A0\u00A0" + parseFloat(extras[15][80-reg_index]).toFixed(1) + "%");
+	    d3.select("#abstract_adv_distance").text("Adversarial distance:\u00A0\u00A0" + parseFloat(extras[14][80-reg_index]).toFixed(1));
+	  }
 	  
 	  function animate() {
-	    draw_canvas1();
-	    draw_canvas2();
-		draw_weight_vector();
+	    draw_foreground();
 		
-	    if (Math.round( extras[14][currentIndex] * 10) / 10 == max_dAdv)
-		  d3.select("#fig0-dAdv").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
-	    else
-		  d3.select("#fig0-dAdv").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"})
-	    if (Math.round( extras[15][currentIndex] * 10) / 10 == min_errTrain)
-		  d3.select("#fig0-errTrain").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
-	    else
-		  d3.select("#fig0-errTrain").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"});
-	  
-		d3.select("#fig0-value-lambda").text(parseFloat(7-currentIndex*0.1).toFixed(1));
-	    d3.select("#fig0-value-dAdv").text(parseFloat(extras[14][currentIndex]).toFixed(1));
-	    d3.select("#fig0-value-errTrain").text(parseFloat(extras[15][currentIndex]).toFixed(1));
-		  
-		container1.selectAll("rect0")
-		          .attr("y", function(d) {return h(0) - d[currentIndex] * 1.4 * height;})
-			      .attr("height", function(d) {return d[currentIndex] * 1.4 * height;});
-
-		container1.selectAll("rect1")
-		          .attr("y", function(d) {return h(0) - d[currentIndex] * 1.4 * height;})
-			      .attr("height", function(d) {return d[currentIndex] * 1.4 * height;});
-
-        container2.selectAll("circle0")
-	              .attr("y", function (d) {return y(d[currentIndex+1]);});
-
-	    container2.selectAll("circle1")
-	              .attr("y", function (d) {return y(d[currentIndex+1]);});
-		
-		if (dir == 1)
-		  currentIndex++;
-	    else
-		  currentIndex--;
-		if (currentIndex == 0) {
-		  dir = 1;
-		  animationCount++;
-		}
-		if (currentIndex == 90)
-		  dir = -1;
-	  
 	    requestId = window.requestAnimationFrame(animate);
-
-	  	if (animationCount==1 && currentIndex==31) {
-          animationCount = 0;
-          dir = 1;
-		  animationRunning = false;
-		  window.cancelAnimationFrame(requestId);
-		}
+		
+		if (Date.now() - input_time > 10000) {
+          animationRunning = false;
+          window.cancelAnimationFrame(requestId);
+        }
 	  }
 	  
-	  init_canvas1();
-	  init_canvas2();
-	  draw_canvas1();
-	  draw_canvas2();
-      draw_weight_vector();
-	  d3.select("#fig0-value-lambda").text(parseFloat(7-currentIndex*0.1).toFixed(1));
-	  d3.select("#fig0-value-dAdv").text(parseFloat(extras[14][currentIndex]).toFixed(1));
-	  d3.select("#fig0-value-errTrain").text(parseFloat(extras[15][currentIndex]).toFixed(1));
+	  init_canvas();
+	  draw_background();
+	  draw_foreground();
 	  
-      d3.select("#play-button").on('click', function() {if (animationRunning) {
-		                                                  window.cancelAnimationFrame(requestId);
-														  animationCount = 0;
-														  currentIndex = 30;
-                                                          dir = 1;
-	                                                    }
-		                                                animationRunning = true;
-														animate();});
-    }
+	  d3.select("#abstract_err_train").text(" Training error:\u00A0\u00A0" + parseFloat(extras[15][80-reg_index]).toFixed(1) + "%");
+	  d3.select("#abstract_adv_distance").text("Adversarial distance:\u00A0\u00A0" + parseFloat(extras[14][80-reg_index]).toFixed(1));
+	  
+	  var input = d3.select("#abstract-input");
+	  input.property("value", reg_index);
+	  input.on("input", function() {if (!animationRunning) {
+			                          animationRunning = true;
+			                          requestId = window.requestAnimationFrame(animate);
+		                            }
+									input_time = Date.now();
+		                            reg_index = +this.value;
+									update();});
+	}
   }
   
-  draw_fig0(left_digit, right_digit);
+  draw_fig(left_digit, right_digit);
 }
 
-function image_space(){
-  var width = 350;
-  var height = 350;
-  var x = d3.scale.linear().domain([-1.3,1.3]).range([0, width]);
-  var y = d3.scale.linear().domain([-1.3,1.3]).range([0, height]);
-  var a = 0.5;
+function Carell_Deschanel(){
+  var width = 648;
+  var height = 340;
+  
+  var im_size = 110;
+  var margin1 = 160;
+  var margin2 = 170;
+  var margin3 = 75;
+  var margin4 = 370;
+  var top_margin = 40;
+  
+  var background = d3.select("#Carell-Deschanel")
+                     .append("svg")
+    	   	  	     .attr("width", width)
+			         .attr("height", height);
+					 
+  background.append("svg:image")
+            .attr('x', 0)
+            .attr('y', margin1/2 + top_margin)
+            .attr('width', im_size)
+			.attr('height', im_size)
+            .attr("xlink:href","assets/Carell_pert.png")
+
+ background.append("svg:image")
+            .attr('x', margin2)
+            .attr('y', top_margin)
+            .attr('width', im_size)
+			.attr('height', im_size)
+            .attr("xlink:href","assets/Carell_im.png")
+			
+  background.append("svg:image")
+            .attr('x', margin2)
+            .attr('y', margin1 + top_margin)
+            .attr('width', im_size)
+			.attr('height', im_size)
+            .attr("xlink:href","assets/Carell_adv.png")
+			
+ background.append("svg:image")
+            .attr('x', 350 + margin2)
+            .attr('y', top_margin)
+            .attr('width', im_size)
+			.attr('height', im_size)
+            .attr("xlink:href","assets/Steve_Carell.png")
+			
+  background.append("svg:image")
+            .attr('x', 350 + margin2)
+            .attr('y', margin1 + top_margin)
+            .attr('width', im_size)
+			.attr('height', im_size)
+            .attr("xlink:href","assets/Zooey_Deschanel.png")
+
+  var bracket = background.append("g")
+                          .attr("fill", "none")
+	                      .attr('stroke',"rgb(0%,0%,0%)")
+			              .attr("stroke-opacity", 1)
+			              .attr("stroke-width", 1);
+  
+  var space_bracket = 30;
+  var path = d3.path();
+      path.moveTo(margin2, im_size/2 + top_margin);
+	  path.arcTo(margin2 - space_bracket, im_size/2 + top_margin, margin2 - space_bracket, im_size/2 + 15 + top_margin, 15);
+	  path.arcTo(margin2 - space_bracket, margin1 + im_size/2 + top_margin, margin2 - space_bracket + 15, margin1 + im_size/2 + top_margin, 15);
+	  path.lineTo(margin2 - 3, margin1 + im_size/2 + top_margin);
+
+  bracket.append("path")
+         .attr("d", path.toString());
+		 
+  var path = d3.path();
+      path.moveTo(margin4 + 5, -5 + top_margin);
+	  path.lineTo(margin4, -5 + top_margin);
+	  path.lineTo(margin4, im_size + 5 + top_margin);
+	  path.lineTo(margin4 + 5, im_size + 5 + top_margin);
+	  
+  bracket.append("path")
+         .attr("d", path.toString());
+		 
+  var path = d3.path();
+      path.moveTo(margin4 + 250, -5 + top_margin);
+	  path.lineTo(margin4 + 250 + 5, -5 + top_margin);
+	  path.lineTo(margin4 + 250 + 5, im_size + 5 + top_margin);
+	  path.lineTo(margin4 + 250, im_size + 5 + top_margin);
+	  
+  bracket.append("path")
+         .attr("d", path.toString());
+		 
+  var path = d3.path();
+      path.moveTo(margin4 + 5, margin1 - 5 + top_margin);
+	  path.lineTo(margin4, margin1 - 5 + top_margin);
+	  path.lineTo(margin4, im_size + margin1 + 5 + top_margin);
+	  path.lineTo(margin4 + 5, im_size + margin1 + 5 + top_margin);
+	  
+  bracket.append("path")
+         .attr("d", path.toString());
+		 
+  var path = d3.path();
+      path.moveTo(margin4 + 250, margin1 - 5 + top_margin);
+	  path.lineTo(margin4 + 250 + 5, margin1 - 5 + top_margin);
+	  path.lineTo(margin4 + 250 + 5, im_size + margin1 + 5 + top_margin);
+	  path.lineTo(margin4 + 250, im_size + margin1 + 5 + top_margin);
+	  
+  bracket.append("path")
+         .attr("d", path.toString());
+						 
+  bracket.append("line")
+         .attr("x1", margin2 + im_size)
+	     .attr("y1", im_size/2 + top_margin)
+	     .attr("x2", margin2 + im_size + margin3)
+	     .attr("y2", im_size/2 + top_margin);
+		 
+  bracket.append("line")
+         .attr("x1", margin2 + im_size)
+	     .attr("y1", margin1 + im_size/2 + top_margin)
+	     .attr("x2", margin2 + im_size + margin3)
+	     .attr("y2", margin1 + im_size/2 + top_margin);
+						 
+  bracket.append("polygon")
+	     .attr("fill", "rgb(0%,0%,0%)")
+         .attr("points", margin2 + "," + (margin1 + im_size/2 + top_margin) + " " +
+	                     (margin2 - 7) + "," + (margin1 + im_size/2 + 3 + top_margin) + " " + 
+				         (margin2 - 7) + "," + (margin1 + im_size/2 - 3 + top_margin));
+						 
+  bracket.append("polygon")
+	     .attr("fill", "rgb(0%,0%,0%)")
+         .attr("points", (margin2 + im_size + margin3) + "," + (im_size/2 + top_margin) + " " +
+	                     (margin2 + im_size + margin3 - 7) + "," + (im_size/2 + 3 + top_margin) + " " + 
+				         (margin2 + im_size + margin3 - 7) + "," + (im_size/2 - 3 + top_margin));
+						 
+  bracket.append("polygon")
+	     .attr("fill", "rgb(0%,0%,0%)")
+         .attr("points", (margin2 + im_size + margin3) + "," + (margin1 + im_size/2 + top_margin) + " " +
+	                     (margin2 + im_size + margin3 - 7) + "," + (margin1 + im_size/2 + 3 + top_margin) + " " + 
+				         (margin2 + im_size + margin3 - 7) + "," + (margin1 + im_size/2 - 3 + top_margin));
+						 
+  bracket.append("circle")
+         .attr("fill","rgb(100%,100%,100%)")
+         .attr("cx", margin2 - space_bracket)
+		 .attr("cy", im_size/2 + margin1/2 + top_margin)
+		 .attr("r", 15);
+		 
+  bracket.append("line")
+         .attr("x1", margin2 - space_bracket + 6)
+         .attr("y1", im_size/2 + margin1/2 + top_margin)
+         .attr("x2", margin2 - space_bracket - 6)
+         .attr("y2", im_size/2 + margin1/2 + top_margin)
+		 
+  bracket.append("line")
+         .attr("x1", margin2 - space_bracket)
+         .attr("y1", im_size/2 + margin1/2 + top_margin + 6)
+         .attr("x2", margin2 - space_bracket)
+         .attr("y2", im_size/2 + margin1/2 + top_margin - 6)
+						 
+  // black labels
+  var black_labels = background.append("g")
+	                           .attr("fill", "rgb(0%,0%,0%)")
+	                           .attr("font-family","Roboto")
+	                           .attr("font-size", "15px");
+
+  black_labels.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", margin2 + im_size/2)
+	          .attr("y", top_margin - 10)
+	          .text("Who is this?");
+							   
+  black_labels.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", margin4 + 85)
+	          .attr("y", im_size/2 + top_margin - 7)
+	          .text("Steve Carell");
+			  
+  black_labels.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", margin4 + 85)
+	          .attr("y", im_size/2 + top_margin + 17)
+	          .text("(score: 0.966)");
+			  
+  black_labels.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", margin2 + im_size/2)
+	          .attr("y", margin1 + top_margin - 10)
+	          .text("Who is this?");
+			  
+  black_labels.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", margin4 + 85)
+	          .attr("y", margin1 + im_size/2 + top_margin - 7)
+	          .text("Zooey Deschanel");
+			  
+  black_labels.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", margin4 + 85)
+	          .attr("y", margin1 + im_size/2 + top_margin + 17)
+	          .text("(score: 0.968)");
+			  
+  // gray labels
+  var gray_labels = background.append("g")
+	                          .attr("fill", "rgb(60%,60%,60%)")
+	                          .attr("font-family","Roboto")
+	                          .attr("font-size", "13px");
+}
+
+function toy_problem1(){
+  var width = 648;
+  var height = 370;
+  var space_x = 30;
+  var space_y = 50;
+  var space_size = 270;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  
+  var im_x = 360;
+  var im_y = 50;
+  var im_size = 120;
+  
+  var text_x = 520;
+  var text_y = 50;
+  
+  var a = 0.2;
   var b = -0.5;
   
-  function draw_image(a,b) {
-    var canvas = document.getElementById("image-canvas1");
-    var ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img_to_canvas1(generate_image(a,b)),0,0,150,150);
-  }
-  
-  function init_image_space() {
-    var space_input = d3.select("#space-input1")
-                        .append("svg")
-    		  	        .attr("width", width)
-			            .attr("height", height);
-						
-	// input rect
-	var input_rect = space_input.append("g")
-                                .attr("fill","rgb(70%,70%,70%)")
-			                    .attr("stroke-opacity",0.3)
-			                    .attr('stroke',"rgb(0%,0%,0%)");
-								
-	input_rect.append("rect")
-			  .attr("id","input-rect")
-              .attr("x", x(-1))
-              .attr("y", y(-1))
-              .attr("width", x(1)-x(-1))
-              .attr("height", y(1)-y(-1));
-	   
-	input_rect.append("line")
-              .attr("x1", x(0))
-	          .attr("y1", y(-1))
-	          .attr("x2", x(0))
-	          .attr("y2", y(1));
-			  
-	input_rect.append("line")
-              .attr("x1", x(-1))
-	          .attr("y1", y(0))
-	          .attr("x2", x(1))
-	          .attr("y2", y(0));
-
-    // a and b
-    var ab_bars = space_input.append("g")
-		                     .attr("stroke-width", 1)
-	                         .attr("stroke", "rgb(0%,0%,0%)")
-	                         .attr("stroke-opacity",1);
+  function init_toy_problem(){
 	
-    ab_bars.append("line")
-           .attr("x1", x(-1))
-	       .attr("y1", y(1))
-	       .attr("x2", x(1))
-	       .attr("y2", y(1));
-			 
-	ab_bars.append("line")
-           .attr("x1", x(-1))
-	       .attr("y1", y(-1))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(1));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(-0.97))
-	       .attr("y1", y(-1))
-	       .attr("x2", x(-1.03))
-	       .attr("y2", y(-1));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(-0.97))
-	       .attr("y1", y(1))
-	       .attr("x2", x(-1.03))
-	       .attr("y2", y(1));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(-1))
-	       .attr("y1", y(0.97))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(1.03));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(1))
-	       .attr("y1", y(0.97))
-	       .attr("x2", x(1))
-	       .attr("y2", y(1.03));
-		   
-    // labels
-    var labels = space_input.append("g")
-	                        .attr("fill", "rgb(0%,0%,0%)")
-	                        .attr("text-anchor", "middle")
-	                        .attr("font-family","Georgia, serif")
- 	                        .attr("font-style", "italic")
-	                        .attr("font-size", "15px");
-
-    labels.append("text")
-          .attr("x", x(0))
-	      .attr("y", y(1.15))
-		  .text("a");
-
-    labels.append("text")
-          .attr("x", x(-1))
-	      .attr("y", y(1.15))
-		  .text("-1");
-		  
-    labels.append("text")
-          .attr("x", x(1))
-	      .attr("y", y(1.15))
-		  .text("1");
-		  
-    labels.append("text")
-          .attr("x", x(-1.15))
-	      .attr("y", y(0.03))
-		  .text("b");
-
-    labels.append("text")
-          .attr("x", x(-1.15))
-	      .attr("y", y(1.03))
-		  .text("-1");
-		  
-    labels.append("text")
-          .attr("x", x(-1.15))
-	      .attr("y", y(-0.97))
-		  .text("1");
-			   
-	// dotted lines
-    var dotted_lines = space_input.append("g")
-		                          .attr("stroke-width", 1)
-	                              .attr("stroke", "rgb(0%,0%,0%)")
-	                              .attr("stroke-opacity",1)
-								  .attr("stroke-dasharray", "3, 1");
-
-    dotted_lines.append("line")
-	            .attr("id","x-line")
-                .attr("x1", x(-1.03))
-	            .attr("y1", y(1)-y(b)+y(-1))
-	            .attr("x2", x(a))
-	            .attr("y2", y(1)-y(b)+y(-1));
-
-    dotted_lines.append("line")
-	            .attr("id","y-line")
-                .attr("x1", x(a))
-	            .attr("y1", y(1.03))
-	            .attr("x2", x(a))
-	            .attr("y2", y(1)-y(b)+y(-1));
-				
-	// (a,b)
-    var ab_ticks = space_input.append("g")
-		                      .attr("stroke-width", 1)
-	                          .attr("stroke", "rgb(0%,0%,0%)")
-	                          .attr("stroke-opacity",1);
-
-    ab_ticks.append("line")
-	        .attr("id","ab-ticks-x")
-            .attr("x1", x(a-0.02))
-	        .attr("y1", y(1)-y(b)+y(-1))
-	        .attr("x2", x(a+0.02))
-	        .attr("y2", y(1)-y(b)+y(-1));
-
-    ab_ticks.append("line")
-	        .attr("id","ab-ticks-y")
-            .attr("x1", x(a))
-	        .attr("y1", y(0.98)-y(b)+y(-1))
-	        .attr("x2", x(a))
-	        .attr("y2", y(1.02)-y(b)+y(-1));
-
-    space_input.append("text")
-	           .attr("id","ab-text")
-	           .attr("fill", "rgb(0%,0%,0%)")
-	           .attr("font-family","Georgia, serif")
- 	           .attr("font-style", "italic")
-			   .attr("font-weight", "bold")
-	           .attr("font-size", "15px")
-               .attr("x", x(a))
-	           .attr("y", y(0.95)-y(b)+y(-1))
-		       .text("x");
-  }
-			 
-  function mousemove() {
-    var a = 2*(d3.mouse(this)[0]-x(-1))/(x(1)-x(-1)) - 1;
-	var b = 2*(y(1)-d3.mouse(this)[1])/(y(1)-y(-1)) - 1;
-	
-    d3.select("#x-line").attr("y1", y(1)-y(b)+y(-1))
-	                   .attr("x2", x(a))
-	                   .attr("y2", y(1)-y(b)+y(-1));
-					   
-    d3.select("#y-line").attr("x1", x(a))
-	                   .attr("x2", x(a))
-	                   .attr("y2", y(1)-y(b)+y(-1))
-					   
-    d3.select("#ab-ticks-x").attr("x1", x(a-0.02))
-	                        .attr("y1", y(1)-y(b)+y(-1))
-	                        .attr("x2", x(a+0.02))
-	                        .attr("y2", y(1)-y(b)+y(-1));
-					   
-    d3.select("#ab-ticks-y").attr("x1", x(a))
-	                        .attr("y1", y(0.98)-y(b)+y(-1))
-	                        .attr("x2", x(a))
-	                        .attr("y2", y(1.02)-y(b)+y(-1));
+	// background
+    var background = d3.select("#toy-problem1")
+                       .append("svg")
+    	   	  	       .attr("width", width)
+			           .attr("height", height);
 							
-    d3.select("#ab-text").attr("x", x(a))
-	                     .attr("y", y(0.95)-y(b)+y(-1));
-	  
-	draw_image(a,b);
+    background.append("rect")
+              .attr("fill","rgb(95%,95%,95%)")
+			  .attr("x", space_x)
+              .attr("y", space_y)
+              .attr("width", space_size)
+              .attr("height", space_size);
+
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
+			  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image
+    background.append("rect")
+	          .attr("id","toy-problem1-background-rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((b+1)/2))
+			  .attr("x", im_x)
+              .attr("y", im_y)
+              .attr("width", im_size)
+              .attr("height", im_size);
+			
+    background.append("rect")
+	          .attr("id","toy-problem1-central-rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((a+1)/2))
+			  .attr("x", im_x + im_size/3)
+              .attr("y", im_y + im_size/3)
+              .attr("width", im_size/3)
+              .attr("height", im_size/3);
+			
+    // black labels
+    var black_labels = background.append("g")
+	                             .attr("fill", "rgb(0%,0%,0%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+                .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(0))
+	            .attr("y", space_y + space_scale(1.18))
+		        .text("a");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(-1.15))
+                .attr("y", space_y + space_scale(0.03))
+                .text("b");
+									
+    black_labels.append("text")
+	            .attr("text-anchor", "start")
+	            .attr("font-style", "italic")
+                .attr("x", text_x)
+	            .attr("y", text_y + 5)
+		        .text("a");
+    black_labels.append("text")
+	            .attr("text-anchor", "start")
+	            .attr("font-style", "italic")
+                .attr("x", text_x)
+	            .attr("y", text_y + 84)
+                .text("b");
+				
+    black_labels.append("text")
+	            .attr("text-anchor", "start")
+                .attr("x", space_x)
+	            .attr("y", space_y - 20)
+		        .text("Image space [-1,1]")
+	            .append("tspan")
+                .attr("font-size", "11px")
+                .attr("dx", "3px")
+                .attr("dy", "-8px")
+	            .text("2");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "start")
+                .attr("x", im_x)
+                .attr("y", im_y - 20)
+                .text("Image ")
+	            .append("tspan")
+                .attr("font-style", "italic")
+                .text("x = (a, b)");
+				
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+				.attr("font-size", "13px")
+	            .attr("id","toy-problem1-labela")
+                .attr("x", im_x + im_size/2)
+	            .attr("y", im_y + im_size/2 + 5)
+		        .text(parseFloat(a).toFixed(1));
+				
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+				.attr("font-size", "13px")
+	            .attr("id","toy-problem1-labelb")
+                .attr("x", im_x + im_size/2 + 40)
+	            .attr("y", im_y + im_size/2 + 5)
+                .text(parseFloat(b).toFixed(1));
+	
+	// gray labels
+    var gray_labels = background.append("g")
+	                            .attr("fill", "rgb(60%,60%,60%)")
+	                            .attr("font-family","Roboto")
+	                            .attr("font-size", "13px");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("1");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(1.025))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(-0.975))
+		       .text("1");
+			  
+	gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", text_x)
+	           .attr("y", text_y + 5)
+		       .text("\u00A0\u00A0\u00A0 is the blue");
+	gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", text_x)
+	           .attr("y", text_y + 25)
+		       .text("level of the");
+	gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", text_x)
+	           .attr("y", text_y + 45)
+		       .text("inner square");
+			 
+	gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", text_x)
+	           .attr("y", text_y + 84)
+		       .text("\u00A0\u00A0\u00A0 is the blue");
+	gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", text_x)
+	           .attr("y", text_y + 104)
+		       .text("level of the");
+	gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", text_x)
+	           .attr("y", text_y + 124)
+		       .text("outer square");
+			
+    // bracket
+    var bracket = background.append("g")
+                            .attr("fill", "none")
+	                        .attr('stroke',"rgb(0%,0%,0%)")
+			                .attr("stroke-opacity", 1)
+			                .attr("stroke-width", 1);
+  
+    bracket.append("line")
+           .attr("x1", im_x - 5)
+	       .attr("y1", im_y - 5)
+	       .attr("x2", im_x - 10)
+	       .attr("y2", im_y - 5);
+		 
+    bracket.append("line")
+           .attr("x1", im_x - 5)
+	       .attr("y1", im_y + im_size + 5)
+	       .attr("x2", im_x - 10)
+	       .attr("y2", im_y + im_size + 5);
+		 
+    bracket.append("line")
+           .attr("x1", im_x - 10)
+	       .attr("y1", im_y - 5)
+	       .attr("x2", im_x - 10)
+	       .attr("y2", im_y + im_size + 5);
+		 
+    var path = d3.path();
+        path.moveTo(im_x - 10, im_y + im_size/2);
+		path.bezierCurveTo(im_x - 10 - 90, im_y + im_size/2, space_x + space_scale(a) + 90, space_y + space_scale(-b), space_x + space_scale(a), space_y + space_scale(-b));
+
+    bracket.append("path")
+	       .attr("id","toy-problem1-path")
+           .attr("d", path.toString());
+		   
+    bracket.append("polygon")
+	       .attr("id","toy-problem1-polygon")
+	       .attr("fill", "rgb(0%,0%,0%)")
+           .attr("points", (space_x + space_scale(a) + 5) + "," + (space_y + space_scale(-b)) + " " +
+		                   (space_x + space_scale(a) + 10) + "," + (space_y + space_scale(-b) + 2) + " " + 
+						   (space_x + space_scale(a) + 10) + "," + (space_y + space_scale(-b) - 2));
+		   
+	bracket.append("circle")
+	       .attr("id","toy-problem1-circle")
+	       .attr("cx", space_x + space_scale(a))
+		   .attr("cy", space_y + space_scale(-b))
+		   .attr("r", 5)
+		   .attr("fill", "rgb(95%,95%,95%)");
+		   
+    var path = d3.path();
+        path.moveTo(text_x - 7, text_y + 2);
+	    path.quadraticCurveTo(im_x + im_size/2, text_y + 2, im_x + im_size/2, im_y + im_size/2 - 18);
+		
+    bracket.append("path")
+           .attr("d", path.toString());
+		   
+    bracket.append("polygon")
+	       .attr("fill", "rgb(0%,0%,0%)")
+           .attr("points", (im_x + im_size/2) + "," + (im_y + im_size/2 - 18 + 5) + " " +
+		                   (im_x + im_size/2 + 2) + "," + (im_y + im_size/2 - 18) + " " + 
+						   (im_x + im_size/2 - 2) + "," + (im_y + im_size/2 - 18));
+		   
+    var path = d3.path();
+        path.moveTo(text_x - 7, text_y + 80);
+	    path.quadraticCurveTo(im_x + im_size/2 + 40, text_y + 95, im_x + im_size/2 + 40, im_y + im_size/2 + 18);
+		
+    bracket.append("path")
+           .attr("d", path.toString());
+		   
+    bracket.append("polygon")
+	       .attr("fill", "rgb(0%,0%,0%)")
+           .attr("points", (im_x + im_size/2 + 40) + "," + (im_y + im_size/2 + 18 - 5) + " " +
+		                   (im_x + im_size/2 + 40 + 2) + "," + (im_y + im_size/2 + 18) + " " + 
+						   (im_x + im_size/2 + 40 - 2) + "," + (im_y + im_size/2 + 18));	   
   }
   
-  init_image_space();
-  draw_image(a,b);
-  d3.select("#input-rect").on("mousemove", mousemove);
+  function mousemove() {
+    a = Math.max(Math.min(2 * (d3.mouse(this)[0]-space_x)/space_size - 1, 1), -1);
+	b = Math.max(Math.min(- 2 * (d3.mouse(this)[1]-space_y)/space_size + 1, 1), -1);
+	
+    var path = d3.path();
+        path.moveTo(im_x - 10, im_y + im_size/2);
+		path.bezierCurveTo(im_x - 10 - 90, im_y + im_size/2, space_x + space_scale(a) + 90, space_y + space_scale(-b), space_x + space_scale(a), space_y + space_scale(-b));	
+
+	d3.select("#toy-problem1-path")
+	  .attr("d", path.toString());
+	
+    d3.select("#toy-problem1-polygon")
+	  .attr("points", (space_x + space_scale(a) + 5) + "," + (space_y + space_scale(-b)) + " " +
+		              (space_x + space_scale(a) + 10) + "," + (space_y + space_scale(-b) + 2) + " " + 
+					  (space_x + space_scale(a) + 10) + "," + (space_y + space_scale(-b) - 2));
+	  
+	d3.select("#toy-problem1-circle")
+	  .attr("cx", space_x + space_scale(a))
+	  .attr("cy", space_y + space_scale(-b));
+	  
+	d3.select("#toy-problem1-background-rect")
+      .attr("fill", d3.interpolateBlues((b+1)/2));
+	  
+	d3.select("#toy-problem1-central-rect")
+      .attr("fill", d3.interpolateBlues((a+1)/2));
+	  
+	d3.select("#toy-problem1-text")
+      .attr("x", space_x + space_scale(a))
+	  .attr("y", space_y + space_scale(-b) + 20)
+      .text("("+parseFloat(a).toFixed(1)+", "+parseFloat(b).toFixed(1)+")");
+	 
+	d3.select("#toy-problem1-labela")
+      .text(parseFloat(a).toFixed(1));
+	d3.select("#toy-problem1-labelb")
+      .text(parseFloat(b).toFixed(1));
+  }
+  
+  init_toy_problem();
+  d3.select("#toy-problem1-circle").call(d3.drag().on("drag", mousemove));
 }
 
-function fig1(){
-  var width = 350;
-  var height = 350;
-  var x = d3.scale.linear().domain([-1.3, 1.3]).range([0, width]);
-  var y = d3.scale.linear().domain([-1.3, 1.3]).range([0, height]);
-  var init_theta = 0.5;
-  var colorI = "rgb(30%,30%,30%)";
-  var colorJ = "rgb(95%,95%,95%)";
-  var colorBackgroundI = "rgb(60%,60%,60%)";
-  var colorBackgroundJ = "rgb(80%,80%,80%)";
-  var red = "rgb(90%,0%,0%)";
+function toy_problem2(){
+  var width = 648;
+  var height = 340;
+  var space_x = 30;
+  var space_y = 30;
+  var space_size = 270;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
   
-  function translate_x(theta) {return Math.min((y(-0.8)-y(0)) * Math.tan(0.00001 + Math.PI/2 * -theta), x(1)-x(0));}
-  function translate_y(theta) {return Math.min((y(-0.8)-y(0)) - (x(1)-x(0)) * Math.tan(0.00001 + Math.PI/2 - Math.PI/2 * -theta), 0);}
+  var im_x = 360;
+  var im_y = 30;
+  var im_size = 45;
   
-  function fig1_right_init(theta){	
-    var fig1_right = d3.select("#space-input2")
+  function init_toy_problem(){
+	
+	// background
+    var background = d3.select("#toy-problem2")
                        .append("svg")
-		  	           .attr("width", width)
+    	   	  	       .attr("width", width)
 			           .attr("height", height);
-			
-    fig1_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", 0)
-              .attr("y", 0)
-              .attr("width", width)
-              .attr("height", height);
+
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
 			  
-    // background
-    var g_theta1 = fig1_right.append("g")
-	                         .attr("id","fig1-group-theta1")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+	                            .attr("id","toy-problem3-image-space")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+							
+    image_space.append("rect")
+               .attr("fill","rgb(95%,95%,95%)")
+			   .attr("opacity",1)
+			   .attr("x", 0)
+               .attr("y", 0)
+               .attr("width", space_size)
+               .attr("height", space_size);
+			   
+    // classes I and J
+    image_space.append("line")
+	           .attr("stroke-width", 9)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 7)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
+		   
+    image_space.append("line")
+	           .attr("stroke-width", 9)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 7)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
+			   
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
+			  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+			  
+    // image
+	for (var i = 0; i < 5; i++) {
+      background.append("rect")
+	            .attr("id","toy-problem1-background-rect")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.1)
+			    .attr("stroke-width", 1)
+                .attr("fill", d3.interpolateBlues(0.5))
+			    .attr("x", im_x + (im_size + 10)*i)
+                .attr("y", im_y + 20)
+                .attr("width", im_size)
+                .attr("height", im_size);
+      background.append("rect")
+	            .attr("id","toy-problem1-central-rect")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.1)
+			    .attr("stroke-width", 1)
+                .attr("fill", d3.interpolateBlues(0.1*i))
+			    .attr("x", im_x + (im_size + 10)*i + im_size/3)
+                .attr("y", im_y + 20 + im_size/3)
+                .attr("width", im_size/3)
+                .attr("height", im_size/3);
+				
+      background.append("rect")
+	            .attr("id","toy-problem1-background-rect")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.1)
+			    .attr("stroke-width", 1)
+                .attr("fill", d3.interpolateBlues(0.5))
+			    .attr("x", im_x + (im_size + 10)*i)
+                .attr("y", im_y + 150 + 20)
+                .attr("width", im_size)
+                .attr("height", im_size);
+      background.append("rect")
+	            .attr("id","toy-problem1-central-rect")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.1)
+			    .attr("stroke-width", 1)
+                .attr("fill", d3.interpolateBlues(0.6 + 0.1*i))
+			    .attr("x", im_x + (im_size + 10)*i + im_size/3)
+                .attr("y", im_y + 150 + 20 + im_size/3)
+                .attr("width", im_size/3)
+                .attr("height", im_size/3);
+	}
+			  
+    // bracket
+    var bracket = background.append("g")
+                            .attr("fill", "none")
+	                        .attr('stroke',"rgb(0%,0%,0%)")
+			                .attr("stroke-opacity", 1)
+			                .attr("stroke-width", 1);
+    
+	// I
+    bracket.append("line")
+           .attr("x1", im_x - 5)
+	       .attr("y1", im_y + 15)
+	       .attr("x2", im_x - 10)
+	       .attr("y2", im_y + 15);
+		 
+    bracket.append("line")
+           .attr("x1", im_x - 5)
+	       .attr("y1", im_y + 15 + im_size + 10)
+	       .attr("x2", im_x - 10)
+	       .attr("y2", im_y + 15 + im_size + 10);
+		 
+    bracket.append("line")
+           .attr("x1", im_x - 10)
+	       .attr("y1", im_y + 15)
+	       .attr("x2", im_x - 10)
+	       .attr("y2", im_y + 15 + im_size + 10);
+		   
+    bracket.append("line")
+           .attr("x1", im_x + 5*(im_size + 10))
+	       .attr("y1", im_y + 15)
+	       .attr("x2", im_x + 5*(im_size + 10) - 5)
+	       .attr("y2", im_y + 15);
+		 
+    bracket.append("line")
+           .attr("x1", im_x + 5*(im_size + 10) - 5)
+	       .attr("y1", im_y + 15 + im_size + 10)
+	       .attr("x2", im_x + 5*(im_size + 10))
+	       .attr("y2", im_y + 15 + im_size + 10);
+		 
+    bracket.append("line")
+           .attr("x1", im_x + 5*(im_size + 10))
+	       .attr("y1", im_y + 15)
+	       .attr("x2", im_x + 5*(im_size + 10))
+	       .attr("y2", im_y + 15 + im_size + 10);
+		   
+    var path = d3.path();
+        path.moveTo(im_x - 10, im_y + 15 + (im_size + 10)/2);
+		path.arcTo(space_x + 53.75, im_y + 15 + (im_size + 10)/2, space_x + 53.75, im_y + 15 + (im_size + 10)/2 + 75, 75);
+
+    bracket.append("path")
+           .attr("d", path.toString());
+		   
+    bracket.append("polygon")
+	       .attr("fill", "rgb(0%,0%,0%)")
+           .attr("points", (space_x + space_scale(-0.6)) + "," + (space_y + space_scale(0) - 15) + " " +
+		                   (space_x + space_scale(-0.6) + 2) + "," + (space_y + space_scale(0) - 5 - 15) + " " + 
+						   (space_x + space_scale(-0.6) - 2) + "," + (space_y + space_scale(0) - 5 - 15));
+	
+    // J	
+    bracket.append("line")
+           .attr("x1", im_x - 5)
+	       .attr("y1", im_y + 150 + 15)
+	       .attr("x2", im_x - 10)
+	       .attr("y2", im_y + 150 + 15);
+		 
+    bracket.append("line")
+           .attr("x1", im_x - 5)
+	       .attr("y1", im_y + 150 + 15 + im_size + 10)
+	       .attr("x2", im_x - 10)
+	       .attr("y2", im_y + 150 + 15 + im_size + 10);
+		 
+    bracket.append("line")
+           .attr("x1", im_x - 10)
+	       .attr("y1", im_y + 150 + 15)
+	       .attr("x2", im_x - 10)
+	       .attr("y2", im_y + 150 + 15 + im_size + 10);
+		   
+    bracket.append("line")
+           .attr("x1", im_x + 5*(im_size + 10))
+	       .attr("y1", im_y + 150 + 15)
+	       .attr("x2", im_x + 5*(im_size + 10) - 5)
+	       .attr("y2", im_y + 150 + 15);
+		 
+    bracket.append("line")
+           .attr("x1", im_x + 5*(im_size + 10) - 5)
+	       .attr("y1", im_y + 150 + 15 + im_size + 10)
+	       .attr("x2", im_x + 5*(im_size + 10))
+	       .attr("y2", im_y + 150 + 15 + im_size + 10);
+		 
+    bracket.append("line")
+           .attr("x1", im_x + 5*(im_size + 10))
+	       .attr("y1", im_y + 150 + 15)
+	       .attr("x2", im_x + 5*(im_size + 10))
+	       .attr("y2", im_y + 150 + 15 + im_size + 10);
+		   
+    var path = d3.path();
+        path.moveTo(im_x - 10, im_y + 150 + 15 + (im_size + 10)/2);
+		path.arcTo(space_x + 216.1, im_y + 150 + 15 + (im_size + 10)/2, space_x + 216.1, im_y + 150 + 15 + (im_size + 10)/2 - 40, 40);
+
+    bracket.append("path")
+           .attr("d", path.toString());
+		   
+    bracket.append("polygon")
+	       .attr("fill", "rgb(0%,0%,0%)")
+           .attr("points", (space_x + space_scale(0.6)) + "," + (space_y + space_scale(0) + 15) + " " +
+		                   (space_x + space_scale(0.6) + 2) + "," + (space_y + space_scale(0) + 5 + 15) + " " + 
+						   (space_x + space_scale(0.6) - 2) + "," + (space_y + space_scale(0) + 5 + 15));
+			
+    // black labels
+    var black_labels = background.append("g")
+	                             .attr("fill", "rgb(0%,0%,0%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+                .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(0))
+	            .attr("y", space_y + space_scale(1.18))
+		        .text("a");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(-1.15))
+                .attr("y", space_y + space_scale(0.03))
+                .text("b");
+				
+	black_labels.append("text")
+	            .attr("text-anchor", "start")
+                .attr("x", im_x)
+                .attr("y", im_y + 5)
+                .text("Class ")
+	            .append("tspan")
+                .attr("font-style", "italic")
+	            .text("I");
+				
+	black_labels.append("text")
+	            .attr("text-anchor", "start")
+                .attr("x", im_x)
+                .attr("y", im_y + 150 + 5)
+                .text("Class ")
+	            .append("tspan")
+                .attr("font-style", "italic")
+	            .text("J");
+	
+	// gray labels
+    var gray_labels = background.append("g")
+	                            .attr("fill", "rgb(60%,60%,60%)")
+	                            .attr("font-family","Roboto")
+	                            .attr("font-size", "13px");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("1");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(1.025))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(-0.975))
+		       .text("1");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", im_x)
+	           .attr("y", im_y + 90)
+		       .text("The set of all images with");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", im_x)
+	           .attr("y", im_y + 110)
+		       .text("a \u2208 [-1, -0.2] \u00A0\u00A0\u00A0 b = 0");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", im_x)
+	           .attr("y", im_y + 150 + 90)
+		       .text("The set of all images with");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", im_x)
+	           .attr("y", im_y + 150 + 110)
+		       .text("a \u2208 [0.2, 1] \u00A0\u00A0\u00A0 b = 0");
+  }
+  
+  init_toy_problem();
+}
+
+function toy_problem3(){
+  var width = 648;
+  var height = 340;
+  var space_x = 30;
+  var space_y = 30;
+  var space_size = 270;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  var colorBackgroundI = "rgb(95%,95%,95%)";
+  var colorBackgroundJ = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
+  
+  var theta_x = 360;
+  var theta_y = 30;
+  var init_theta = 0.5;
+  
+  function translate_x(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) * Math.tan(0.00001 + Math.PI/2 * -theta), space_size/2);}
+  function translate_y(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) - space_size/2 * Math.tan(0.00001 + Math.PI/2 - Math.PI/2 * -theta), 0);}
+  
+  function init_toy_problem(theta){
+	  
+    var fig = d3.select("#toy-problem3");
+	fig.style("position","relative");
+	   
+	// background
+    var background = fig.append("svg")
+    	   	  	        .attr("width", width)
+			            .attr("height", height)
+					    .style("position","static")
+					    .style("top", "0px")
+					    .style("left", "0px");
+						
+    // controler
+	fig.append("input")
+	   .attr("id","toy-problem3-input")
+	   .attr("type","range")
+	   .attr("min",0)
+	   .attr("max",0.99)
+	   .attr("step",0.01)
+	   .attr("value", theta)
+	   .style("position","absolute")
+	   .style("top", "90px")
+	   .style("left", "350px");
+
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
+			  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+	                            .attr("id","toy-problem3-image-space")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+			   
+    // L_theta 1
+    var g_theta1 = image_space.append("g")
+	                          .attr("id","toy-problem3-g-theta1")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 	
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundI)
-            .attr("x", x(-2))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
+            .attr("x", space_scale(-2))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
 			  
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundJ)
-            .attr("x", x(0))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
-			
-	// x-axis
-	fig1_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(-1))
-	          .attr("y1", y(0))
-	          .attr("x2", x(1))
-	          .attr("y2", y(0));
-			
+            .attr("x", space_scale(0))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			   
     // classes I and J
-    var line_IJ = fig1_right.append("g")
-		                    .attr("stroke-width", 5)
-	                        .attr("stroke-opacity",1)
-							.attr("stroke-linecap", "round");
-	  
-    line_IJ.append("line")
-           .attr("x1", x(-0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorI);
-		   
-    line_IJ.append("line")
-           .attr("x1", x(0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorJ);
-
-    var text_IJ = fig1_right.append("g")
-	                        .attr("text-anchor", "middle")
-	                        .attr("font-family","Georgia, serif")
- 	                        .attr("font-style", "normal")
- 	                        .attr("font-weight", "bold")
-	                        .attr("font-size", "20px");
-
-    text_IJ.append("text")
-           .attr("x", x(-0.6))
-	       .attr("y", y(0.32))
-           .attr("fill", colorI)
-		   .text("Class ")
-	       .append("tspan")
-           .attr("font-style", "italic")
-           .text("I");
-
-    text_IJ.append("text")
-           .attr("x", x(0.6))
-	       .attr("y", y(-0.20))
-           .attr("fill", colorJ)
-		   .text("Class ")
-	       .append("tspan")
-           .attr("font-style", "italic")
-           .text("J");
-
-    var arrow_IJ = fig1_right.append("g")
-	                         .attr("stroke-width", 2)
-							 .attr("fill","none")
-				             .attr("stroke-linecap", "round");
-
-    arrow_IJ.append("path")
-            .attr("d", " M "+x(-0.7)+" "+y(0.15)+" L "+x(-0.6)+" "+y(0.10)+" L "+x(-0.5)+" "+y(0.15))
-		    .attr("stroke", colorI);
-
-    arrow_IJ.append("path")
-            .attr("d", " M "+x(0.7)+" "+y(-0.15)+" L "+x(0.6)+" "+y(-0.10)+" L "+x(0.5)+" "+y(-0.15))
-		    .attr("stroke", colorJ);
+    image_space.append("line")
+	           .attr("stroke-width", 9)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
 			  
-	// L_theta 1
-    var g_theta2 = fig1_right.append("g")
-	                         .attr("id","fig1-group-theta2")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    image_space.append("line")
+	           .attr("stroke-width", 7)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
+		   
+    image_space.append("line")
+	           .attr("stroke-width", 9)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 7)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
+			   
+	// L_theta 2
+    var g_theta2 = image_space.append("g")
+	                          .attr("id","toy-problem3-g-theta2")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 							 
     g_theta2.append("line")
-            .attr("x1", x(0)-2)
-		    .attr("y1", y(2))
-		    .attr("x2", x(0)-2)
-		    .attr("y2", y(0.08))
-            .attr("stroke-width", 4)
+            .attr("x1", space_scale(0)-3)
+		    .attr("y1", space_scale(2))
+		    .attr("x2", space_scale(0)-3)
+		    .attr("y2", space_scale(0.08))
+            .attr("stroke-width", 6)
 	        .attr("stroke", colorBackgroundI)
      	    .attr("stroke-opacity",1);
 							 
     g_theta2.append("line")
-            .attr("x1", x(0)+2)
-		    .attr("y1", y(-0.08))
-		    .attr("x2", x(0)+2)
-		    .attr("y2", y(-2))
-            .attr("stroke-width", 4)
+            .attr("x1", space_scale(0)+3)
+		    .attr("y1", space_scale(-0.08))
+		    .attr("x2", space_scale(0)+3)
+		    .attr("y2", space_scale(-2))
+            .attr("stroke-width", 6)
 	        .attr("stroke", colorBackgroundJ)
      	    .attr("stroke-opacity",1);
-	
-	// x-axis
-	fig1_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(0))
-	          .attr("y1", y(-1))
-	          .attr("x2", x(0))
-	          .attr("y2", y(1));
+
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
 			  
-	// L_theta 2bis
-    var g_theta2bis = fig1_right.append("g")
-	                            .attr("id","fig1-group-theta2bis")
-                                .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-							 
-    g_theta2bis.append("line")
-               .attr("x1", x(0))
-		       .attr("y1", y(2))
-		       .attr("x2", x(0))
-		       .attr("y2", y(-2))
-               .attr("stroke-width", 2)
-	           .attr("stroke", red)
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+
+    // L_theta
+	image_space.append("line")
+	           .attr("id","toy-problem3-L-theta")
+			   .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")")
+               .attr("x1", space_scale(0))
+		       .attr("y1", space_scale(2))
+		       .attr("x2", space_scale(0))
+		       .attr("y2", space_scale(-2))
+               .attr("stroke-width", 2.5)
+	           .attr("stroke", orange)
      	       .attr("stroke-opacity",1);
-	
+
 	// L_theta text
-    fig1_right.append("text")
-	          .attr("id","fig1-text-theta")
-              .attr("transform", "translate("+translate_x(theta)+","+translate_y(theta)+")")
-              .attr("x",x(-0.20))
-              .attr("y",y(0.95))
-  	          .attr("text-anchor", "start")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill", red)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "15px")
-	          .attr("opacity", 0.5)
-              .text("\u2112")
-	          .append("tspan")
-              .attr("font-size", "10px")
-              .attr("dx", "2px")
-              .attr("dy", "4px")
-	          .text("\u03B8");
-		   
-	// borders			  
-	fig1_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(-3))
-              .attr("width", x(-1)-x(-3))
-              .attr("height", y(3)-y(-3));
-			  
-	fig1_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(-3))
-              .attr("width", x(3)-x(-3))
-              .attr("height", y(-1)-y(-3));
-			  
-	fig1_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(1))
-              .attr("width", x(3)-x(-3))
-              .attr("height", y(1)-y(-3));
-			  
-	fig1_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(1))
-              .attr("y", y(-3))
-              .attr("width", x(1)-x(-3))
-              .attr("height", y(3)-y(-3));
-								
-	fig1_right.append("rect")
-			  .attr("id","input-rect")
-              .attr("fill","none")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x", x(-1))
-              .attr("y", y(-1))
-              .attr("width", x(1)-x(-1))
-              .attr("height", y(1)-y(-1));
+    image_space.append("text")
+	           .attr("id","toy-problem3-text-theta")
+               .attr("transform", "translate("+translate_x(theta)+","+translate_y(theta)+")")
+               .attr("x",space_scale(-0.20))
+               .attr("y",space_scale(0.95))
+  	           .attr("text-anchor", "start")
+	           .attr("font-family", "Georgia, serif")
+	           .attr("fill", orange)
+	           .attr("font-style", "italic")
+               .attr("font-weight", "bold")
+	           .attr("font-size", "15px")
+	           .attr("opacity", 1)
+               .text("\u2112")
+	           .append("tspan")
+               .attr("font-size", "10px")
+               .attr("dx", "2px")
+               .attr("dy", "4px")
+	           .text("\u03B8");		   
+						  
+    // black labels
+    var black_labels = background.append("g")
+	                             .attr("fill", "rgb(0%,0%,0%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+                .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(0))
+	            .attr("y", space_y + space_scale(1.18))
+		        .text("a");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(-1.15))
+                .attr("y", space_y + space_scale(0.03))
+                .text("b");
+				
+    black_labels.append("text")
+	            .attr("id","toy-problem3-theta-text")
+	            .attr("text-anchor", "start")
+                .attr("x", theta_x)
+                .attr("y", theta_y + 30)
+                .text("\u03B8 = " + parseFloat(theta).toFixed(2) + " \u03C0/2");
 	
+	// gray labels
+    var gray_labels = background.append("g")
+	                            .attr("fill", "rgb(60%,60%,60%)")
+	                            .attr("font-family","Roboto")
+	                            .attr("font-size", "13px");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("1");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(1.025))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(-0.975))
+		       .text("1");
+			   
+	gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", theta_x)
+	           .attr("y", theta_y + 130)
+		       .text("The linear classifier ")
+			   .append("tspan")
+			   .attr("font-family", "Georgia, serif")
+			   .attr("font-weight", "bold")
+			   .attr("font-style", "italic")
+			   .text("\u2112")
+	           .append("tspan")
+               .attr("font-size", "10px")
+               .attr("dx", "2px")
+               .attr("dy", "4px")
+	           .text("\u03B8 ")
+			   .append("tspan")
+	           .attr("font-family","Roboto")
+	           .attr("font-size", "15px")
+			   .attr("font-weight", "normal")
+			   .attr("font-style", "normal")
+			   .attr("dx", "2px")
+			   .attr("dy", "-4px")
+			   .text(" defined by its");	
+			    
+	gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", theta_x)
+	           .attr("y", theta_y + 150)
+		       .text("normal weight vector ")
+			   .append("tspan")
+			   .attr("font-family", "Georgia, serif")
+			   .attr("font-weight", "bold")
+			   .attr("font-style", "italic")
+			   .text("w")
+	           .append("tspan")
+               .attr("font-size", "10px")
+               .attr("dx", "2px")
+               .attr("dy", "4px")
+	           .text("\u03B8 ")
+	           .append("tspan")
+			   .attr("font-size", "15px")
+			   .attr("font-family","Roboto")
+			   .attr("font-weight", "normal")
+			   .attr("font-style", "normal")
+               .attr("dx", "2px")
+               .attr("dy", "-4px")
+	           .text(" = (cos \u03B8, sin \u03B8)");
+	gray_labels.append("text")
+	           .attr("text-anchor", "start")
+			   .attr("font-size", "15px")
+               .attr("x", theta_x)
+	           .attr("y", theta_y + 170)
+		       .text("separates ")
+			   .append("tspan")
+			   .attr("font-style", "italic")
+			   .text("I\u00A0")
+			   .append("tspan")
+			   .attr("font-style", "normal")
+			   .text(" and ")
+			   .append("tspan")
+			   .attr("font-style", "italic")
+			   .text("J\u00A0")
+			   .append("tspan")
+			   .attr("font-style", "normal")
+			   .text(" for all \u03B8 in [0, \u03C0/2)");
+
+    var gray_labels = image_space.append("g")
+	                             .attr("fill", "rgb(60%,60%,60%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+								
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_scale(-0.6))
+	           .attr("y", space_scale(0.2))
+		       .text("Class ")
+			   .append("tspan")
+               .attr("font-style", "italic")
+	           .text("I");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_scale(0.6))
+	           .attr("y", space_scale(-0.13))
+		       .text("Class ")
+			   .append("tspan")
+               .attr("font-style", "italic")
+	           .text("J");
+	
+			   
 	// w_theta
-    var g_theta3 = fig1_right.append("g")
-	                         .attr("id","fig1-group-theta3")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    var g_theta3 = image_space.append("g")
+	                          .attr("id","toy-problem3-g-theta3")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 	
     g_theta3.append("line")
-            .attr("x1", x(0))
-		    .attr("y1", y(0))
-		    .attr("x2", x(0.975))
-		    .attr("y2", y(0))
-	        .attr("stroke-width", 1)
-	        .attr("stroke", red);
+            .attr("x1", space_scale(0))
+		    .attr("y1", space_scale(0))
+		    .attr("x2", space_scale(0.475))
+		    .attr("y2", space_scale(0))
+	        .attr("stroke-width", 2)
+			.attr("stroke-dasharray", "5, 3")
+	        .attr("stroke", orange);
 		 
     g_theta3.append("polygon")
-            .attr("points", x(0.975)+","+y(0)+" "+x(0.95)+","+y(-0.02)+" "+x(1)+","+y(0)+" "+x(0.95)+","+y(0.02))
+            .attr("points", space_scale(0.475)+","+space_scale(0)+" "+space_scale(0.45)+","+space_scale(-0.035)+" "+space_scale(0.5)+","+space_scale(0)+" "+space_scale(0.45)+","+space_scale(0.035))
   	        .attr("fill", "rgb(100%,0%,0%)")
   	        .attr("stroke-width", 1)
-  	        .attr("stroke", red);
+  	        .attr("stroke", orange);
 		 
     g_theta3.append("text")
-            .attr("x", x(1.06))
-	        .attr("y", y(0.03))
-	        .attr("text-anchor", "start")
+            .attr("x", space_scale(0.63))
+	        .attr("y", space_scale(0.025))
+	        .attr("text-anchor", "middle")
 	        .attr("font-family","Georgia, serif")
-	        .attr("fill", red)
+	        .attr("fill", orange)
  	        .attr("font-style", "italic")
  	        .attr("font-weight", "bold")
 	        .attr("font-size", "15px")
@@ -902,763 +1746,853 @@ function fig1(){
             .attr("font-size", "10px")
             .attr("dx", "2px")
             .attr("dy", "4px")
-            .text("\u03B8");
-			
-    // a and b
-    var ab_bars = fig1_right.append("g")
-		                    .attr("stroke-width", 1)
-	                        .attr("stroke", "rgb(0%,0%,0%)")
-	                        .attr("stroke-opacity",1);
-	
-    ab_bars.append("line")
-           .attr("x1", x(-1))
-	       .attr("y1", y(1))
-	       .attr("x2", x(1))
-	       .attr("y2", y(1));
-			 
-	ab_bars.append("line")
-           .attr("x1", x(-1))
-	       .attr("y1", y(-1))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(1));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(-0.97))
-	       .attr("y1", y(-1))
-	       .attr("x2", x(-1.03))
-	       .attr("y2", y(-1));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(-0.97))
-	       .attr("y1", y(1))
-	       .attr("x2", x(-1.03))
-	       .attr("y2", y(1));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(-1))
-	       .attr("y1", y(0.97))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(1.03));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(1))
-	       .attr("y1", y(0.97))
-	       .attr("x2", x(1))
-	       .attr("y2", y(1.03));
-		   
-    // labels
-    var labels = fig1_right.append("g")
-	                       .attr("fill", "rgb(0%,0%,0%)")
-	                       .attr("text-anchor", "middle")
-	                       .attr("font-family","Georgia, serif")
- 	                       .attr("font-style", "italic")
-	                       .attr("font-size", "15px");
-
-    labels.append("text")
-          .attr("x", x(0))
-	      .attr("y", y(1.15))
-		  .text("a");
-
-    labels.append("text")
-          .attr("x", x(-1))
-	      .attr("y", y(1.15))
-		  .text("-1");
-		  
-    labels.append("text")
-          .attr("x", x(1))
-	      .attr("y", y(1.15))
-		  .text("1");
-		  
-    labels.append("text")
-          .attr("x", x(-1.15))
-	      .attr("y", y(0.03))
-		  .text("b");
-
-    labels.append("text")
-          .attr("x", x(-1.15))
-	      .attr("y", y(1.03))
-		  .text("-1");
-		  
-    labels.append("text")
-          .attr("x", x(-1.15))
-	      .attr("y", y(-0.97))
-		  .text("1");
+            .text("\u03B8");	
   }
   
-  function fig1_w_theta(theta) {
-    var canvas = document.getElementById("image-canvas2");
-    var ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img_to_canvas1(generate_image(Math.cos(Math.PI/2 * theta), Math.sin(Math.PI/2 * theta))),0,0,150,150);
-  }
+  function toy_problem_update(theta) {
+	d3.select("#toy-problem3-g-theta1").attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+    d3.select("#toy-problem3-g-theta2").attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+	d3.select("#toy-problem3-g-theta3").attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+	d3.select("#toy-problem3-L-theta").attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+	d3.select("#toy-problem3-text-theta").attr("transform", "translate("+translate_x(theta)+","+translate_y(theta)+")");
+	d3.select("#toy-problem3-theta-text").text("\u03B8 = " + parseFloat(theta).toFixed(2) + " \u03C0/2");
+	}
 
-  function fig1_update(theta) {
-	fig1_w_theta(theta);
-	d3.select("#fig1-value-theta").text(parseFloat(theta).toFixed(2));
-	d3.select("#fig1-group-theta1").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	d3.select("#fig1-group-theta2").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	d3.select("#fig1-group-theta2bis").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	d3.select("#fig1-group-theta3").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	d3.select("#fig1-text-theta").attr("transform","translate("+translate_x(theta)+","+translate_y(theta)+")");
-  }
-
-  d3.select("#controler-input1").property("value", init_theta);
-  d3.select("#fig1-value-theta").text(parseFloat(init_theta).toFixed(2));
-
-  fig1_right_init(init_theta);
-  fig1_w_theta(init_theta);
-
-  d3.select("#controler-input1")
-	.on("input", function() {fig1_update(this.value);});
+  init_toy_problem(init_theta);
+  
+  d3.select("#toy-problem3-input")
+	.on("input", function() {toy_problem_update(this.value);});
 }
 
 function projected_image(){
-  var width = 180;
-  var height = 120;
-  var x = d3.scale.linear().domain([-1., 1.]).range([0, width]);
-  var y = d3.scale.linear().domain([-1., 0.333]).range([0, height]);
+  var width = 130;
+  var height = 130;
+  var space_x = 5;
+  var space_y = 5;
+  var space_size = 120;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  var colorBackgroundI = "rgb(95%,95%,95%)";
+  var colorBackgroundJ = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
+
   var init_theta = 0.5;
-  var colorI = "rgb(30%,30%,30%)";
-  var colorJ = "rgb(95%,95%,95%)";
-  var colorBackgroundI = "rgb(60%,60%,60%)";
-  var colorBackgroundJ = "rgb(80%,80%,80%)";
-  var colorImI = "rgb(10%,10%,10%)";
-  var colorImJ = "rgb(30%,30%,30%)";
-  var red = "rgb(90%,0%,0%)";
   
   var x_a = -0.8, x_b = 0;
-  var xp_a = x_a * (1 - Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
-  var xp_b = - x_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
+  var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
+  var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
   
-  function fig2_right_init(theta){
-    var fig2_right = d3.select("#projected-mirror-input1")
-                       .append("svg")
-		  	           .attr("width", width)
-			           .attr("height", height);
-			
-    fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", 0)
-              .attr("y", 0)
-              .attr("width", width)
-              .attr("height", height);
+  function init_toy_problem(theta){
+	  
+    var fig = d3.select("#projected-mirror-input1");
+	   
+	// background
+    var background = fig.append("svg")
+    	   	  	        .attr("width", width)
+			            .attr("height", height);
+
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
 			  
-    // background
-    var g_theta1 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+			   
+    // L_theta 1
+    var g_theta1 = image_space.append("g")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 	
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundI)
-            .attr("x", x(-2))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
+            .attr("x", space_scale(-2))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
 			  
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundJ)
-            .attr("x", x(0))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
-	 
-	// inside axes
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(0))
-	          .attr("y1", y(-1))
-	          .attr("x2", x(0))
-	          .attr("y2", y(1));
-			  
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(-1))
-	          .attr("y1", y(0))
-	          .attr("x2", x(1))
-	          .attr("y2", y(0));
-			
+            .attr("x", space_scale(0))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			   
     // classes I and J
-    var line_IJ = fig2_right.append("g")
-		                    .attr("stroke-width", 4)
-	                        .attr("stroke-opacity",1)
-							.attr("stroke-linecap", "round");
-	  
-    line_IJ.append("line")
-           .attr("x1", x(-0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorI);
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
 		   
-    line_IJ.append("line")
-           .attr("x1", x(0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorJ);
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
 			  
-	// C_theta
-    fig2_right.append("line")
-			  .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")")
-              .attr("x1", x(0))
-		      .attr("y1", y(2))
-		      .attr("x2", x(0))
-		      .attr("y2", y(-2))
-              .attr("stroke-width", 1.5)
-	          .attr("stroke", red)
-     	      .attr("stroke-opacity",1);
-		   
-	// borders			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(-3))
-              .attr("width", x(-1)-x(-3))
-              .attr("height", y(3)-y(-3));
-			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(-3))
-              .attr("width", x(3)-x(-3))
-              .attr("height", y(-1)-y(-3));
-			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(1))
-              .attr("width", x(3)-x(-3))
-              .attr("height", y(1)-y(-3));
-			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(1))
-              .attr("y", y(-3))
-              .attr("width", x(1)-x(-3))
-              .attr("height", y(3)-y(-3));
-			  
-	// w_theta
-    var g_theta3 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	
-    g_theta3.append("line")
-            .attr("x1", x(0))
-		    .attr("y1", y(0))
-		    .attr("x2", x(0.275))
-		    .attr("y2", y(0))
-	        .attr("stroke-width", 1)
-	        .attr("stroke", red);
-		 
-    g_theta3.append("polygon")
-            .attr("points", x(0.275)+","+y(0)+" "+x(0.25)+","+y(-0.02)+" "+x(0.3)+","+y(0)+" "+x(0.25)+","+y(0.02))
-  	        .attr("fill", "rgb(100%,0%,0%)")
-  	        .attr("stroke-width", 0.75)
-  	        .attr("stroke", red);
-		 
-    g_theta3.append("text")
-            .attr("x", x(0.36))
-	        .attr("y", y(0.03))
-	        .attr("text-anchor", "start")
-	        .attr("font-family","Georgia, serif")
-	        .attr("fill", red)
- 	        .attr("font-style", "italic")
- 	        .attr("font-weight", "bold")
-	        .attr("font-size", "15px")
-            .text("w")
-	        .append("tspan")
-            .attr("font-size", "10px")
-            .attr("dx", "2px")
-            .attr("dy", "4px")
-            .text("\u03B8");
-		  
-	// x xp
-	fig2_right.append("circle")
-	          .attr("cx",x(x_a))
-			  .attr("cy",y(-x_b))
-			  .attr("r",2.5)
-			  .attr("fill",colorImI);
-			  
-	fig2_right.append("text")
-              .attr("x",x(x_a))
-              .attr("y",y(-x_b)+15)
-  	          .attr("text-anchor", "middle")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill",colorImI)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "12px")
-              .text("x");
-			  
-	fig2_right.append("circle")
-	          .attr("cx",x(xp_a))
-			  .attr("cy",y(-xp_b))
-			  .attr("r",2.5)
-			  .attr("fill",colorImJ);
-			  
-	fig2_right.append("text")
-              .attr("x",x(xp_a))
-              .attr("y",y(-xp_b)-10)
-  	          .attr("text-anchor", "start")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill",colorImJ)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "12px")
-              .text("x")
-		      .append("tspan")
-              .attr("font-size", "10px")
-              .attr("dx", "1px")
-              .attr("dy", "2px")
-              .text("p");
-			  
-	fig2_right.append("line")
-              .attr("x1", x(x_a))
-	          .attr("y1", y(-x_b))
-	          .attr("x2", x(xp_a))
-	          .attr("y2", y(-xp_b))
-              .attr("stroke-width", 1)
-			  .attr("stroke-dasharray", "3, 1")
-	          .attr("stroke",colorImI);
-  }
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
 
-  fig2_right_init(init_theta);
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
+			  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+
+    // L_theta
+	image_space.append("line")
+			   .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")")
+               .attr("x1", space_scale(0))
+		       .attr("y1", space_scale(2))
+		       .attr("x2", space_scale(0))
+		       .attr("y2", space_scale(-2))
+               .attr("stroke-width", 2.5)
+	           .attr("stroke", orange)
+     	       .attr("stroke-opacity",1);	   
+						  
+    // black labels
+    var black_labels = background.append("g")
+	                             .attr("fill", "rgb(0%,0%,0%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+				
+	black_labels.append("text")
+                .attr("x", space_x + space_scale(x_a))
+                .attr("y", space_y + space_scale(-x_b)+17)
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x");
+			  
+	black_labels.append("text")
+	            .attr("x", space_x + (space_scale(xm_a)+space_scale(x_a))/2 + 17)
+	            .attr("y", space_y + (space_scale(-xm_b)+space_scale(-x_b))/2)
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x")
+		        .append("tspan")
+                .attr("font-size", "10px")
+                .attr("dx", "1px")
+                .attr("dy", "2px")
+                .text("p");
+			
+	// x xp
+	image_space.append("circle")
+	           .attr("cx",space_scale(x_a))
+			   .attr("cy",space_scale(-x_b))
+			   .attr("r",3.5)
+			   .attr("fill","rgb(0%,0%,0%)");
+			  
+	image_space.append("circle")
+	           .attr("cx", (space_scale(xm_a)+space_scale(x_a))/2)
+	           .attr("cy", (space_scale(-xm_b)+space_scale(-x_b))/2)
+			   .attr("r",3.5)
+			   .attr("fill","rgb(0%,0%,0%)");
+			  
+	image_space.append("line")
+               .attr("x1", space_scale(x_a))
+	           .attr("y1", space_scale(-x_b))
+	           .attr("x2", (space_scale(xm_a)+space_scale(x_a))/2)
+	           .attr("y2", (space_scale(-xm_b)+space_scale(-x_b))/2)
+               .attr("stroke-width", 1)
+			   .attr("stroke-dasharray", "2, 1")
+	           .attr("stroke","rgb(0%,0%,0%)");
+  }
+  
+  init_toy_problem(init_theta);
 }
 
 function mirror_image(){
-  var width = 180;
-  var height = 120;
-  var x = d3.scale.linear().domain([-1., 1.]).range([0, width]);
-  var y = d3.scale.linear().domain([-1., 0.333]).range([0, height]);
+  var width = 130;
+  var height = 130;
+  var space_x = 5;
+  var space_y = 5;
+  var space_size = 120;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  var colorBackgroundI = "rgb(95%,95%,95%)";
+  var colorBackgroundJ = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
+
   var init_theta = 0.5;
-  var colorI = "rgb(30%,30%,30%)";
-  var colorJ = "rgb(95%,95%,95%)";
-  var colorBackgroundI = "rgb(60%,60%,60%)";
-  var colorBackgroundJ = "rgb(80%,80%,80%)";
-  var colorImI = "rgb(10%,10%,10%)";
-  var colorImJ = "rgb(30%,30%,30%)";
-  var red = "rgb(90%,0%,0%)";
   
   var x_a = -0.8, x_b = 0;
   var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
   var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
   
-  function fig2_right_init(theta){
-    var fig2_right = d3.select("#projected-mirror-input2")
-                       .append("svg")
-		  	           .attr("width", width)
-			           .attr("height", height);
-			
-    fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", 0)
-              .attr("y", 0)
-              .attr("width", width)
-              .attr("height", height);
+  function init_toy_problem(theta){
+	  
+    var fig = d3.select("#projected-mirror-input2");
+	   
+	// background
+    var background = fig.append("svg")
+    	   	  	        .attr("width", width)
+			            .attr("height", height);
+
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
 			  
-    // background
-    var g_theta1 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+			   
+    // L_theta 1
+    var g_theta1 = image_space.append("g")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 	
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundI)
-            .attr("x", x(-2))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
+            .attr("x", space_scale(-2))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
 			  
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundJ)
-            .attr("x", x(0))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
-	 
-	// inside axes
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(0))
-	          .attr("y1", y(-1))
-	          .attr("x2", x(0))
-	          .attr("y2", y(1));
-			  
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(-1))
-	          .attr("y1", y(0))
-	          .attr("x2", x(1))
-	          .attr("y2", y(0));
-			
+            .attr("x", space_scale(0))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			   
     // classes I and J
-    var line_IJ = fig2_right.append("g")
-		                    .attr("stroke-width", 4)
-	                        .attr("stroke-opacity",1)
-							.attr("stroke-linecap", "round");
-	  
-    line_IJ.append("line")
-           .attr("x1", x(-0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorI);
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
 		   
-    line_IJ.append("line")
-           .attr("x1", x(0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorJ);
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
 			  
-	// C_theta
-    fig2_right.append("line")
-			  .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")")
-              .attr("x1", x(0))
-		      .attr("y1", y(2))
-		      .attr("x2", x(0))
-		      .attr("y2", y(-2))
-              .attr("stroke-width", 1.5)
-	          .attr("stroke", red)
-     	      .attr("stroke-opacity",1);
-		   
-	// borders			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(-3))
-              .attr("width", x(-1)-x(-3))
-              .attr("height", y(3)-y(-3));
-			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(-3))
-              .attr("width", x(3)-x(-3))
-              .attr("height", y(-1)-y(-3));
-			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(1))
-              .attr("width", x(3)-x(-3))
-              .attr("height", y(1)-y(-3));
-			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(1))
-              .attr("y", y(-3))
-              .attr("width", x(1)-x(-3))
-              .attr("height", y(3)-y(-3));
-			  
-	// w_theta
-    var g_theta3 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	
-    g_theta3.append("line")
-            .attr("x1", x(0))
-		    .attr("y1", y(0))
-		    .attr("x2", x(0.275))
-		    .attr("y2", y(0))
-	        .attr("stroke-width", 1)
-	        .attr("stroke", red);
-		 
-    g_theta3.append("polygon")
-            .attr("points", x(0.275)+","+y(0)+" "+x(0.25)+","+y(-0.02)+" "+x(0.3)+","+y(0)+" "+x(0.25)+","+y(0.02))
-  	        .attr("fill", "rgb(100%,0%,0%)")
-  	        .attr("stroke-width", 0.75)
-  	        .attr("stroke", red);
-		 
-    g_theta3.append("text")
-            .attr("x", x(0.36))
-	        .attr("y", y(0.03))
-	        .attr("text-anchor", "start")
-	        .attr("font-family","Georgia, serif")
-	        .attr("fill", red)
- 	        .attr("font-style", "italic")
- 	        .attr("font-weight", "bold")
-	        .attr("font-size", "15px")
-            .text("w")
-	        .append("tspan")
-            .attr("font-size", "10px")
-            .attr("dx", "2px")
-            .attr("dy", "4px")
-            .text("\u03B8");
-		  
-	// x xm
-	fig2_right.append("circle")
-	          .attr("cx",x(x_a))
-			  .attr("cy",y(-x_b))
-			  .attr("r",2.5)
-			  .attr("fill",colorImI);
-			  
-	fig2_right.append("text")
-              .attr("x",x(x_a))
-              .attr("y",y(-x_b)+15)
-  	          .attr("text-anchor", "middle")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill",colorImI)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "12px")
-              .text("x");
-			  
-	fig2_right.append("circle")
-	          .attr("cx",x(xm_a))
-			  .attr("cy",y(-xm_b))
-			  .attr("r",2.5)
-			  .attr("fill",colorImJ);
-			  
-	fig2_right.append("text")
-              .attr("x",x(xm_a))
-              .attr("y",y(-xm_b)-10)
-  	          .attr("text-anchor", "middle")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill",colorImJ)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "12px")
-              .text("x")
-		      .append("tspan")
-              .attr("font-size", "10px")
-              .attr("dx", "1px")
-              .attr("dy", "2px")
-              .text("m");
-			  
-	fig2_right.append("line")
-              .attr("x1", x(x_a))
-	          .attr("y1", y(-x_b))
-	          .attr("x2", (x(x_a)+x(xm_a))/2)
-	          .attr("y2", (y(-x_b)+y(-xm_b))/2)
-              .attr("stroke-width", 1)
-			  .attr("stroke-dasharray", "3, 1")
-	          .attr("stroke",colorImI);
-			  
-	fig2_right.append("line")
-              .attr("x1", x(xm_a))
-	          .attr("y1", y(-xm_b))
-	          .attr("x2", (x(x_a)+x(xm_a))/2)
-	          .attr("y2", (y(-x_b)+y(-xm_b))/2)
-              .attr("stroke-width", 1)
-			  .attr("stroke-dasharray", "3, 1")
-	          .attr("stroke",colorImJ);
-  }
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
 
-  fig2_right_init(init_theta);
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
+			  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+
+    // L_theta
+	image_space.append("line")
+			   .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")")
+               .attr("x1", space_scale(0))
+		       .attr("y1", space_scale(2))
+		       .attr("x2", space_scale(0))
+		       .attr("y2", space_scale(-2))
+               .attr("stroke-width", 2.5)
+	           .attr("stroke", orange)
+     	       .attr("stroke-opacity",1);	   
+						  
+    // black labels
+    var black_labels = background.append("g")
+	                             .attr("fill", "rgb(0%,0%,0%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+				
+	black_labels.append("text")
+                .attr("x", space_x + space_scale(x_a))
+                .attr("y", space_y + space_scale(-x_b)+17)
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x");
+			  
+	black_labels.append("text")
+                .attr("x", space_x + space_scale(xm_a)+17)
+                .attr("y", space_y + space_scale(-xm_b))
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x")
+		        .append("tspan")
+                .attr("font-size", "10px")
+                .attr("dx", "1px")
+                .attr("dy", "2px")
+                .text("m");
+			
+	// x xm
+	image_space.append("circle")
+	           .attr("cx",space_scale(x_a))
+			   .attr("cy",space_scale(-x_b))
+			   .attr("r",3.5)
+			   .attr("fill","rgb(0%,0%,0%)");
+			  
+	image_space.append("circle")
+	           .attr("cx",space_scale(xm_a))
+			   .attr("cy",space_scale(-xm_b))
+			   .attr("r",3.5)
+			   .attr("fill","rgb(0%,0%,0%)");
+			  
+	image_space.append("line")
+               .attr("x1", space_scale(x_a))
+	           .attr("y1", space_scale(-x_b))
+	           .attr("x2", space_scale(xm_a))
+	           .attr("y2", space_scale(-xm_b))
+               .attr("stroke-width", 1)
+			   .attr("stroke-dasharray", "2, 1")
+	           .attr("stroke","rgb(0%,0%,0%)");
+  }
+  
+  init_toy_problem(init_theta);
 }
 
-function fig2(){
-  var width = 350;
-  var height = 350;
-  var x = d3.scale.linear().domain([-1.3, 1.3]).range([0, width]);
-  var y = d3.scale.linear().domain([-1.3, 1.3]).range([0, height]);
-  var init_theta = 0.5;
-  var colorI = "rgb(30%,30%,30%)";
-  var colorJ = "rgb(95%,95%,95%)";
-  var colorBackgroundI = "rgb(60%,60%,60%)";
-  var colorBackgroundJ = "rgb(80%,80%,80%)";
-  var colorImI = "rgb(10%,10%,10%)";
-  var colorImJ = "rgb(30%,30%,30%)";
-  var red = "rgb(90%,0%,0%)";
+function toy_problem4(){
+  var width = 648;
+  var height = 340;
+  var space_x = 30;
+  var space_y = 30;
+  var space_size = 270;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  var colorBackgroundI = "rgb(95%,95%,95%)";
+  var colorBackgroundJ = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
   
-  function translate_x(theta) {return Math.min((y(-0.8)-y(0)) * Math.tan(0.00001 + Math.PI/2 * -theta), x(1)-x(0));}
-  function translate_y(theta) {return Math.min((y(-0.8)-y(0)) - (x(1)-x(0)) * Math.tan(0.00001 + Math.PI/2 - Math.PI/2 * -theta), 0);}
+  var im_x = 360;
+  var im_y = 150;
+  var im_size = 120;
+  
+  var theta_x = 360;
+  var theta_y = 30;
+  var init_theta = 0.5;
+  
+  function translate_x(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) * Math.tan(0.00001 + Math.PI/2 * -theta), space_size/2);}
+  function translate_y(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) - space_size/2 * Math.tan(0.00001 + Math.PI/2 - Math.PI/2 * -theta), 0);}
   
   var x_a = -0.8, x_b = 0;
   var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
   var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
   
-  function fig2_right_init(theta){	
-    var fig2_right = d3.select("#space-input3")
-                       .append("svg")
-		  	           .attr("width", width)
-			           .attr("height", height);
-			
-    fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", 0)
-              .attr("y", 0)
-              .attr("width", width)
-              .attr("height", height);
+  function init_toy_problem(theta){
+	  
+    var fig = d3.select("#toy-problem4");
+	fig.style("position","relative");
+	   
+	// background
+    var background = fig.append("svg")
+    	   	  	        .attr("width", width)
+			            .attr("height", height)
+					    .style("position","static")
+					    .style("top", "0px")
+					    .style("left", "0px");
+						
+    // controler
+	fig.append("input")
+	   .attr("id","toy-problem4-input")
+	   .attr("type","range")
+	   .attr("min",0)
+	   .attr("max",0.99)
+	   .attr("step",0.01)
+	   .attr("value", theta)
+	   .style("position","absolute")
+	   .style("top", "90px")
+	   .style("left", "350px");
+
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
 			  
-    // background
-    var g_theta1 = fig2_right.append("g")
-	                         .attr("id","fig2-group-theta1")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+	                            .attr("id","toy-problem4-image-space")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+			   
+    // L_theta 1
+    var g_theta1 = image_space.append("g")
+	                          .attr("id","toy-problem4-g-theta1")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 	
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundI)
-            .attr("x", x(-2))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
+            .attr("x", space_scale(-2))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
 			  
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundJ)
-            .attr("x", x(0))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
-			
-	// x-axis
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(-1))
-	          .attr("y1", y(0))
-	          .attr("x2", x(1))
-	          .attr("y2", y(0));
-
+            .attr("x", space_scale(0))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			   
     // classes I and J
-    var line_IJ = fig2_right.append("g")
-		                    .attr("stroke-width", 5)
-	                        .attr("stroke-opacity",1)
-							.attr("stroke-linecap", "round");
-	  
-    line_IJ.append("line")
-           .attr("x1", x(-0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorI);
+    image_space.append("line")
+	           .attr("stroke-width", 9)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 7)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
 		   
-    line_IJ.append("line")
-           .attr("x1", x(0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorJ);
-		   
-	// L_theta
-    var g_theta2 = fig2_right.append("g")
-	                         .attr("id","fig2-group-theta2")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    image_space.append("line")
+	           .attr("stroke-width", 9)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 7)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
+			   
+	// L_theta 2
+    var g_theta2 = image_space.append("g")
+	                          .attr("id","toy-problem4-g-theta2")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 							 
     g_theta2.append("line")
-            .attr("x1", x(0)-2)
-		    .attr("y1", y(2))
-		    .attr("x2", x(0)-2)
-		    .attr("y2", y(0.08))
-            .attr("stroke-width", 4)
+            .attr("x1", space_scale(0)-3)
+		    .attr("y1", space_scale(2))
+		    .attr("x2", space_scale(0)-3)
+		    .attr("y2", space_scale(0.08))
+            .attr("stroke-width", 6)
 	        .attr("stroke", colorBackgroundI)
      	    .attr("stroke-opacity",1);
 							 
     g_theta2.append("line")
-            .attr("x1", x(0)+2)
-		    .attr("y1", y(-0.08))
-		    .attr("x2", x(0)+2)
-		    .attr("y2", y(-2))
-            .attr("stroke-width", 4)
+            .attr("x1", space_scale(0)+3)
+		    .attr("y1", space_scale(-0.08))
+		    .attr("x2", space_scale(0)+3)
+		    .attr("y2", space_scale(-2))
+            .attr("stroke-width", 6)
 	        .attr("stroke", colorBackgroundJ)
      	    .attr("stroke-opacity",1);
-	
-	// x-axis
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(0))
-	          .attr("y1", y(-1))
-	          .attr("x2", x(0))
-	          .attr("y2", y(1));
+
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
 			  
-	// L_theta
-    var g_theta2bis = fig2_right.append("g")
-	                            .attr("id","fig2-group-theta2bis")
-                                .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-							 
-    g_theta2bis.append("line")
-               .attr("x1", x(0))
-		       .attr("y1", y(2))
-		       .attr("x2", x(0))
-		       .attr("y2", y(-2))
-               .attr("stroke-width", 2)
-	           .attr("stroke", red)
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+
+    // L_theta
+	image_space.append("line")
+	           .attr("id","toy-problem4-L-theta")
+			   .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")")
+               .attr("x1", space_scale(0))
+		       .attr("y1", space_scale(2))
+		       .attr("x2", space_scale(0))
+		       .attr("y2", space_scale(-2))
+               .attr("stroke-width", 2.5)
+	           .attr("stroke", orange)
      	       .attr("stroke-opacity",1);
-			   
+
 	// L_theta text
-    fig2_right.append("text")
-	          .attr("id","fig2-text-theta")
-              .attr("transform", "translate("+translate_x(theta)+","+translate_y(theta)+")")
-              .attr("x",x(-0.20))
-              .attr("y",y(0.95))
-  	          .attr("text-anchor", "start")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill", red)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "15px")
-	          .attr("opacity", 0.5)
-              .text("\u2112")
-	          .append("tspan")
-              .attr("font-size", "10px")
-              .attr("dx", "2px")
-              .attr("dy", "4px")
-	          .text("\u03B8");
-		   
-	// borders			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(-3))
-              .attr("width", x(-1)-x(-3))
-              .attr("height", y(3)-y(-3));
+    image_space.append("text")
+	           .attr("id","toy-problem4-text-theta")
+               .attr("transform", "translate("+translate_x(theta)+","+translate_y(theta)+")")
+               .attr("x",space_scale(-0.20))
+               .attr("y",space_scale(0.95))
+  	           .attr("text-anchor", "start")
+	           .attr("font-family", "Georgia, serif")
+	           .attr("fill", orange)
+	           .attr("font-style", "italic")
+               .attr("font-weight", "bold")
+	           .attr("font-size", "15px")
+	           .attr("opacity", 1)
+               .text("\u2112")
+	           .append("tspan")
+               .attr("font-size", "10px")
+               .attr("dx", "2px")
+               .attr("dy", "4px")
+	           .text("\u03B8");		   
+						  
+    // black labels
+    var black_labels = background.append("g")
+	                             .attr("fill", "rgb(0%,0%,0%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+                .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(0))
+	            .attr("y", space_y + space_scale(1.18))
+		        .text("a");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(-1.15))
+                .attr("y", space_y + space_scale(0.03))
+                .text("b");
+				
+	black_labels.append("text")
+                .attr("x", space_x + space_scale(x_a))
+                .attr("y", space_y + space_scale(-x_b)+17)
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x");
 			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(-3))
-              .attr("width", x(3)-x(-3))
-              .attr("height", y(-1)-y(-3));
+	black_labels.append("text")
+	            .attr("id","toy-problem4-xm-text")
+                .attr("x", space_x + space_scale(xm_a))
+                .attr("y", space_y + space_scale(-xm_b)-12)
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x")
+		        .append("tspan")
+                .attr("font-size", "10px")
+                .attr("dx", "1px")
+                .attr("dy", "2px")
+                .text("m");
+				
+    black_labels.append("text")
+	            .attr("id","toy-problem4-theta-text")
+	            .attr("text-anchor", "start")
+                .attr("x", theta_x)
+                .attr("y", theta_y + 30)
+                .text("\u03B8 = " + parseFloat(theta).toFixed(2) + " \u03C0/2");
+	
+	// gray labels
+    var gray_labels = background.append("g")
+	                            .attr("fill", "rgb(60%,60%,60%)")
+	                            .attr("font-family","Roboto")
+	                            .attr("font-size", "13px");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("1");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(1.025))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(-0.975))
+		       .text("1");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+			   .attr("font-size", "15px")
+               .attr("x", im_x + im_size/2)
+               .attr("y", im_y + im_size + 23)
+               .text("Image ")
+		       .append("tspan")
+               .attr("font-style", "italic")
+               .text("x");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+			   .attr("font-size", "15px")
+               .attr("x", im_x + im_size/2 + im_size + 20)
+               .attr("y", im_y + im_size + 23)
+               .text("Mirror image ")
+		       .append("tspan")
+               .attr("font-style", "italic")
+               .text("x")
+		       .append("tspan")
+               .attr("font-size", "10px")
+               .attr("dx", "1px")
+               .attr("dy", "2px")
+               .text("m");
+			
+	// x xm
+	image_space.append("circle")
+	           .attr("cx",space_scale(x_a))
+			   .attr("cy",space_scale(-x_b))
+			   .attr("r",4)
+			   .attr("fill","rgb(0%,0%,0%)");
 			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(-3))
-              .attr("y", y(1))
-              .attr("width", x(3)-x(-3))
-              .attr("height", y(1)-y(-3));
+	image_space.append("circle")
+	           .attr("id","toy-problem4-xm")
+	           .attr("cx",space_scale(xm_a))
+			   .attr("cy",space_scale(-xm_b))
+			   .attr("r",4)
+			   .attr("fill","rgb(0%,0%,0%)");
 			  
-	fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", x(1))
-              .attr("y", y(-3))
-              .attr("width", x(1)-x(-3))
-              .attr("height", y(3)-y(-3));
-								
-	fig2_right.append("rect")
-			  .attr("id","input-rect")
-              .attr("fill","none")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x", x(-1))
-              .attr("y", y(-1))
-              .attr("width", x(1)-x(-1))
-              .attr("height", y(1)-y(-1));
+	image_space.append("line")
+	           .attr("id","toy-problem4-lineI")
+               .attr("x1", space_scale(x_a))
+	           .attr("y1", space_scale(-x_b))
+	           .attr("x2", space_scale(xm_a))
+	           .attr("y2", space_scale(-xm_b))
+               .attr("stroke-width", 1)
+			   .attr("stroke-dasharray", "3, 1")
+	           .attr("stroke","rgb(0%,0%,0%)");
 			  
 	// w_theta
-    var g_theta3 = fig2_right.append("g")
-	                         .attr("id","fig2-group-theta3")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    var g_theta3 = image_space.append("g")
+	                          .attr("id","toy-problem4-g-theta3")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 	
     g_theta3.append("line")
-            .attr("x1", x(0))
-		    .attr("y1", y(0))
-		    .attr("x2", x(0.975))
-		    .attr("y2", y(0))
-	        .attr("stroke-width", 1)
-	        .attr("stroke", red);
+            .attr("x1", space_scale(0))
+		    .attr("y1", space_scale(0))
+		    .attr("x2", space_scale(0.475))
+		    .attr("y2", space_scale(0))
+	        .attr("stroke-width", 2)
+			.attr("stroke-dasharray", "5, 3")
+	        .attr("stroke", orange);
 		 
     g_theta3.append("polygon")
-            .attr("points", x(0.975)+","+y(0)+" "+x(0.95)+","+y(-0.02)+" "+x(1)+","+y(0)+" "+x(0.95)+","+y(0.02))
+            .attr("points", space_scale(0.475)+","+space_scale(0)+" "+space_scale(0.45)+","+space_scale(-0.035)+" "+space_scale(0.5)+","+space_scale(0)+" "+space_scale(0.45)+","+space_scale(0.035))
   	        .attr("fill", "rgb(100%,0%,0%)")
   	        .attr("stroke-width", 1)
-  	        .attr("stroke", red);
+  	        .attr("stroke", orange);
 		 
     g_theta3.append("text")
-            .attr("x", x(1.06))
-	        .attr("y", y(0.03))
-	        .attr("text-anchor", "start")
+            .attr("x", space_scale(0.63))
+	        .attr("y", space_scale(0.025))
+	        .attr("text-anchor", "middle")
 	        .attr("font-family","Georgia, serif")
-	        .attr("fill", red)
+	        .attr("fill", orange)
  	        .attr("font-style", "italic")
  	        .attr("font-weight", "bold")
 	        .attr("font-size", "15px")
@@ -1669,709 +2603,1427 @@ function fig2(){
             .attr("dy", "4px")
             .text("\u03B8");
 			
-    // a and b
-    var ab_bars = fig2_right.append("g")
-		                    .attr("stroke-width", 1)
-	                        .attr("stroke", "rgb(0%,0%,0%)")
-	                        .attr("stroke-opacity",1);
-	
-    ab_bars.append("line")
-           .attr("x1", x(-1))
-	       .attr("y1", y(1))
-	       .attr("x2", x(1))
-	       .attr("y2", y(1));
-			 
-	ab_bars.append("line")
-           .attr("x1", x(-1))
-	       .attr("y1", y(-1))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(1));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(-0.97))
-	       .attr("y1", y(-1))
-	       .attr("x2", x(-1.03))
-	       .attr("y2", y(-1));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(-0.97))
-	       .attr("y1", y(1))
-	       .attr("x2", x(-1.03))
-	       .attr("y2", y(1));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(-1))
-	       .attr("y1", y(0.97))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(1.03));
-		   
-	ab_bars.append("line")
-           .attr("x1", x(1))
-	       .attr("y1", y(0.97))
-	       .attr("x2", x(1))
-	       .attr("y2", y(1.03));
-		   
-    // labels
-    var labels = fig2_right.append("g")
-	                       .attr("fill", "rgb(0%,0%,0%)")
-	                       .attr("text-anchor", "middle")
-	                       .attr("font-family","Georgia, serif")
- 	                       .attr("font-style", "italic")
-	                       .attr("font-size", "15px");
-
-    labels.append("text")
-          .attr("x", x(0))
-	      .attr("y", y(1.15))
-		  .text("a");
-
-    labels.append("text")
-          .attr("x", x(-1))
-	      .attr("y", y(1.15))
-		  .text("-1");
-		  
-    labels.append("text")
-          .attr("x", x(1))
-	      .attr("y", y(1.15))
-		  .text("1");
-		  
-    labels.append("text")
-          .attr("x", x(-1.15))
-	      .attr("y", y(0.03))
-		  .text("b");
-
-    labels.append("text")
-          .attr("x", x(-1.15))
-	      .attr("y", y(1.03))
-		  .text("-1");
-		  
-    labels.append("text")
-          .attr("x", x(-1.15))
-	      .attr("y", y(-0.97))
-		  .text("1");
-		  
-	// x xm
-	fig2_right.append("circle")
-	          .attr("cx",x(x_a))
-			  .attr("cy",y(-x_b))
-			  .attr("r",3)
-			  .attr("fill",colorImI);
+    // images
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((x_b+1)/2))
+			  .attr("x", im_x)
+              .attr("y", im_y)
+              .attr("width", im_size)
+              .attr("height", im_size);
+			
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((x_a+1)/2))
+			  .attr("x", im_x + im_size/3)
+              .attr("y", im_y + im_size/3)
+              .attr("width", im_size/3)
+              .attr("height", im_size/3);
 			  
-	fig2_right.append("text")
-              .attr("x",x(x_a))
-              .attr("y",y(-x_b)+15)
-  	          .attr("text-anchor", "middle")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill",colorImI)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "12px")
-              .text("x");
-			  
-	fig2_right.append("circle")
-	          .attr("id","fig2-xm")
-	          .attr("cx",x(xm_a))
-			  .attr("cy",y(-xm_b))
-			  .attr("r",3)
-			  .attr("fill",colorImJ);
-			  
-	fig2_right.append("text")
-	          .attr("id","fig2-xm-text")
-              .attr("x",x(xm_a))
-              .attr("y",y(-xm_b)-10)
-  	          .attr("text-anchor", "middle")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill",colorImJ)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "12px")
-              .text("x")
-		      .append("tspan")
-              .attr("font-size", "10px")
-              .attr("dx", "1px")
-              .attr("dy", "2px")
-              .text("m");
-			  
-	fig2_right.append("line")
-	          .attr("id","fig2-lineI1")
-              .attr("x1", x(x_a))
-	          .attr("y1", y(-x_b))
-	          .attr("x2", (x(x_a)+x(xm_a))/2)
-	          .attr("y2", (y(-x_b)+y(-xm_b))/2)
-              .attr("stroke-width", 1)
-			  .attr("stroke-dasharray", "3, 1")
-	          .attr("stroke",colorImI);
-			  
-	fig2_right.append("line")
-	          .attr("id","fig2-lineI2")
-              .attr("x1", x(xm_a))
-	          .attr("y1", y(-xm_b))
-	          .attr("x2", (x(x_a)+x(xm_a))/2)
-	          .attr("y2", (y(-x_b)+y(-xm_b))/2)
-              .attr("stroke-width", 1)
-			  .attr("stroke-dasharray", "3, 1")
-	          .attr("stroke",colorImJ);
+    background.append("rect")
+	          .attr("id","toy-problem4-background-rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((xm_b+1)/2))
+			  .attr("x", im_x + im_size + 20)
+              .attr("y", im_y)
+              .attr("width", im_size)
+              .attr("height", im_size);
+			
+    background.append("rect")
+	          .attr("id","toy-problem4-central-rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((xm_a+1)/2))
+			  .attr("x", im_x + im_size/3 + im_size + 20)
+              .attr("y", im_y + im_size/3)
+              .attr("width", im_size/3)
+              .attr("height", im_size/3);
   }
   
-  function fig2_xy() {
-    var canvas = document.getElementById("image-canvas-x");
-    var ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img_to_canvas1(generate_image(x_a,x_b)),0,0,80,80);
-  }
-  
-  function fig2_xym(theta) {	
-    var canvas = document.getElementById("image-canvas-xm");
-    var ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(img_to_canvas1(generate_image(xm_a,xm_b)),0,0,80,80);
-  }
-  
-  function fig2_update(theta) {	
+  function toy_problem_update(theta) {
     xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * theta) * Math.cos(Math.PI/2 * theta));
     xm_b = - 2 * x_a * Math.cos(Math.PI/2 * theta) * Math.sin(Math.PI/2 * theta);
-	fig2_xym(theta);
-	
-	d3.select("#fig2-value-theta").text(parseFloat(theta).toFixed(2));
-	d3.select("#fig2-group-theta1").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	d3.select("#fig2-group-theta2").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	d3.select("#fig2-group-theta2bis").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	d3.select("#fig2-group-theta3").attr("transform","rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	d3.select("#fig2-text-theta").attr("transform","translate("+translate_x(theta)+","+translate_y(theta)+")");
-	
-	d3.select("#fig2-xm").attr("cx",x(xm_a)).attr("cy",y(-xm_b));
-	d3.select("#fig2-xm-text").attr("x",x(xm_a)).attr("y",y(-xm_b)-10);
-	d3.select("#fig2-lineI1").attr("x2", (x(x_a)+x(xm_a))/2).attr("y2", (y(-x_b)+y(-xm_b))/2);
-	d3.select("#fig2-lineI2").attr("x1", x(xm_a)).attr("y1", y(-xm_b)).attr("x2", (x(x_a)+x(xm_a))/2).attr("y2", (y(-x_b)+y(-xm_b))/2);
-  }
-  
-  d3.select("#controler-input2").property("value", init_theta);
-  d3.select("#fig2-value-theta").text(parseFloat(init_theta).toFixed(2));
-  
-  fig2_right_init(init_theta);
-  fig2_xy();
-  fig2_xym(init_theta);
-
-  d3.select("#controler-input2")
-	.on("input", function() {fig2_update(this.value);});
-}
-
-function images_x1_xm1() {
-  var theta = 0.;
-  
-  var x_a = -0.8, x_b = 0;
-  var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * theta) * Math.cos(Math.PI/2 * theta));
-  var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * theta) * Math.sin(Math.PI/2 * theta);
-
-  var canvas = document.getElementById("image-canvas-x1");
-  var ctx = canvas.getContext("2d");
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img_to_canvas1(generate_image(x_a,x_b)),0,0,80,80);
-  
-  var canvas = document.getElementById("image-canvas-xm1");
-  var ctx = canvas.getContext("2d");
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img_to_canvas1(generate_image(xm_a,xm_b)),0,0,80,80);
-}
-
-function images_x2_xm2() {
-  var theta = 0.99;
-  
-  var x_a = -0.8, x_b = 0;
-  var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * theta) * Math.cos(Math.PI/2 * theta));
-  var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * theta) * Math.sin(Math.PI/2 * theta);
-
-  var canvas = document.getElementById("image-canvas-x2");
-  var ctx = canvas.getContext("2d");
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img_to_canvas1(generate_image(x_a,x_b)),0,0,80,80);
-  
-  var canvas = document.getElementById("image-canvas-xm2");
-  var ctx = canvas.getContext("2d");
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img_to_canvas1(generate_image(xm_a,xm_b)),0,0,80,80);
-}
-
-function noisy_data0(){
-  var width = 350;
-  var height = 140;
-  var x = d3.scale.linear().domain([-1., 1.]).range([0, width]);
-  var y = d3.scale.linear().domain([-0.4, 0.4]).range([0, height]);
-  var init_theta = 0.95;
-  var colorI = "rgb(30%,30%,30%)";
-  var colorJ = "rgb(95%,95%,95%)";
-  var colorBackgroundI = "rgb(60%,60%,60%)";
-  var colorBackgroundJ = "rgb(80%,80%,80%)";
-  var colorImI = "rgb(10%,10%,10%)";
-  var colorImJ = "rgb(30%,30%,30%)";
-  var red = "rgb(90%,0%,0%)";
-  
-  function fig2_right_init(theta){
-    var fig2_right = d3.select("#noisy-data-input0")
-                       .append("svg")
-		  	           .attr("width", width)
-			           .attr("height", height);
-			
-    fig2_right.append("rect")
-	          .attr("fill","rgb(70%,70%,70%)")
-              .attr("x", 0)
-              .attr("y", 0)
-              .attr("width", width)
-              .attr("height", height);
-			
-	// x-axis
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(-1))
-	          .attr("y1", y(0))
-	          .attr("x2", x(1))
-	          .attr("y2", y(0));
-
-    // classes I and J
-    var line_IJ = fig2_right.append("g")
-		                    .attr("stroke-width", 5)
-	                        .attr("stroke-opacity",1)
-							.attr("stroke-linecap", "round");
 	  
-    line_IJ.append("line")
-           .attr("x1", x(-0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorI);
-		   
-    line_IJ.append("line")
-           .attr("x1", x(0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorJ);
-		   
-    var text_IJ = fig2_right.append("g")
-	                        .attr("text-anchor", "middle")
-	                        .attr("font-family","Georgia, serif")
- 	                        .attr("font-style", "normal")
- 	                        .attr("font-weight", "bold")
-	                        .attr("font-size", "20px");
+	d3.select("#toy-problem4-g-theta1").attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+    d3.select("#toy-problem4-g-theta2").attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+	d3.select("#toy-problem4-g-theta3").attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+	d3.select("#toy-problem4-L-theta").attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+	d3.select("#toy-problem4-text-theta").attr("transform", "translate("+translate_x(theta)+","+translate_y(theta)+")");
+	d3.select("#toy-problem4-theta-text").text("\u03B8 = " + parseFloat(theta).toFixed(2) + " \u03C0/2");
+	d3.select("#toy-problem4-xm").attr("cx",space_scale(xm_a)).attr("cy",space_scale(-xm_b));
+	d3.select("#toy-problem4-xm-text").attr("x",space_x + space_scale(xm_a)).attr("y",space_y + space_scale(-xm_b)-10);
+	d3.select("#toy-problem4-lineI").attr("x2", space_scale(xm_a)).attr("y2", space_scale(-xm_b));
+	d3.select("#toy-problem4-background-rect").attr("fill", d3.interpolateBlues((xm_b+1)/2));
+	d3.select("#toy-problem4-central-rect").attr("fill", d3.interpolateBlues((xm_a+1)/2));
+	}
 
-    text_IJ.append("text")
-           .attr("x", x(-0.6))
-	       .attr("y", y(0.32))
-           .attr("fill", colorI)
-		   .text("Class ")
-	       .append("tspan")
-           .attr("font-style", "italic")
-           .text("I");
+  init_toy_problem(init_theta);
+  
+  d3.select("#toy-problem4-input")
+	.on("input", function() {toy_problem_update(this.value);});
+}
 
-    text_IJ.append("text")
-           .attr("x", x(0.6))
-	       .attr("y", y(-0.20))
-           .attr("fill", colorJ)
-		   .text("Class ")
-	       .append("tspan")
-           .attr("font-style", "italic")
-           .text("J");
-
-    var arrow_IJ = fig2_right.append("g")
-	                         .attr("stroke-width", 2)
-							 .attr("fill","none")
-				             .attr("stroke-linecap", "round");
-
-    arrow_IJ.append("path")
-            .attr("d", " M "+x(-0.7)+" "+y(0.15)+" L "+x(-0.6)+" "+y(0.10)+" L "+x(-0.5)+" "+y(0.15))
-		    .attr("stroke", colorI);
-
-    arrow_IJ.append("path")
-            .attr("d", " M "+x(0.7)+" "+y(-0.15)+" L "+x(0.6)+" "+y(-0.10)+" L "+x(0.5)+" "+y(-0.15))
-		    .attr("stroke", colorJ);
-		   
-    // noisy data point
-	var p_a = 0.03, p_b = -0.03;
-	fig2_right.append("circle")
-	          .attr("cx",x(p_a))
-			  .attr("cy",y(-p_b))
-			  .attr("r",2.5)
-			  .attr("fill",colorI);
-			 
-	fig2_right.append("text")
-              .attr("x",x(p_a)+10)
-              .attr("y",y(-p_b)+10)
-  	          .attr("text-anchor", "middle")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill",colorI)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "15px")
-              .text("p");
+function images_x1_xm1(){
+  var width = 250;
+  var height = 130;
+  var space_x = 5;
+  var space_y = 5;
+  var space_size = 120;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  var colorBackgroundI = "rgb(95%,95%,95%)";
+  var colorBackgroundJ = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
+  
+  var init_theta = 0.;
+  
+  var im_x = 25;
+  var im_y = 65;
+  var im_size = 45;
+  
+  var x_a = -0.8, x_b = 0;
+  var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
+  var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
+  
+  function init_toy_problem(theta){
+	  
+    var fig = d3.select("#x-xm-small-theta");
+  
+    // background
+    var background = fig.append("svg")
+    	   	  	        .attr("width", width)
+	  		            .attr("height", height)
+					    .style("position","static")
+					    .style("top", "0px")
+					    .style("left", "0px");
+					  
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
+			  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+			   
+    // L_theta 1
+    var g_theta1 = image_space.append("g")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 	
-	// y-axis
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(0))
-	          .attr("y1", y(-1))
-	          .attr("x2", x(0))
-	          .attr("y2", y(1));
-  }
+	g_theta1.append("rect")
+	        .attr("fill",colorBackgroundI)
+            .attr("x", space_scale(-2))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			  
+	g_theta1.append("rect")
+	        .attr("fill",colorBackgroundJ)
+            .attr("x", space_scale(0))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			   
+    // classes I and J
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
+		   
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
 
-  fig2_right_init(init_theta);
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
+			  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+
+    // L_theta
+	image_space.append("line")
+			   .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")")
+               .attr("x1", space_scale(0))
+		       .attr("y1", space_scale(2))
+		       .attr("x2", space_scale(0))
+		       .attr("y2", space_scale(-2))
+               .attr("stroke-width", 2)
+	           .attr("stroke", orange)
+     	       .attr("stroke-opacity",1);
+
+    // black labels
+    var black_labels = background.append("g")
+	                             .attr("fill", "rgb(0%,0%,0%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "13px");
+				
+	black_labels.append("text")
+                .attr("x", space_x + space_scale(x_a))
+                .attr("y", space_y + space_scale(-x_b)+17)
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x");
+			  
+	black_labels.append("text")
+                .attr("x", space_x + space_scale(xm_a))
+                .attr("y", space_y + space_scale(-xm_b)-12)
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x")
+		        .append("tspan")
+                .attr("font-size", "10px")
+                .attr("dx", "1px")
+                .attr("dy", "2px")
+                .text("m");
+				
+	// gray labels
+    var gray_labels = background.append("g")
+	                            .attr("fill", "rgb(60%,60%,60%)")
+	                            .attr("font-family","Roboto")
+	                            .attr("font-size", "15px");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", im_x + space_size + im_size/2)
+               .attr("y", im_y + im_size + 15)
+               .attr("font-style", "italic")
+               .text("x");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", im_x + space_size + im_size/2 + im_size + 15)
+               .attr("y", im_y + im_size + 15)
+               .attr("font-style", "italic")
+               .text("x")
+		       .append("tspan")
+               .attr("font-size", "10px")
+               .attr("dx", "1px")
+               .attr("dy", "2px")
+               .text("m");
+			
+	// x xm
+	image_space.append("circle")
+	           .attr("cx",space_scale(x_a))
+			   .attr("cy",space_scale(-x_b))
+			   .attr("r",3.5)
+			   .attr("fill","rgb(0%,0%,0%)");
+			  
+	image_space.append("circle")
+	           .attr("cx",space_scale(xm_a))
+			   .attr("cy",space_scale(-xm_b))
+			   .attr("r",3.5)
+			   .attr("fill","rgb(0%,0%,0%)");
+			  
+	image_space.append("line")
+               .attr("x1", space_scale(x_a))
+	           .attr("y1", space_scale(-x_b))
+	           .attr("x2", space_scale(xm_a))
+	           .attr("y2", space_scale(-xm_b))
+               .attr("stroke-width", 1)
+			   .attr("stroke-dasharray", "2, 1")
+	           .attr("stroke","rgb(0%,0%,0%)");			   
+	
+    // images			  
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((x_b+1)/2))
+			  .attr("x", im_x + space_size)
+              .attr("y", im_y)
+              .attr("width", im_size)
+              .attr("height", im_size);
+			
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((x_a+1)/2))
+			  .attr("x", im_x + im_size/3 + space_size)
+              .attr("y", im_y + im_size/3)
+              .attr("width", im_size/3)
+              .attr("height", im_size/3);
+			  
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((xm_b+1)/2))
+			  .attr("x", im_x + im_size + 10 + space_size)
+              .attr("y", im_y)
+              .attr("width", im_size)
+              .attr("height", im_size);
+			
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((xm_a+1)/2))
+			  .attr("x", im_x + im_size/3 + im_size + 10 + space_size)
+              .attr("y", im_y + im_size/3)
+              .attr("width", im_size/3)
+              .attr("height", im_size/3);
+  }
+  
+  init_toy_problem(init_theta)
+}
+
+function images_x2_xm2(){
+  var width = 250;
+  var height = 130;
+  var space_x = 5;
+  var space_y = 5;
+  var space_size = 120;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  var colorBackgroundI = "rgb(95%,95%,95%)";
+  var colorBackgroundJ = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
+  
+  var init_theta = 0.99;
+  
+  var im_x = 25;
+  var im_y = 65;
+  var im_size = 45;
+  
+  var x_a = -0.8, x_b = 0;
+  var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
+  var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
+  
+  function init_toy_problem(theta){
+	  
+    var fig = d3.select("#x-xm-large-theta");
+  
+    // background
+    var background = fig.append("svg")
+    	   	  	        .attr("width", width)
+	  		            .attr("height", height)
+					    .style("position","static")
+					    .style("top", "0px")
+					    .style("left", "0px");
+					  
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
+			  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+			   
+    // L_theta 1
+    var g_theta1 = image_space.append("g")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+	
+	g_theta1.append("rect")
+	        .attr("fill",colorBackgroundI)
+            .attr("x", space_scale(-2))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			  
+	g_theta1.append("rect")
+	        .attr("fill",colorBackgroundJ)
+            .attr("x", space_scale(0))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			   
+    // classes I and J
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
+		   
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
+			   
+	// L_theta 2
+    var g_theta2 = image_space.append("g")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
+							 
+    g_theta2.append("line")
+            .attr("x1", space_scale(0)-3)
+		    .attr("y1", space_scale(2))
+		    .attr("x2", space_scale(0)-3)
+		    .attr("y2", space_scale(0.08))
+            .attr("stroke-width", 6)
+	        .attr("stroke", colorBackgroundI)
+     	    .attr("stroke-opacity",1);
+							 
+    g_theta2.append("line")
+            .attr("x1", space_scale(0)+3)
+		    .attr("y1", space_scale(-0.08))
+		    .attr("x2", space_scale(0)+3)
+		    .attr("y2", space_scale(-2))
+            .attr("stroke-width", 6)
+	        .attr("stroke", colorBackgroundJ)
+     	    .attr("stroke-opacity",1);
+
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
+			  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+
+    // L_theta
+	image_space.append("line")
+			   .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")")
+               .attr("x1", space_scale(0))
+		       .attr("y1", space_scale(2))
+		       .attr("x2", space_scale(0))
+		       .attr("y2", space_scale(-2))
+               .attr("stroke-width", 2)
+	           .attr("stroke", orange)
+     	       .attr("stroke-opacity",1);
+
+    // black labels
+    var black_labels = background.append("g")
+	                             .attr("fill", "rgb(0%,0%,0%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "13px");
+				
+	black_labels.append("text")
+                .attr("x", space_x + space_scale(x_a))
+                .attr("y", space_y + space_scale(-x_b)+17)
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x");
+			  
+	black_labels.append("text")
+                .attr("x", space_x + space_scale(xm_a))
+                .attr("y", space_y + space_scale(-xm_b)-12)
+  	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .text("x")
+		        .append("tspan")
+                .attr("font-size", "10px")
+                .attr("dx", "1px")
+                .attr("dy", "2px")
+                .text("m");
+				
+	// gray labels
+    var gray_labels = background.append("g")
+	                            .attr("fill", "rgb(60%,60%,60%)")
+	                            .attr("font-family","Roboto")
+	                            .attr("font-size", "15px");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", im_x + space_size + im_size/2)
+               .attr("y", im_y + im_size + 15)
+               .attr("font-style", "italic")
+               .text("x");
+			   
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", im_x + space_size + im_size/2 + im_size + 15)
+               .attr("y", im_y + im_size + 15)
+               .attr("font-style", "italic")
+               .text("x")
+		       .append("tspan")
+               .attr("font-size", "10px")
+               .attr("dx", "1px")
+               .attr("dy", "2px")
+               .text("m");
+			
+	// x xm
+	image_space.append("circle")
+	           .attr("cx",space_scale(x_a))
+			   .attr("cy",space_scale(-x_b))
+			   .attr("r",3.5)
+			   .attr("fill","rgb(0%,0%,0%)");
+			  
+	image_space.append("circle")
+	           .attr("cx",space_scale(xm_a))
+			   .attr("cy",space_scale(-xm_b))
+			   .attr("r",3.5)
+			   .attr("fill","rgb(0%,0%,0%)");
+			  
+	image_space.append("line")
+               .attr("x1", space_scale(x_a))
+	           .attr("y1", space_scale(-x_b))
+	           .attr("x2", space_scale(xm_a))
+	           .attr("y2", space_scale(-xm_b))
+               .attr("stroke-width", 1)
+			   .attr("stroke-dasharray", "2, 1")
+	           .attr("stroke","rgb(0%,0%,0%)");			   
+	
+    // images			  
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((x_b+1)/2))
+			  .attr("x", im_x + space_size)
+              .attr("y", im_y)
+              .attr("width", im_size)
+              .attr("height", im_size);
+			
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((x_a+1)/2))
+			  .attr("x", im_x + im_size/3 + space_size)
+              .attr("y", im_y + im_size/3)
+              .attr("width", im_size/3)
+              .attr("height", im_size/3);
+			  
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((xm_b+1)/2))
+			  .attr("x", im_x + im_size + 10 + space_size)
+              .attr("y", im_y)
+              .attr("width", im_size)
+              .attr("height", im_size);
+			
+    background.append("rect")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.1)
+			  .attr("stroke-width", 1)
+              .attr("fill", d3.interpolateBlues((xm_a+1)/2))
+			  .attr("x", im_x + im_size/3 + im_size + 10 + space_size)
+              .attr("y", im_y + im_size/3)
+              .attr("width", im_size/3)
+              .attr("height", im_size/3);
+  }
+  
+  init_toy_problem(init_theta)
+}
+
+function toy_problem5(){
+  var width = 648;
+  var height = 340;
+  var space_x = 30;
+  var space_y = 30;
+  var space_size = 270;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  
+  var im_x = 360;
+  var im_y = 35;
+  var im_size = 45;
+  
+  function init_toy_problem(){
+	
+	// background
+    var background = d3.select("#toy-problem5")
+                       .append("svg")
+    	   	  	       .attr("width", width)
+			           .attr("height", height);
+
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
+			  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+	                            .attr("id","toy-problem3-image-space")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+							
+    image_space.append("rect")
+               .attr("fill","rgb(95%,95%,95%)")
+			   .attr("opacity",1)
+			   .attr("x", 0)
+               .attr("y", 0)
+               .attr("width", space_size)
+               .attr("height", space_size);
+			   
+    // classes I and J
+    image_space.append("line")
+	           .attr("stroke-width", 9)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 7)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
+		   
+    image_space.append("line")
+	           .attr("stroke-width", 9)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 7)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
+			   
+    // noisy data point
+	var p_a = 0.07, p_b = -0.07;
+	image_space.append("circle")
+	           .attr("cx",space_scale(p_a))
+			   .attr("cy",space_scale(-p_b))
+			   .attr("r",4.5)
+			   .attr("fill", "rgb(50%,50%,50%)");
+			   
+	image_space.append("circle")
+	           .attr("cx",space_scale(p_a))
+			   .attr("cy",space_scale(-p_b))
+			   .attr("r",3.5)
+			   .attr("fill", d3.interpolateBlues(0.3));
+			   
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
+			  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+			   
+    // bracket
+    var bracket = background.append("g")
+                            .attr("fill", "none")
+	                        .attr('stroke',"rgb(0%,0%,0%)")
+			                .attr("stroke-opacity", 1)
+			                .attr("stroke-width", 1);
+    
+	// I		   
+    var path = d3.path();
+        path.moveTo(im_x - 10, space_y + space_scale(0) - 50);
+		path.arcTo(space_x + space_scale(-0.6), space_y + space_scale(0) - 50, space_x + space_scale(-0.6), space_y + space_scale(0) - 20, 30);
+
+    bracket.append("path")
+           .attr("d", path.toString());
+		   
+    bracket.append("polygon")
+	       .attr("fill", "rgb(0%,0%,0%)")
+           .attr("points", (space_x + space_scale(-0.6)) + "," + (space_y + space_scale(0) - 15) + " " +
+		                   (space_x + space_scale(-0.6) + 2) + "," + (space_y + space_scale(0) - 5 - 15) + " " + 
+						   (space_x + space_scale(-0.6) - 2) + "," + (space_y + space_scale(0) - 5 - 15));
+	
+	// J
+    var path = d3.path();
+        path.moveTo(im_x - 10, space_y + space_scale(0));
+		path.lineTo(space_x + space_scale(1) + 10, space_y + space_scale(0));
+		
+    bracket.append("path")
+           .attr("d", path.toString());
+		   
+    bracket.append("polygon")
+	       .attr("fill", "rgb(0%,0%,0%)")
+           .attr("points", (space_x + space_scale(1) + 5) + "," + (space_y + space_scale(0)) + " " +
+		                   (space_x + space_scale(1) + 10) + "," + (space_y + space_scale(0) - 2) + " " + 
+						   (space_x + space_scale(1) + 10) + "," + (space_y + space_scale(0) + 2));
+	
+    // p	
+    var path = d3.path();
+        path.moveTo(im_x - 10, space_y + space_scale(0) + 50);
+		path.arcTo(space_x + space_scale(0.07), space_y + space_scale(0) + 50, space_x + space_scale(0.07), space_y + space_scale(0) + 23, 27);
+
+    bracket.append("path")
+           .attr("d", path.toString());
+		   
+    bracket.append("polygon")
+	       .attr("fill", "rgb(0%,0%,0%)")
+           .attr("points", (space_x + space_scale(0.07)) + "," + (space_y + space_scale(0.07) + 8) + " " +
+		                   (space_x + space_scale(0.07) + 2) + "," + (space_y + space_scale(0.07) + 5 + 8) + " " + 
+						   (space_x + space_scale(0.07) - 2) + "," + (space_y + space_scale(0.07) + 5 + 8));
+			
+    // black labels
+    var black_labels = background.append("g")
+	                             .attr("fill", "rgb(0%,0%,0%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+                .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(0))
+	            .attr("y", space_y + space_scale(1.18))
+		        .text("a");
+
+    black_labels.append("text")
+	            .attr("text-anchor", "middle")
+	            .attr("font-style", "italic")
+                .attr("x", space_x + space_scale(-1.15))
+                .attr("y", space_y + space_scale(0.03))
+                .text("b");
+				
+	black_labels.append("text")
+	            .attr("text-anchor", "start")
+                .attr("x", im_x)
+                .attr("y", im_y + 20)
+                .text("Training set containing:");
+	
+	// gray labels
+    var gray_labels = background.append("g")
+	                            .attr("fill", "rgb(60%,60%,60%)")
+	                            .attr("font-family","Roboto")
+	                            .attr("font-size", "13px");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(1))
+	           .attr("y", space_y + space_scale(1.18))
+		       .text("1");
+
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(1.025))
+		       .text("-1");
+		  
+    gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+               .attr("x", space_x + space_scale(-1.15))
+	           .attr("y", space_y + space_scale(-0.975))
+		       .text("1");
+			   
+	gray_labels.append("text")
+	            .attr("text-anchor", "start")
+				.attr("font-size", "15px")
+                .attr("x", im_x)
+                .attr("y", space_y + space_scale(0) - 50 + 4)
+                .text("A large number of images in class ")
+				.append("tspan")
+				.attr("font-style","italic")
+				.text("I");
+				
+	gray_labels.append("text")
+	            .attr("text-anchor", "start")
+				.attr("font-size", "15px")
+                .attr("x", im_x)
+                .attr("y", space_y + space_scale(0) + 4)
+                .text("A large number of images in class ")
+				.append("tspan")
+				.attr("font-style","italic")
+				.text("J");
+				
+	gray_labels.append("text")
+	            .attr("text-anchor", "start")
+				.attr("font-size", "15px")
+                .attr("x", im_x)
+                .attr("y", space_y + space_scale(0) + 50 + 4)
+                .text("The data point ")
+				.append("tspan")
+				.attr("font-style","italic")
+				.attr("fill", "rgb(0%,0%,0%)")
+				.text("p ")
+				.append("tspan")
+				.attr("font-style","normal")
+				.attr("fill", "rgb(60%,60%,60%)")
+				.text("wrongly labelled in class ")
+				.append("tspan")
+				.attr("font-style","italic")
+				.text("I");
+  }
+  
+  init_toy_problem();
 }
 
 function noisy_data1(){
-  var width = 180;
-  var height = 120;
-  var x = d3.scale.linear().domain([-1., 1.]).range([0, width]);
-  var y = d3.scale.linear().domain([-0.667, 0.667]).range([0, height]);
+  var width = 130;
+  var height = 130;
+  var space_x = 5;
+  var space_y = 5;
+  var space_size = 120;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  var colorBackgroundI = "rgb(95%,95%,95%)";
+  var colorBackgroundJ = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
+
   var init_theta = 0.95;
-  var colorI = "rgb(30%,30%,30%)";
-  var colorJ = "rgb(95%,95%,95%)";
-  var colorBackgroundI = "rgb(60%,60%,60%)";
-  var colorBackgroundJ = "rgb(80%,80%,80%)";
-  var colorImI = "rgb(10%,10%,10%)";
-  var colorImJ = "rgb(30%,30%,30%)";
-  var red = "rgb(90%,0%,0%)";
   
-  function fig2_right_init(theta){
-    var fig2_right = d3.select("#noisy-data-input1")
-                       .append("svg")
-		  	           .attr("width", width)
-			           .attr("height", height);
-			
-    fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", 0)
-              .attr("y", 0)
-              .attr("width", width)
-              .attr("height", height);
+  var x_a = -0.8, x_b = 0;
+  var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
+  var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
+  
+  function init_toy_problem(theta){
+	  
+    var fig = d3.select("#noisy-data-input1");
+	   
+	// background
+    var background = fig.append("svg")
+    	   	  	        .attr("width", width)
+			            .attr("height", height);
+
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
 			  
-    // background
-    var g_theta1 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+			   
+    // L_theta 1
+    var g_theta1 = image_space.append("g")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 	
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundI)
-            .attr("x", x(-2))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
+            .attr("x", space_scale(-2))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
 			  
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundJ)
-            .attr("x", x(0))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
-			
-	// x-axis
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(-1))
-	          .attr("y1", y(0))
-	          .attr("x2", x(1))
-	          .attr("y2", y(0));
-
+            .attr("x", space_scale(0))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			   
     // classes I and J
-    var line_IJ = fig2_right.append("g")
-		                    .attr("stroke-width", 4)
-	                        .attr("stroke-opacity",1)
-							.attr("stroke-linecap", "round");
-	  
-    line_IJ.append("line")
-           .attr("x1", x(-0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorI);
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
 		   
-    line_IJ.append("line")
-           .attr("x1", x(0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorJ);
-		   
-    // noisy data point
-	var p_a = 0.03, p_b = -0.03;
-	fig2_right.append("circle")
-	          .attr("cx",x(p_a))
-			  .attr("cy",y(-p_b))
-			  .attr("r",2.5)
-			  .attr("fill",colorI);
-			 
-	fig2_right.append("text")
-              .attr("x",x(p_a)+10)
-              .attr("y",y(-p_b)+10)
-  	          .attr("text-anchor", "middle")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill",colorI)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "12px")
-              .text("p");
-		   
-	// L_theta
-    var g_theta2 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
+
+	// L_theta 2
+    var g_theta2 = image_space.append("g")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 							 
     g_theta2.append("line")
-            .attr("x1", x(0)-2)
-		    .attr("y1", y(2))
-		    .attr("x2", x(0)-2)
-		    .attr("y2", y(0.08))
-            .attr("stroke-width", 4)
+            .attr("x1", space_scale(0)-3)
+		    .attr("y1", space_scale(2))
+		    .attr("x2", space_scale(0)-3)
+		    .attr("y2", space_scale(0.08))
+            .attr("stroke-width", 6)
 	        .attr("stroke", colorBackgroundI)
      	    .attr("stroke-opacity",1);
 							 
     g_theta2.append("line")
-            .attr("x1", x(0)+2)
-		    .attr("y1", y(-0.08))
-		    .attr("x2", x(0)+2)
-		    .attr("y2", y(-2))
-            .attr("stroke-width", 4)
+            .attr("x1", space_scale(0)+3)
+		    .attr("y1", space_scale(-0.08))
+		    .attr("x2", space_scale(0)+3)
+		    .attr("y2", space_scale(-2))
+            .attr("stroke-width", 6)
 	        .attr("stroke", colorBackgroundJ)
      	    .attr("stroke-opacity",1);
-	
-	// y-axis
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(0))
-	          .attr("y1", y(-1))
-	          .attr("x2", x(0))
-	          .attr("y2", y(1));
-			  
-	// L_theta
-    var g_theta2bis = fig2_right.append("g")
-                                .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-							 
-    g_theta2bis.append("line")
-               .attr("x1", x(0))
-		       .attr("y1", y(2))
-		       .attr("x2", x(0))
-		       .attr("y2", y(-2))
-               .attr("stroke-width", 1.5)
-	           .attr("stroke", red)
-     	       .attr("stroke-opacity",1);
+			
+    // noisy data point
+	var p_a = 0.07, p_b = -0.07;
+	image_space.append("circle")
+	           .attr("cx",space_scale(p_a))
+			   .attr("cy",space_scale(-p_b))
+			   .attr("r",3)
+			   .attr("fill", "rgb(50%,50%,50%)");
 			   
-	// w_theta
-    var g_theta3 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	
-    g_theta3.append("line")
-            .attr("x1", x(0))
-		    .attr("y1", y(0))
-		    .attr("x2", x(0.275))
-		    .attr("y2", y(0))
-	        .attr("stroke-width", 1)
-	        .attr("stroke", red);
-		 
-    g_theta3.append("polygon")
-            .attr("points", x(0.275)+","+y(0)+" "+x(0.25)+","+y(-0.02)+" "+x(0.3)+","+y(0)+" "+x(0.25)+","+y(0.02))
-  	        .attr("fill", "rgb(100%,0%,0%)")
-  	        .attr("stroke-width", 0.75)
-  	        .attr("stroke", red);
-		 
-    g_theta3.append("text")
-            .attr("x", x(0.36))
-	        .attr("y", y(0.03))
-	        .attr("text-anchor", "start")
-	        .attr("font-family","Georgia, serif")
-	        .attr("fill", red)
- 	        .attr("font-style", "italic")
- 	        .attr("font-weight", "bold")
-	        .attr("font-size", "15px")
-            .text("w")
-	        .append("tspan")
-            .attr("font-size", "10px")
-            .attr("dx", "2px")
-            .attr("dy", "4px")
-            .text("\u03B8");
-  }
+	image_space.append("circle")
+	           .attr("cx",space_scale(p_a))
+			   .attr("cy",space_scale(-p_b))
+			   .attr("r",2.5)
+			   .attr("fill", d3.interpolateBlues(0.3));
 
-  fig2_right_init(init_theta);
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
+			  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+
+    // L_theta
+	image_space.append("line")
+			   .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")")
+               .attr("x1", space_scale(0))
+		       .attr("y1", space_scale(2))
+		       .attr("x2", space_scale(0))
+		       .attr("y2", space_scale(-2))
+               .attr("stroke-width", 2.5)
+	           .attr("stroke", orange)
+     	       .attr("stroke-opacity",1);	   
+				
+    // gray labels	
+    var gray_labels = image_space.append("g")
+	                             .attr("fill", "rgb(60%,60%,60%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+				
+	gray_labels.append("text")
+  	           .attr("text-anchor", "middle")
+               .attr("x",space_scale(p_a)+10)
+               .attr("y",space_scale(-p_b)+14)
+               .text("p");
+  }
+  
+  init_toy_problem(init_theta);
 }
 
 function noisy_data2(){
-  var width = 180;
-  var height = 120;
-  var x = d3.scale.linear().domain([-1., 1.]).range([0, width]);
-  var y = d3.scale.linear().domain([-0.667, 0.667]).range([0, height]);
+  var width = 130;
+  var height = 130;
+  var space_x = 5;
+  var space_y = 5;
+  var space_size = 120;
+  var space_scale = d3.scaleLinear().domain([-1.,1.]).range([0, space_size]);
+  var colorBackgroundI = "rgb(95%,95%,95%)";
+  var colorBackgroundJ = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
+
   var init_theta = 0.;
-  var colorI = "rgb(30%,30%,30%)";
-  var colorJ = "rgb(95%,95%,95%)";
-  var colorBackgroundI = "rgb(60%,60%,60%)";
-  var colorBackgroundJ = "rgb(80%,80%,80%)";
-  var colorImI = "rgb(10%,10%,10%)";
-  var colorImJ = "rgb(30%,30%,30%)";
-  var red = "rgb(90%,0%,0%)";
   
-  function fig2_right_init(theta){
-    var fig2_right = d3.select("#noisy-data-input2")
-                       .append("svg")
-		  	           .attr("width", width)
-			           .attr("height", height);
-			
-    fig2_right.append("rect")
-	          .attr("fill","rgb(100%,100%,100%)")
-              .attr("x", 0)
-              .attr("y", 0)
-              .attr("width", width)
-              .attr("height", height);
+  var x_a = -0.8, x_b = 0;
+  var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
+  var xm_b = - 2 * x_a * Math.cos(Math.PI/2 * init_theta) * Math.sin(Math.PI/2 * init_theta);
+  
+  function init_toy_problem(theta){
+	  
+    var fig = d3.select("#noisy-data-input2");
+	   
+	// background
+    var background = fig.append("svg")
+    	   	  	        .attr("width", width)
+			            .attr("height", height);
+
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, 1.05, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, -1, -1, -1];
+  
+    for (var i = 0; i < 8; i++) {
+	  background.append("line")
+	            .attr('stroke',"rgb(0%,0%,0%)")
+			    .attr("stroke-opacity",0.075)
+			    .attr("stroke-width", 1)
+                .attr("x1", space_x + space_scale(x1_array[i]))
+	            .attr("y1", space_y + space_scale(y1_array[i]))
+	            .attr("x2", space_x + space_scale(x2_array[i]))
+	            .attr("y2", space_y + space_scale(y2_array[i]));
+    }
+  
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(0))
+	          .attr("y1", space_y + space_scale(-1))
+	          .attr("x2", space_x + space_scale(0))
+	          .attr("y2", space_y + space_scale(1.05));
 			  
-    // background
-    var g_theta1 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    background.append("line")
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1)
+              .attr("x1", space_x + space_scale(-1.05))
+	          .attr("y1", space_y + space_scale(0))
+	          .attr("x2", space_x + space_scale(1))
+	          .attr("y2", space_y + space_scale(0));
+			  
+    // image space
+    var image_space = background.append("svg")
+                                .attr("x",space_x)
+			                    .attr("y",space_y)
+    		                    .attr("width", space_size)
+			                    .attr("height", space_size);
+			   
+    // L_theta 1
+    var g_theta1 = image_space.append("g")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 	
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundI)
-            .attr("x", x(-2))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
+            .attr("x", space_scale(-2))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
 			  
 	g_theta1.append("rect")
 	        .attr("fill",colorBackgroundJ)
-            .attr("x", x(0))
-            .attr("y", y(-2))
-            .attr("width", x(0)-x(-2))
-            .attr("height", y(2)-y(-2));
-			
-	// x-axis
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(-1))
-	          .attr("y1", y(0))
-	          .attr("x2", x(1))
-	          .attr("y2", y(0));
-
+            .attr("x", space_scale(0))
+            .attr("y", space_scale(-2))
+            .attr("width", space_size)
+            .attr("height", 2*space_size);
+			   
     // classes I and J
-    var line_IJ = fig2_right.append("g")
-		                    .attr("stroke-width", 4)
-	                        .attr("stroke-opacity",1)
-							.attr("stroke-linecap", "round");
-	  
-    line_IJ.append("line")
-           .attr("x1", x(-0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(-1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorI);
-		   
-    line_IJ.append("line")
-           .attr("x1", x(0.2))
-	       .attr("y1", y(0))
-	       .attr("x2", x(1))
-	       .attr("y2", y(0))
-	       .attr("stroke", colorJ);
-		   
-    // noisy data point
-	var p_a = 0.03, p_b = -0.03;
-	fig2_right.append("circle")
-	          .attr("cx",x(p_a))
-			  .attr("cy",y(-p_b))
-			  .attr("r",2.5)
-			  .attr("fill",colorI);
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(50%,50%,50%)");
 			  
-	fig2_right.append("text")
-              .attr("x",x(p_a)+10)
-              .attr("y",y(-p_b)+10)
-  	          .attr("text-anchor", "middle")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill",colorI)
-	          .attr("font-style", "italic")
-              .attr("font-weight", "bold")
-	          .attr("font-size", "12px")
-              .text("p");
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+			   .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(-0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(-1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.3));
 		   
-	// L_theta
-    var g_theta2 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
+    image_space.append("line")
+	           .attr("stroke-width", 6)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", "rgb(30%,30%,30%)");
+			  
+    image_space.append("line")
+	           .attr("stroke-width", 5)
+		       .attr("stroke-linecap", "round")
+               .attr("x1", space_scale(0.2))
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(1))
+	           .attr("y2", space_scale(0))
+	           .attr("stroke", d3.interpolateBlues(0.7));
+
+	// L_theta 2
+    var g_theta2 = image_space.append("g")
+                              .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")");
 							 
     g_theta2.append("line")
-            .attr("x1", x(0)-2)
-		    .attr("y1", y(2))
-		    .attr("x2", x(0)-2)
-		    .attr("y2", y(0.08))
-            .attr("stroke-width", 4)
+            .attr("x1", space_scale(0)-3)
+		    .attr("y1", space_scale(2))
+		    .attr("x2", space_scale(0)-3)
+		    .attr("y2", space_scale(0.08))
+            .attr("stroke-width", 6)
 	        .attr("stroke", colorBackgroundI)
      	    .attr("stroke-opacity",1);
 							 
     g_theta2.append("line")
-            .attr("x1", x(0)+2)
-		    .attr("y1", y(-0.08))
-		    .attr("x2", x(0)+2)
-		    .attr("y2", y(-2))
-            .attr("stroke-width", 4)
+            .attr("x1", space_scale(0)+3)
+		    .attr("y1", space_scale(-0.08))
+		    .attr("x2", space_scale(0)+3)
+		    .attr("y2", space_scale(-2))
+            .attr("stroke-width", 6)
 	        .attr("stroke", colorBackgroundJ)
      	    .attr("stroke-opacity",1);
-	
-	// y-axis
-	fig2_right.append("line")
-			  .attr("stroke-opacity",0.3)
-			  .attr('stroke',"rgb(0%,0%,0%)")
-              .attr("x1", x(0))
-	          .attr("y1", y(-1))
-	          .attr("x2", x(0))
-	          .attr("y2", y(1));
-			  
-	// L_theta
-    var g_theta2bis = fig2_right.append("g")
-                                .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-							 
-    g_theta2bis.append("line")
-               .attr("x1", x(0))
-		       .attr("y1", y(2))
-		       .attr("x2", x(0))
-		       .attr("y2", y(-2))
-               .attr("stroke-width", 1.5)
-	           .attr("stroke", red)
-     	       .attr("stroke-opacity",1);
+			
+    // noisy data point
+	var p_a = 0.07, p_b = -0.07;
+	image_space.append("circle")
+	           .attr("cx",space_scale(p_a))
+			   .attr("cy",space_scale(-p_b))
+			   .attr("r",3)
+			   .attr("fill", "rgb(50%,50%,50%)");
 			   
-	// w_theta
-    var g_theta3 = fig2_right.append("g")
-                             .attr("transform", "rotate("+ (90 * -theta) +","+x(0)+","+y(0)+")");
-	
-    g_theta3.append("line")
-            .attr("x1", x(0))
-		    .attr("y1", y(0))
-		    .attr("x2", x(0.275))
-		    .attr("y2", y(0))
-	        .attr("stroke-width", 1)
-	        .attr("stroke", red);
-		 
-    g_theta3.append("polygon")
-            .attr("points", x(0.275)+","+y(0)+" "+x(0.25)+","+y(-0.02)+" "+x(0.3)+","+y(0)+" "+x(0.25)+","+y(0.02))
-  	        .attr("fill", "rgb(100%,0%,0%)")
-  	        .attr("stroke-width", 0.75)
-  	        .attr("stroke", red);
-		 
-    g_theta3.append("text")
-            .attr("x", x(0.36))
-	        .attr("y", y(0.03))
-	        .attr("text-anchor", "start")
-	        .attr("font-family","Georgia, serif")
-	        .attr("fill", red)
- 	        .attr("font-style", "italic")
- 	        .attr("font-weight", "bold")
-	        .attr("font-size", "15px")
-            .text("w")
-	        .append("tspan")
-            .attr("font-size", "10px")
-            .attr("dx", "2px")
-            .attr("dy", "4px")
-            .text("\u03B8");
-  }
+	image_space.append("circle")
+	           .attr("cx",space_scale(p_a))
+			   .attr("cy",space_scale(-p_b))
+			   .attr("r",2.5)
+			   .attr("fill", d3.interpolateBlues(0.3));
 
-  fig2_right_init(init_theta);
+    // grid
+    var x1_array = [-1.05, -1.05, -1.05, -1.05, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y1_array = [1, 0.5, -0.5, -1, 1.05, 1.05, -0.035, 1.05, -0.035, 1.05];
+    var x2_array = [1, 1, 1, 1, -1, -0.5, -0.5, 0.5, 0.5, 1];
+    var y2_array = [1, 0.5, -0.5, -1, -1, 0.035, -1, 0.035, -1, -1];
+  
+    for (var i = 0; i < 10; i++) {
+	  image_space.append("line")
+	             .attr('stroke',"rgb(0%,0%,0%)")
+			     .attr("stroke-opacity",0.075)
+			     .attr("stroke-width", 1)
+                 .attr("x1", space_scale(x1_array[i]))
+	             .attr("y1", space_scale(y1_array[i]))
+	             .attr("x2", space_scale(x2_array[i]))
+	             .attr("y2", space_scale(y2_array[i]));
+    }
+  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(0))
+	           .attr("y1", space_scale(-1))
+	           .attr("x2", space_scale(0))
+	           .attr("y2", space_scale(1.05));
+			  
+    image_space.append("line")
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1)
+               .attr("x1", space_scale(-0.2) + 4)
+	           .attr("y1", space_scale(0))
+	           .attr("x2", space_scale(0.2) - 4)
+	           .attr("y2", space_scale(0));
+
+    // L_theta
+	image_space.append("line")
+			   .attr("transform", "rotate("+ (90 * -theta) +","+ space_scale(0) +","+ space_scale(0) +")")
+               .attr("x1", space_scale(0))
+		       .attr("y1", space_scale(2))
+		       .attr("x2", space_scale(0))
+		       .attr("y2", space_scale(-2))
+               .attr("stroke-width", 2.5)
+	           .attr("stroke", orange)
+     	       .attr("stroke-opacity",1);	   
+				
+    // gray labels	
+    var gray_labels = image_space.append("g")
+	                             .attr("fill", "rgb(60%,60%,60%)")
+	                             .attr("font-family","Roboto")
+	                             .attr("font-size", "15px");
+				
+	gray_labels.append("text")
+  	           .attr("text-anchor", "middle")
+               .attr("x",space_scale(p_a)+10)
+               .attr("y",space_scale(-p_b)+14)
+               .text("p");
+  }
+  
+  init_toy_problem(init_theta);
 }
 
 function loss_functions() {
   var width = 180;
   var height = 120;
-  var x = d3.scale.linear().domain([-3, 3]).range([0, width]);
-  var y = d3.scale.linear().domain([3, -1]).range([0, height]);
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
+  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
   
   var indicator_01 = d3.select("#indicator-01")
                        .append("svg")
@@ -2465,7 +4117,7 @@ function loss_functions() {
 	        .attr("font-size", "10px")
             .text("1");
 			
-  var line = d3.svg.line()
+  var line = d3.line()
                    .x(function(d,i) {return x(-3.5 + i * 0.025);})
                    .y(function(d) {return y(d);});
   var softplusA = [];
@@ -2522,8 +4174,8 @@ function loss_functions() {
 function large_norm_w() {
   var width = 180;
   var height = 120;
-  var x = d3.scale.linear().domain([-3, 3]).range([0, width]);
-  var y = d3.scale.linear().domain([3, -1]).range([0, height]);
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
+  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
   var norm_w = 1.5;
   
   var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
@@ -2597,8 +4249,8 @@ function large_norm_w() {
 function small_norm_w() {
   var width = 180;
   var height = 120;
-  var x = d3.scale.linear().domain([-3, 3]).range([0, width]);
-  var y = d3.scale.linear().domain([3, -1]).range([0, height]);
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
+  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
   var norm_w = -1;
   
   var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
@@ -2672,13 +4324,13 @@ function small_norm_w() {
 function fig3() {
   var width = 240;
   var height = 160;
-  var x = d3.scale.linear().domain([-3, 3]).range([0, width]);
-  var y = d3.scale.linear().domain([3, -1]).range([0, height]);
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
+  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
   var init_w = 0.5;
   
   var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
   var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
-  var line = d3.svg.line()
+  var line = d3.line()
                    .x(function(d,i) {return x(-3.5 + i * 0.025);})
                    .y(function(d) {return y(d);});
   var softplusA = [];
@@ -3051,11 +4703,35 @@ function fig3() {
     .on("input", function() {fig3_update(this.value);});
 }
 
+function img_to_canvas2(img) {
+  var s = d3.scaleLinear().domain([-1, 1]).range([10, 245]);
+  var h = Math.sqrt(img.length);
+  var canvas = document.createElement("canvas");
+  canvas.setAttribute("width", h);
+  canvas.setAttribute("height", h);
+  
+  var ctx = canvas.getContext("2d");
+  var imgData = ctx.createImageData(h, h);
+  var data = imgData.data;
+
+  for (var i = 0; i < h; i++) {
+	for (var j = 0; j < h; j++) {
+      var value = s(img[j*h+i]);
+      data[4*(i*h+j)] = value;
+      data[4*(i*h+j)+1] = value;
+	  data[4*(i*h+j)+2] = value;
+	  data[4*(i*h+j)+3] = 255;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+  return canvas;
+}
+
 function fig4() {
-  var width = 430;
+  var width = 420;
   var height = 280;
-  var x = d3.scale.linear().domain([-21,21]).range([0, width]);
-  var y = d3.scale.linear().domain([14,-14]).range([0, height]);
+  var x = d3.scaleLinear().domain([-21,21]).range([0, width]);
+  var y = d3.scaleLinear().domain([14,-14]).range([0, height]);
   var left_digit = 2;
   var right_digit = 3;
   var init_reg_index = 0;
@@ -3082,25 +4758,25 @@ function fig4() {
   }
   
   function draw_fig4(digit0, digit1) {	
-    queue().defer(d3.text,"assets/data/data0_"+digit0+digit1+".csv","text/csv")
-           .defer(d3.text,"assets/data/data1_"+digit0+digit1+".csv","text/csv")
-		   .defer(d3.text,"assets/data/extras_"+digit0+digit1+".csv","text/csv")
-           .defer(d3.text,"assets/data/w_"+digit0+digit1+".csv","text/csv")
-		   .defer(d3.text,"assets/data/x_"+digit0+digit1+".csv","text/csv")
-		   .defer(d3.text,"assets/data/xm_"+digit0+digit1+".csv","text/csv")
-		   .defer(d3.text,"assets/data/y_"+digit0+digit1+".csv","text/csv")
-		   .defer(d3.text,"assets/data/ym_"+digit0+digit1+".csv","text/csv")
-           .await(draw_all);
+    d3.queue().defer(d3.text,"assets/data/data0_"+digit0+digit1+".csv")
+              .defer(d3.text,"assets/data/data1_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/extras_"+digit0+digit1+".csv")
+              .defer(d3.text,"assets/data/w_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/x_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/xm_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/y_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/ym_"+digit0+digit1+".csv")
+              .await(draw_all);
 
     function draw_all(error, text_data0, text_data1, text_extras, text_w, text_x, text_xm, text_y, text_ym) { //
-      var data0 = d3.csv.parseRows(text_data0).map(function(row) {return row.map(function(value) {return +value;});});
-	  var data1 = d3.csv.parseRows(text_data1).map(function(row) {return row.map(function(value) {return +value;});});
-	  var extras = d3.csv.parseRows(text_extras).map(function(row) {return row.map(function(value) {return +value;});});	// m b w1 w2 x1 x2 y1 y2 xm1 xm2 ym1 ym2
-	  var w = d3.csv.parseRows(text_w).map(function(row) {return row.map(function(value) {return +value;});});
-	  var imx = d3.csv.parseRows(text_x).map(function(row) {return row.map(function(value) {return +value;});});
-	  var imxm = d3.csv.parseRows(text_xm).map(function(row) {return row.map(function(value) {return +value;});});
-	  var imy = d3.csv.parseRows(text_y).map(function(row) {return row.map(function(value) {return +value;});});
-	  var imym = d3.csv.parseRows(text_ym).map(function(row) {return row.map(function(value) {return +value;});});
+      var data0 = d3.csvParseRows(text_data0).map(function(row) {return row.map(function(value) {return +value;});});
+	  var data1 = d3.csvParseRows(text_data1).map(function(row) {return row.map(function(value) {return +value;});});
+	  var extras = d3.csvParseRows(text_extras).map(function(row) {return row.map(function(value) {return +value;});});	// m b w1 w2 x1 x2 y1 y2 xm1 xm2 ym1 ym2
+	  var w = d3.csvParseRows(text_w).map(function(row) {return row.map(function(value) {return +value;});});
+	  var imx = d3.csvParseRows(text_x).map(function(row) {return row.map(function(value) {return +value;});});
+	  var imxm = d3.csvParseRows(text_xm).map(function(row) {return row.map(function(value) {return +value;});});
+	  var imy = d3.csvParseRows(text_y).map(function(row) {return row.map(function(value) {return +value;});});
+	  var imym = d3.csvParseRows(text_ym).map(function(row) {return row.map(function(value) {return +value;});});
 
 	  var max_dAdv = Math.round( Math.max.apply(null, extras[14]) * 10) / 10;
       var min_errTrain = Math.round( Math.min.apply(null, extras[15]) * 10) / 10;
