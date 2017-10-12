@@ -125,7 +125,7 @@ function abstract_fig(){
 	  
 	  function draw_layer1() {
         layer1.append("rect")
-              .attr("fill","rgb(98%,98%,98%)")
+              .attr("fill","rgb(99%,99%,99%)")
 			  .attr("x", 0)
               .attr("y", 0)
               .attr("width", 3/2*height)
