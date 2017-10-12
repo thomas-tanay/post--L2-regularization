@@ -68,11 +68,13 @@
   }
   #abstract-fig {
 	width: 816px;
-	height: 300px;
-	margin-right: 20px;
+	height: 233px;
+	border-style: solid;
+	border-width: 1.5px;
+	border-color: rgb(60%,60%,60%);
   }
   #abstract-rest {
-    margin-top: 20px;
+    margin-top: 15px;
     display: -webkit-flex;
     display: flex;
 	justify-content: space-between;	
@@ -81,6 +83,9 @@
     display: -webkit-flex;
     display: flex;
 	flex-direction: column;
+	width: 190px;
+	margin-left: auto;
+	margin-right: auto;
   }
   #abstract-input {
     margin-left: 0px;
@@ -97,6 +102,8 @@
 	font: 15px/1.55em "Roboto";
 	line-height: 1.5em;
 	color: rgb(60%,60%,60%);
+	margin-left: auto;
+	margin-right: auto;
   }
   </style>
   
@@ -122,7 +129,7 @@
   </div>
   
   <script>
-    abstract_fig();
+    abstract_fig2();
   </script>
   
   <p> Deep neural networks have been shown to be vulnerable to the adversarial example phenomenon: all models tested so far can have their classifications dramatically 
@@ -453,8 +460,8 @@
   
   <h2> In Linear Classification </h2>
   
-  <p> At this point, one might legitimately wonder&mdash;what does a 1-dimensional data manifold lying in a 2-dimensional image space have to do with the 
-  high-dimensional images of the real world? </p>
+  <p> At this point, one might legitimately wonder&mdash;what does a 1-dimensional data manifold lying in a 2-dimensional image space have to do with real world
+  high-dimensional images? </p>
   
   <p> In the following, we show that the two main ideas introduced in the previous toy problem stay valid in the general case:
   adversarial examples exist when the classification boundary lies close to the data manifold and L2 regularization controls the tilting angle of the boundary.
