@@ -69,9 +69,9 @@
   #abstract-fig {
 	width: 816px;
 	height: 233px;
-	border-style: solid;
-	border-width: 1.5px;
-	border-color: rgb(60%,60%,60%);
+	//border-style: solid;
+	//border-width: 1.5px;
+	//border-color: rgb(60%,60%,60%);
   }
   #abstract-rest {
     margin-top: 15px;
@@ -83,7 +83,8 @@
     display: -webkit-flex;
     display: flex;
 	flex-direction: column;
-	width: 190px;
+	width: 200px;
+	padding-left: 20px;
 	margin-left: auto;
 	margin-right: auto;
   }
@@ -98,7 +99,7 @@
 	color: rgb(60%,60%,60%);
   }
   #abstract-text {
-    width: 540px;
+    width: 570px;
 	font: 15px/1.55em "Roboto";
 	line-height: 1.5em;
 	color: rgb(60%,60%,60%);
@@ -114,12 +115,12 @@
 	  <div id="abstract-controler">
 	    <div class="abstract-text-content"> Regularization: </div>
         <input id="abstract-input" type="range" min="0" max="80" step="1"> </input>
-		<div class="abstract-text-content"> <span id="abstract_err_train"> ... </span> </div>
-		<div class="abstract-text-content"> <span id="abstract_adv_distance"> ... </span> </div>
+		<div class="abstract-text-content"> $err_{\text{train}} =$ <span id="abstract_err_train"> ... </span> </div>
+		<div class="abstract-text-content"> $d_{\text{adv}} =$ <span id="abstract_adv_distance"> ... </span> </div>
 	  </div>
 	  <div id="abstract-text">
 		In linear models and small neural nets, L2 regularization can be understood as a balancing mechanism between two objectives:
-		minimizing the training error and maximizing the distance between the data and the boundary. <br>
+		minimizing the training error $err_{\text{train}}$ and maximizing the adversarial distance $d_{\text{adv}}$. <br>
 		<br>
 		In practice, using an appropriate level of regularization helps avoid overfitting and constitutes a good defence against adversarial attacks.	
 	  </div> 
@@ -460,8 +461,8 @@
   
   <h2> In Linear Classification </h2>
   
-  <p> At this point, one might legitimately wonder&mdash;what does a 1-dimensional data manifold lying in a 2-dimensional image space have to do with real world
-  high-dimensional images? </p>
+  <p> At this point, one might legitimately wonder&mdash;what does a 1-dimensional data manifold lying in a 2-dimensional image space have to do with
+  high-dimensional natural images? </p>
   
   <p> In the following, we show that the two main ideas introduced in the previous toy problem stay valid in the general case:
   adversarial examples exist when the classification boundary lies close to the data manifold and L2 regularization controls the tilting angle of the boundary.
@@ -949,14 +950,17 @@
 	font-size: 13px;
   }
   .top-row {
-    color: rgb(78.07%,51.10%,4.21%);
+    color: rgb(181, 212, 233);
   }
   .bottom-row {
-    color: rgb(36.84%,50.68%,70.98%);
+    color: rgb(47, 126, 188);
   }
   #fig4-right-content {
-	width: 430px;
+	width: 420px;
 	height: 280px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(80%,80%,80%);
   }
   #fig4-caption {
     margin-top: 10px;
@@ -1066,8 +1070,7 @@
 	the test error $err_{\text{test}}$ and the adversarial distance $d_{\text{adv}}$ are indicated in the top left corner. Below are two representative images $\boldsymbol{x}$,
 	$\boldsymbol{y}$ and their mirror images $\boldsymbol{x}_m$, $\boldsymbol{y}_m$. On the right are their projections in the tilting plane of $\boldsymbol{\hat{w}}$
 	along with the projections of the training data. The horizontal direction is $\boldsymbol{\hat{z}}$ (joining the two centroids) and the vertical direction is 
-	$\boldsymbol{\hat{n}}$ with $\boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$. 
-	The grey area is the SVM margin of width $\frac{2}{\lVert\boldsymbol{w}\rVert}$.</figcaption>
+	$\boldsymbol{\hat{n}}$ with $\boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$. </figcaption>
   </figure>
   
   <style>
@@ -1095,7 +1098,7 @@
   </ul>
   
   <script>
-   fig4();
+   svm_mnist();
   </script>
   
   <hr>
@@ -1510,5 +1513,6 @@
 }
 </script>
 
+<dt-article class="centered">
 </body>
 </html>

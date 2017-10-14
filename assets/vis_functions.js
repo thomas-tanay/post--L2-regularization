@@ -1,45 +1,29 @@
 function abstract_fig(){
   var width = 816;
   var height = 233;
-  var x = d3.scaleLinear().domain([-19.5,19.5]).range([0, height*3/2]);
-  var y = d3.scaleLinear().domain([13,-13]).range([0, height]);
+  var x = d3.scaleLinear().domain([-24,24]).range([0, height*3/2]);
+  var y = d3.scaleLinear().domain([16,-16]).range([0, height]);
   var left_digit = 2;
   var right_digit = 3;
   var left_color = d3.interpolateBlues(0.3); //rgb(181, 212, 233)
   var right_color = d3.interpolateBlues(0.7); //rgb(47, 126, 188)
   var orange = "rgb(255,102,0)";
-  var light_left_color = "rgb(218, 233, 244)"; //"rgb(85%,85%,85%)";// "rgb(229, 240, 247)";
-  var light_right_color = "rgb(150, 190, 221)"; //"rgb(85%,85%,85%)";// "rgb(182, 210, 232)";
-  var light_orange = "rgb(255,224,204)";//"rgb(255,244,237)";
+  var side_boxes_color = "rgb(95%, 95%, 95%)";
   var reg_index = 40;
   var animationRunning = false;
   var requestId;
   
-  var mean2 = new Image();
-  var mean3 = new Image();
-  mean2.src = "assets/mean2.png";
-  mean3.src = "assets/mean3.png";
-  
   function draw_fig(digit0, digit1) {
-    d3.queue().defer(d3.text,"assets/data/fig0_data0_"+digit0+digit1+".csv")
-              .defer(d3.text,"assets/data/fig0_data1_"+digit0+digit1+".csv")
-		      .defer(d3.text,"assets/data/fig0_extras_"+digit0+digit1+".csv")
-		      .defer(d3.text,"assets/data/fig0_w_"+digit0+digit1+".csv")
-		      .defer(d3.text,"assets/data/fig0_bins0_"+digit0+digit1+".csv")
-		      .defer(d3.text,"assets/data/fig0_bins1_"+digit0+digit1+".csv")
+    d3.queue().defer(d3.text,"assets/data/data0_"+digit0+digit1+".csv")
+              .defer(d3.text,"assets/data/data1_"+digit0+digit1+".csv")
+		      .defer(d3.text,"assets/data/extras_"+digit0+digit1+".csv")
               .await(draw_all);
 
-    function draw_all(error, text_data0, text_data1, text_extras, text_w, text_bins0, text_bins1) {
+    function draw_all(error, text_data0, text_data1, text_extras) {
 	  
       var data0 = d3.csvParseRows(text_data0).map(function(row) {return row.map(function(value) {return +value;});});
 	  var data1 = d3.csvParseRows(text_data1).map(function(row) {return row.map(function(value) {return +value;});});
 	  var extras = d3.csvParseRows(text_extras).map(function(row) {return row.map(function(value) {return +value;});});
-	  var w = d3.csvParseRows(text_w).map(function(row) {return row.map(function(value) {return +value;});});
-	  var bins0 = d3.csvParseRows(text_bins0).map(function(row) {return row.map(function(value) {return +value;});});
-	  var bins1 = d3.csvParseRows(text_bins1).map(function(row) {return row.map(function(value) {return +value;});});
-	  
-	  var max_dAdv = Math.round( Math.max.apply(null, extras[14]) * 10) / 10;
-      var min_errTrain = Math.round( Math.min.apply(null, extras[15]) * 10) / 10;
 	  
       var fig = d3.select("#abstract-fig");
 	  fig.style("position","relative");
@@ -65,16 +49,8 @@ function abstract_fig(){
                       .attr("height", height)
 					  .style("top", "0px")
 					  .style("left", (width-height*3/2)/2 + "px");
-					  
-      var layer4 = fig.append("canvas")
-					  .style("position","absolute")
-                      .attr("width", width)
-                      .attr("height", height)
-					  .style("top", "0px")
-					  .style("left", "0px");
-	  var ctx_layer4 = layer4.node().getContext("2d");
 	  
-      var layer5 = fig.append("svg")
+      var layer4 = fig.append("svg")
 	                  .style("position","absolute")
                       .attr("width", width)
                       .attr("height", height)
@@ -97,7 +73,7 @@ function abstract_fig(){
 	  var mean2_im_x = (width - height*3/2)/4, mean2_im_y = height/2;  
 	  var mean3_im_x = height*3/2 + 3*(width - height*3/2)/4, mean3_im_y = height/2;
 	  
-	  var theta = -Math.acos(extras[2][80-reg_index]);
+	  var theta = extras[1][80-reg_index];
 	  
 	  function init_canvas() {	
         container.selectAll("circle0")
@@ -106,7 +82,7 @@ function abstract_fig(){
 	             .append("circle0")
                  .attr("x", function (d) { return x(d[0]);})
 		         .attr("y", function (d) { return y(d[80-reg_index+1]);})
-		         .attr("r", 1)
+		         .attr("r", 0.75)
 	             .attr("lineWidth", 0.6)
                  .attr("strokeStyle", left_color)
 			     .attr("fillStyle", left_color);
@@ -117,7 +93,7 @@ function abstract_fig(){
 		         .append("circle1")
                  .attr("x", function (d) { return x(d[0]);})
 		         .attr("y", function (d) { return y(d[80-reg_index+1]);})
-		         .attr("r", 1)
+		         .attr("r", 0.75)
 			     .attr("lineWidth", 0.6)
                  .attr("strokeStyle", right_color)
 			     .attr("fillStyle", right_color);
@@ -125,48 +101,13 @@ function abstract_fig(){
 	  
 	  function draw_layer1() {
         layer1.append("rect")
-              .attr("fill","rgb(99%,99%,99%)")
+              .attr("fill","rgb(98%,98%,98%)")
+			  .attr("stroke","rgb(60%,60%,60%)")
+			  .attr("stroke-width",1)
 			  .attr("x", 0)
               .attr("y", 0)
               .attr("width", 3/2*height)
               .attr("height", height);
-		
-		/*	  
-        // grid
-        var x1_array = [-19.5, -19.5, -13, -6.5, 6.5, 13];
-        var y1_array = [6.5, -6.5, 13, 13, 13, 13];
-        var x2_array = [19.5, 19.5, -13, -6.5, 6.5, 13];
-        var y2_array = [6.5, -6.5, -13, -13, -13, -13];
-  
-        for (var i = 0; i < 6; i++) {
-	      layer1.append("line")
-	            .attr('stroke',"rgb(0%,0%,0%)")
-			    .attr("stroke-opacity",0.075)
-			    .attr("stroke-width", 1)
-                .attr("x1", x(x1_array[i]))
-	            .attr("y1", y(y1_array[i]))
-	            .attr("x2", x(x2_array[i]))
-	            .attr("y2", y(y2_array[i]));
-        }
-		
-        layer1.append("line")
-	          .attr('stroke',"rgb(0%,0%,0%)")
-			  .attr("stroke-opacity",0.2)
-			  .attr("stroke-width", 1)
-              .attr("x1", x(-19.5))
-	          .attr("y1", y(0))
-	          .attr("x2", x(19.5))
-	          .attr("y2", y(0));
-			  
-        layer1.append("line")
-	          .attr('stroke',"rgb(0%,0%,0%)")
-			  .attr("stroke-opacity",0.2)
-			  .attr("stroke-width", 1)
-              .attr("x1", x(0))
-	          .attr("y1", y(13))
-	          .attr("x2", x(0))
-	          .attr("y2", y(-13));
-	  */
 	  }
 
       function draw_layer2() {
@@ -200,77 +141,148 @@ function abstract_fig(){
                          ctx_layer2.closePath();
                        });
 	  }
-
+	  
       function draw_layer3() {
 	    layer3.append("rect")
-	          .attr("id","abstract-margin")
-              .attr("transform", "rotate("+ (90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+	          .attr("id","abstract-d-adv-margin")
+              .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
 	          .attr("fill", "rgba(0,0,0,0.07)")
-              .attr("x", x(-mean_x*extras[2][80-reg_index]))
+              .attr("x", x(-mean_x*Math.cos(theta)))
               .attr("y", -200)
-              .attr("width", 2*(x(mean_x*extras[2][80-reg_index])-x(0)))
+              .attr("width", 2*(x(mean_x*Math.cos(theta))-x(0)))
               .attr("height", width+200);
-		  
+		
+		var line_y, text_x, text_y;
+        if (reg_index > 30) {
+          line_y = y(-14/Math.cos(theta) + mean_x*Math.sin(theta));
+		  text_x = x(14 * Math.tan(theta)) - 70;
+		  text_y = y(-14.5);
+		}
+	    else {
+		  line_y = y(-20.5/Math.sin(theta) - mean_x*Math.cos(theta)*Math.cos(theta)/Math.sin(theta));
+	      text_x = x(16.5);
+		  text_y = y(-25 / Math.tan(theta + Math.PI/18)) +40;
+		}
+	    layer3.append("line")
+	          .attr("id","abstract-d-adv-line")
+              .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+	          .attr("stroke","rgb(40%,40%,40%)")
+			  .attr("stroke-width",0.5)
+			  .style("stroke-dasharray", ("2, 1"))
+              .attr("x1", x(-mean_x*Math.cos(theta)))
+              .attr("y1", line_y)
+              .attr("x2", x(mean_x*Math.cos(theta)))
+              .attr("y2", line_y);
+		
+        layer3.append("path")
+	          .attr("id","abstract-d-adv-arrow1")
+			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+			  .attr("d","M "+ (x(-mean_x*Math.cos(theta))+5) +" "+ (line_y+3) +" L "+ x(-mean_x*Math.cos(theta)) +" "+ line_y +" L "+ (x(-mean_x*Math.cos(theta))+5) +" "+ (line_y-3))
+              .style("stroke-width", 0.5)
+              .style("stroke", "rgb(40%,40%,40%)")
+              .style("fill", "none");
+			  
+        layer3.append("path")
+	          .attr("id","abstract-d-adv-arrow2")
+			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+			  .attr("d","M "+ (x(mean_x*Math.cos(theta))-5) +" "+ (line_y+3) +" L "+ x(mean_x*Math.cos(theta)) +" "+ line_y +" L "+ (x(mean_x*Math.cos(theta))-5) +" "+ (line_y-3))
+              .style("stroke-width", 0.5)
+              .style("stroke", "rgb(40%,40%,40%)")
+              .style("fill", "none");
+
+        layer3.append("text")
+		      .attr("id","abstract-d-adv-text")
+	          .attr("fill", "rgb(60%,60%,60%)")
+	          .attr("font-family","Roboto")
+	          .attr("font-size", "13px")
+	          .attr("text-anchor", "middle")
+			  .attr("font-style", "italic")
+              .attr("x", text_x)
+	          .attr("y", text_y)
+		      .text("2 d")
+	          .append("tspan")
+              .attr("font-size", "10px")
+              .attr("dx", "1px")
+              .attr("dy", "4px")
+	          .text("adv");
+			   
 	    layer3.append("line")
 	          .attr("id","abstract-boundary")
-              .attr("transform", "rotate("+ (90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+              .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
 	          .attr("stroke",orange)
 			  .attr("stroke-width",2.5)
-              .attr("x1", x(-extras[1][80-reg_index]))
+              .attr("x1", x(-extras[0][80-reg_index]))
               .attr("y1", -200)
-              .attr("x2", x(-extras[1][80-reg_index]))
+              .attr("x2", x(-extras[0][80-reg_index]))
               .attr("y2", width+200);
 	  }
-	  
-	  function draw_layer4() {
-		//background left right
-        ctx_layer4.beginPath();
-		ctx_layer4.fillStyle = light_left_color;
-        ctx_layer4.rect(0, 0, (width - height*3/2)/2, height);
-		ctx_layer4.fill();
-	    ctx_layer4.closePath();
-		
-        ctx_layer4.beginPath();
-		ctx_layer4.fillStyle = light_right_color;
-        ctx_layer4.rect((width - height*3/2)/2 + height*3/2, 0, (width - height*3/2)/2, height);
-		ctx_layer4.fill();
-	    ctx_layer4.closePath();
-		
-		//mean image
-	    ctx_layer4.beginPath();
-		ctx_layer4.fillStyle = "rgb(100%,100%,100%)";
-	    ctx_layer4.lineWidth = 1;
-        ctx_layer4.arc(mean2_im_x, mean2_im_y, 0.6*im_size, 0, 2 * Math.PI);
-        ctx_layer4.fill();
-        ctx_layer4.closePath();
-		
-	    ctx_layer4.beginPath();
-		ctx_layer4.fillStyle = "rgb(100%,100%,100%)";
-	    ctx_layer4.lineWidth = 1;
-        ctx_layer4.arc(mean3_im_x, mean3_im_y, 0.6*im_size, 0, 2 * Math.PI);
-        ctx_layer4.fill();
-        ctx_layer4.closePath();
-		
-        ctx_layer4.drawImage(mean2, mean2_im_x - im_size/2, mean2_im_y - im_size/2, im_size, im_size);
-		ctx_layer4.drawImage(mean3, mean3_im_x - im_size/2, mean3_im_y - im_size/2, im_size, im_size);
-		
-	    ctx_layer4.beginPath();
-        ctx_layer4.strokeStyle = light_left_color;
-	    ctx_layer4.lineWidth = 10;
-        ctx_layer4.arc(mean2_im_x, mean2_im_y, 0.6*im_size + 5, 0, 2 * Math.PI);
-        ctx_layer4.stroke();
-        ctx_layer4.closePath();
-		
-	    ctx_layer4.beginPath();
-        ctx_layer4.strokeStyle = light_right_color;
-	    ctx_layer4.lineWidth = 10;
-        ctx_layer4.arc(mean3_im_x, mean3_im_y, 0.6*im_size + 5, 0, 2 * Math.PI);
-        ctx_layer4.stroke();
-        ctx_layer4.closePath();
-	  }
 
-	  function draw_layer5() {
-	    layer5.append("circle")
+	  function draw_layer4() {
+        layer4.append("rect")
+              .attr("fill",side_boxes_color)
+			  .attr("stroke","rgb(60%,60%,60%)")
+			  .attr("stroke-width",1)
+			  .attr("x", 1)
+              .attr("y", 0)
+              .attr("width", (width - height*3/2)/2)
+              .attr("height", height);
+			  
+        layer4.append("rect")
+              .attr("fill",side_boxes_color)
+			  .attr("stroke","rgb(60%,60%,60%)")
+			  .attr("stroke-width",1)
+			  .attr("x", (width - height*3/2)/2 + height*3/2 - 1)
+              .attr("y", 0)
+              .attr("width", (width - height*3/2)/2 + 1)
+              .attr("height", height);
+			  
+	    layer4.append("circle")
+	           .attr("cx", mean2_im_x)
+		       .attr("cy", mean2_im_y)
+		       .attr("r", 0.6*im_size)
+			   .attr("stroke-width", 1)
+			   .attr("stroke", "rgb(30%,30%,30%)")
+		       .attr("fill", "rgb(100%,100%,100%)");
+			  
+	    layer4.append("circle")
+	           .attr("cx", mean3_im_x)
+		       .attr("cy", mean3_im_y)
+		       .attr("r", 0.6*im_size)
+			   .attr("stroke-width", 1)
+			   .attr("stroke", "rgb(30%,30%,30%)")
+		       .attr("fill", "rgb(100%,100%,100%)");
+		  
+		layer4.append("image")
+		      .attr("x",mean2_im_x - im_size/2)
+			  .attr("y",mean2_im_y - im_size/2)
+			  .attr("width", im_size)
+			  .attr("height", im_size)
+			  .attr("xlink:href","assets/mean2.png")
+			  
+		layer4.append("image")
+		      .attr("x",mean3_im_x - im_size/2)
+			  .attr("y",mean3_im_y - im_size/2)
+			  .attr("width", im_size)
+			  .attr("height", im_size)
+			  .attr("xlink:href","assets/mean3.png")
+		
+	    layer4.append("circle")
+	           .attr("cx", mean2_im_x)
+		       .attr("cy", mean2_im_y)
+		       .attr("r", 0.6*im_size + 5)
+			   .attr("stroke-width", 10)
+			   .attr("stroke", side_boxes_color)
+		       .attr("fill", "none");
+		
+	    layer4.append("circle")
+	           .attr("cx", mean3_im_x)
+		       .attr("cy", mean3_im_y)
+		       .attr("r", 0.6*im_size + 5)
+			   .attr("stroke-width", 10)
+			   .attr("stroke", side_boxes_color)
+		       .attr("fill", "none");
+		  
+	    layer4.append("circle")
 	           .attr("cx", mean2_x)
 		       .attr("cy", mean2_y)
 		       .attr("r", 3.5)
@@ -278,7 +290,7 @@ function abstract_fig(){
 			   .attr("stroke", "rgb(30%,30%,30%)")
 		       .attr("fill", "rgb(100%,100%,100%)");
 			   
-	    layer5.append("circle")
+	    layer4.append("circle")
 	           .attr("cx", mean3_x)
 		       .attr("cy", mean3_y)
 		       .attr("r", 3.5)
@@ -286,7 +298,7 @@ function abstract_fig(){
 			   .attr("stroke", "rgb(30%,30%,30%)")
 		       .attr("fill", "rgb(100%,100%,100%)");
 			   
-	    layer5.append("circle")
+	    layer4.append("circle")
 	           .attr("cx", mean2_im_x)
 		       .attr("cy", mean2_im_y)
 		       .attr("r", 0.6*im_size)
@@ -294,7 +306,7 @@ function abstract_fig(){
 			   .attr("stroke", "rgb(30%,30%,30%)")
 			   .attr("fill", "none");
 			   
-	    layer5.append("circle")
+	    layer4.append("circle")
 	           .attr("cx", mean3_im_x)
 		       .attr("cy", mean3_im_y)
 		       .attr("r", 0.6*im_size)
@@ -302,7 +314,7 @@ function abstract_fig(){
 			   .attr("stroke", "rgb(30%,30%,30%)")
 			   .attr("fill", "none");
 			   
-	    layer5.append("line")
+	    layer4.append("line")
 	          .attr("stroke", "rgb(30%,30%,30%)")
 			  .attr("stroke-width", 1.5)
 			  .style("stroke-dasharray", ("6, 3"))
@@ -311,7 +323,7 @@ function abstract_fig(){
               .attr("x2", mean2_x - 3.5)
               .attr("y2", mean2_y);
 			  
-	    layer5.append("line")
+	    layer4.append("line")
 	          .attr("stroke", "rgb(30%,30%,30%)")
 			  .attr("stroke-width", 1.5)
 			  .style("stroke-dasharray", ("6, 3"))
@@ -320,13 +332,13 @@ function abstract_fig(){
               .attr("x2", mean3_x + 3.5)
               .attr("y2", mean3_y);
 		
-		layer5.append("polygon")
+		layer4.append("polygon")
 		      .attr("points", (mean3_x+3.5) +","+ y(0) +" "+ (mean3_x+3.5+10) +","+ (y(0)+4) +" "+ (mean3_x+3.5+6) +","+ y(0) +" "+(mean3_x+3.5+10) +","+ (y(0)-4))
   	          .attr("stroke-width", 1)
   	          .attr("stroke", "rgb(30%,30%,30%)")
 			  .attr("fill", "rgb(30%,30%,30%)");
 			  
-		layer5.append("polygon")
+		layer4.append("polygon")
 		      .attr("points", (mean2_x-3.5) +","+ y(0) +" "+ (mean2_x-3.5-10) +","+ (y(0)+4) +" "+ (mean2_x-3.5-6) +","+ y(0) +" "+(mean2_x-3.5-10) +","+ (y(0)-4))
   	          .attr("stroke-width", 1)
   	          .attr("stroke", "rgb(30%,30%,30%)")
@@ -334,7 +346,7 @@ function abstract_fig(){
 	  }
 	  
 	  function update() {
-		theta = -Math.acos(extras[2][80-reg_index]);
+		theta = extras[1][80-reg_index];
 		  
         container.selectAll("circle0")
 	             .attr("y", function (d) {return y(d[80-reg_index+1]);});
@@ -342,31 +354,48 @@ function abstract_fig(){
 	    container.selectAll("circle1")
 	             .attr("y", function (d) {return y(d[80-reg_index+1]);});
 		
-		d3.select("#abstract-margin")
-          .attr("transform", "rotate("+ (90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-          .attr("x", x(-mean_x*extras[2][80-reg_index]))
-          .attr("width", 2*(x(mean_x*extras[2][80-reg_index])-x(0)));
+		d3.select("#abstract-d-adv-margin")
+          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+          .attr("x", x(-mean_x*Math.cos(theta)))
+          .attr("width", 2*(x(mean_x*Math.cos(theta))-x(0)));
+		
+		var line_y, text_x, text_y;
+        if (reg_index > 30) {
+          line_y = y(-14/Math.cos(theta) + mean_x*Math.sin(theta));
+		  text_x = x(14 * Math.tan(theta)) - 70;
+		  text_y = y(-14.5);
+		}
+	    else {
+		  line_y = y(-20.5/Math.sin(theta) - mean_x*Math.cos(theta)*Math.cos(theta)/Math.sin(theta));
+	      text_x = x(16.5);
+		  text_y = y(-25 / Math.tan(theta)) + 10;
+		}
+		d3.select("#abstract-d-adv-line")
+          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+          .attr("x1", x(-mean_x*Math.cos(theta)))
+		  .attr("y1", line_y)
+          .attr("x2", x(mean_x*Math.cos(theta)))
+		  .attr("y2", line_y);
+		  
+		d3.select("#abstract-d-adv-arrow1") 
+		  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+		  .attr("d","M "+ (x(-mean_x*Math.cos(theta))+5) +" "+ (line_y+3) +" L "+ x(-mean_x*Math.cos(theta)) +" "+ line_y +" L "+ (x(-mean_x*Math.cos(theta))+5) +" "+ (line_y-3))
+		  
+		d3.select("#abstract-d-adv-arrow2") 
+		  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+		  .attr("d","M "+ (x(mean_x*Math.cos(theta))-5) +" "+ (line_y+3) +" L "+ x(mean_x*Math.cos(theta)) +" "+ line_y +" L "+ (x(mean_x*Math.cos(theta))-5) +" "+ (line_y-3))
+		  
+        d3.select("#abstract-d-adv-text")
+          .attr("x", text_x)
+		  .attr("y", text_y);
 		  
 		d3.select("#abstract-boundary")
-          .attr("transform", "rotate("+ (90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-          .attr("x1", x(-extras[1][80-reg_index]))
-          .attr("x2", x(-extras[1][80-reg_index]))
-		  
-	    //if (Math.round( extras[15][80-reg_index] * 10) / 10 == min_errTrain)
-		//  d3.select("#abstract_err_train").style("font-weight","bold")
-		//	                              .style("color",orange);
-	    //else
-		//  d3.select("#abstract_err_train").style("font-weight","normal")
-		//	                              .style("color","rgba(60%,60%,60%)");			 
-	    //if (Math.round( extras[14][80-reg_index] * 10) / 10 == max_dAdv)
-		//  d3.select("#abstract_adv_distance").style("font-weight","bold")
-		//	                                 .style("color",orange);
-	    //else
-		//  d3.select("#abstract_adv_distance").style("font-weight","normal")
-		//	                                 .style("color","rgba(60%,60%,60%)");	
+          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+          .attr("x1", x(-extras[0][80-reg_index]))
+          .attr("x2", x(-extras[0][80-reg_index]))	
 				 
-	    d3.select("#abstract_err_train").text(" Training error:\u00A0\u00A0" + parseFloat(extras[15][80-reg_index]).toFixed(1) + "%");
-	    d3.select("#abstract_adv_distance").text("Adversarial distance:\u00A0\u00A0" + parseFloat(extras[14][80-reg_index]).toFixed(1));
+	    d3.select("#abstract_err_train").text("\u00A0\u00A0" + parseFloat(extras[13][80-reg_index]).toFixed(1) + "%");
+	    d3.select("#abstract_adv_distance").text("\u00A0\u00A0" + parseFloat(extras[12][80-reg_index]).toFixed(1));
 	  }
 	  
 	  function animate() {
@@ -385,10 +414,9 @@ function abstract_fig(){
 	  draw_layer2();
 	  draw_layer3();
 	  draw_layer4();
-	  draw_layer5();
 	  
-	  d3.select("#abstract_err_train").text(" Training error:\u00A0\u00A0" + parseFloat(extras[15][80-reg_index]).toFixed(1) + "%");
-	  d3.select("#abstract_adv_distance").text("Adversarial distance:\u00A0\u00A0" + parseFloat(extras[14][80-reg_index]).toFixed(1));
+	  d3.select("#abstract_err_train").text("\u00A0\u00A0" + parseFloat(extras[13][80-reg_index]).toFixed(1) + "%");
+	  d3.select("#abstract_adv_distance").text("\u00A0\u00A0" + parseFloat(extras[12][80-reg_index]).toFixed(1));
 	  
 	  var input = d3.select("#abstract-input");
 	  input.property("value", reg_index);
@@ -428,7 +456,7 @@ function Carell_Deschanel(){
 			.attr('height', im_size)
             .attr("xlink:href","assets/Carell_pert.png")
 
- background.append("svg:image")
+  background.append("svg:image")
             .attr('x', margin2)
             .attr('y', top_margin)
             .attr('width', im_size)
@@ -1357,8 +1385,8 @@ function toy_problem3(){
   var theta_y = 30;
   var init_theta = 0.5;
   
-  function translate_x(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) * Math.tan(0.00001 + Math.PI/2 * -theta), space_size/2);}
-  function translate_y(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) - space_size/2 * Math.tan(0.00001 + Math.PI/2 - Math.PI/2 * -theta), 0);}
+  function translate_x(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) * Math.tan(Math.PI/2 * -theta), space_size/2);}
+  function translate_y(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) - space_size/2 / Math.tan(Math.PI/2 * -theta), 0);}
   
   function init_toy_problem(theta){
 	  
@@ -1738,7 +1766,7 @@ function toy_problem3(){
 		 
     g_theta3.append("polygon")
             .attr("points", space_scale(0.475)+","+space_scale(0)+" "+space_scale(0.45)+","+space_scale(-0.035)+" "+space_scale(0.5)+","+space_scale(0)+" "+space_scale(0.45)+","+space_scale(0.035))
-  	        .attr("fill", "rgb(100%,0%,0%)")
+  	        .attr("fill", orange)
   	        .attr("stroke-width", 1)
   	        .attr("stroke", orange);
 		 
@@ -2231,8 +2259,8 @@ function toy_problem4(){
   var theta_y = 30;
   var init_theta = 0.5;
   
-  function translate_x(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) * Math.tan(0.00001 + Math.PI/2 * -theta), space_size/2);}
-  function translate_y(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) - space_size/2 * Math.tan(0.00001 + Math.PI/2 - Math.PI/2 * -theta), 0);}
+  function translate_x(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) * Math.tan(Math.PI/2 * -theta), space_size/2);}
+  function translate_y(theta) {return Math.min((space_scale(-0.8)-space_scale(0)) - space_size/2 / Math.tan(Math.PI/2 * -theta), 0);}
   
   var x_a = -0.8, x_b = 0;
   var xm_a = x_a * (1 - 2 * Math.cos(Math.PI/2 * init_theta) * Math.cos(Math.PI/2 * init_theta));
@@ -2593,7 +2621,7 @@ function toy_problem4(){
 		 
     g_theta3.append("polygon")
             .attr("points", space_scale(0.475)+","+space_scale(0)+" "+space_scale(0.45)+","+space_scale(-0.035)+" "+space_scale(0.5)+","+space_scale(0)+" "+space_scale(0.45)+","+space_scale(0.035))
-  	        .attr("fill", "rgb(100%,0%,0%)")
+  	        .attr("fill", orange)
   	        .attr("stroke-width", 1)
   	        .attr("stroke", orange);
 		 
@@ -3801,6 +3829,7 @@ function noisy_data1(){
 				
 	gray_labels.append("text")
   	           .attr("text-anchor", "middle")
+			   .attr("font-style", "italic")
                .attr("x",space_scale(p_a)+10)
                .attr("y",space_scale(-p_b)+14)
                .text("p");
@@ -4021,6 +4050,7 @@ function noisy_data2(){
 				
 	gray_labels.append("text")
   	           .attr("text-anchor", "middle")
+			   .attr("font-style", "italic")
                .attr("x",space_scale(p_a)+10)
                .attr("y",space_scale(-p_b)+14)
                .text("p");
@@ -4179,156 +4209,6 @@ function loss_functions() {
 	           .attr("fill", "rgb(50%,50%,50%)")
 	           .attr("font-size", "10px")
                .text("1");
-}
-
-function large_norm_w() {
-  var width = 180;
-  var height = 120;
-  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
-  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
-  var norm_w = 1.5;
-  
-  var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
-  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
-  
-  function fig3_init() {
-    var fig3_subfig2 = d3.select("#value-w-input1")
-                         .append("svg")
-	                     .attr("width", width)
-	                     .attr("height", height);
-			  
-    fig3_subfig2.append("line")
-                .attr("x1", x(-4))
-	            .attr("y1", y(0))
-	            .attr("x2", x(4))
-	            .attr("y2", y(0))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
-
-    fig3_subfig2.append("line")
-                .attr("x1", x(0))
-	            .attr("y1", y(-1))
-	            .attr("x2", x(0))
-	            .attr("y2", y(4))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
-				
-    fig3_subfig2.selectAll("rect0")
-                .data(dataA)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 5)
-                .attr("height", function(d) {return d * height / 3.6;})
-                .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-                .style("fill-opacity", 0.2)
-                .style("fill", "rgb(88.07%, 61.10%, 14.21%)");
-			  
-    fig3_subfig2.selectAll("rect1")
-                .data(dataB)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 5)
-                .attr("height", function(d) {return d * height / 3.6;})
-			    .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-			    .style("fill-opacity", 0.2)
-			    .style("fill", "rgb(36.84%,50.68%,70.98%)");
-				
-	fig3_subfig2.append("path")
-				.attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
-                .style("stroke", "rgb(36.84%,50.68%,70.98%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-				
-	fig3_subfig2.append("path")
-				.attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(1 + Math.pow(10,norm_w) * 4))
-                .style("stroke", "rgb(88.07%, 61.10%, 14.21%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-  }
-  fig3_init();
-}
-
-function small_norm_w() {
-  var width = 180;
-  var height = 120;
-  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
-  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
-  var norm_w = -1;
-  
-  var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
-  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
-  
-  function fig3_init() {
-    var fig3_subfig2 = d3.select("#value-w-input2")
-                         .append("svg")
-	                     .attr("width", width)
-	                     .attr("height", height);
-			  
-    fig3_subfig2.append("line")
-                .attr("x1", x(-4))
-	            .attr("y1", y(0))
-	            .attr("x2", x(4))
-	            .attr("y2", y(0))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
-
-    fig3_subfig2.append("line")
-                .attr("x1", x(0))
-	            .attr("y1", y(-1))
-	            .attr("x2", x(0))
-	            .attr("y2", y(4))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
-				
-    fig3_subfig2.selectAll("rect0")
-                .data(dataA)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 5)
-                .attr("height", function(d) {return d * height / 3.6;})
-                .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-                .style("fill-opacity", 0.2)
-                .style("fill", "rgb(88.07%, 61.10%, 14.21%)");
-			  
-    fig3_subfig2.selectAll("rect1")
-                .data(dataB)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 5)
-                .attr("height", function(d) {return d * height / 3.6;})
-			    .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-			    .style("fill-opacity", 0.2)
-			    .style("fill", "rgb(36.84%,50.68%,70.98%)");
-				
-	fig3_subfig2.append("path")
-				.attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
-                .style("stroke", "rgb(36.84%,50.68%,70.98%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-				
-	fig3_subfig2.append("path")
-				.attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(1 + Math.pow(10,norm_w) * 4))
-                .style("stroke", "rgb(88.07%, 61.10%, 14.21%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-  }
-  fig3_init();
 }
 
 function fig3() {
@@ -4713,6 +4593,156 @@ function fig3() {
     .on("input", function() {fig3_update(this.value);});
 }
 
+function large_norm_w() {
+  var width = 180;
+  var height = 120;
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
+  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
+  var norm_w = 1.5;
+  
+  var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  
+  function fig3_init() {
+    var fig3_subfig2 = d3.select("#value-w-input1")
+                         .append("svg")
+	                     .attr("width", width)
+	                     .attr("height", height);
+			  
+    fig3_subfig2.append("line")
+                .attr("x1", x(-4))
+	            .attr("y1", y(0))
+	            .attr("x2", x(4))
+	            .attr("y2", y(0))
+                .attr("stroke-width", 0.3)
+	            .attr("stroke", "rgb(0%,0%,0%)")
+                .attr("stroke-opacity",0.8);
+
+    fig3_subfig2.append("line")
+                .attr("x1", x(0))
+	            .attr("y1", y(-1))
+	            .attr("x2", x(0))
+	            .attr("y2", y(4))
+                .attr("stroke-width", 0.3)
+	            .attr("stroke", "rgb(0%,0%,0%)")
+                .attr("stroke-opacity",0.8);
+				
+    fig3_subfig2.selectAll("rect0")
+                .data(dataA)
+                .enter()
+                .append("rect")
+                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+                .attr("y", function(d) {return y(0) - d * height / 3.6;})
+                .attr("width", 5)
+                .attr("height", function(d) {return d * height / 3.6;})
+                .style("stroke-width", 0.3)
+                .style("stroke", "rgb(20%, 20%, 20%)")
+                .style("fill-opacity", 0.2)
+                .style("fill", "rgb(88.07%, 61.10%, 14.21%)");
+			  
+    fig3_subfig2.selectAll("rect1")
+                .data(dataB)
+                .enter()
+                .append("rect")
+                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+                .attr("y", function(d) {return y(0) - d * height / 3.6;})
+                .attr("width", 5)
+                .attr("height", function(d) {return d * height / 3.6;})
+			    .style("stroke-width", 0.3)
+                .style("stroke", "rgb(20%, 20%, 20%)")
+			    .style("fill-opacity", 0.2)
+			    .style("fill", "rgb(36.84%,50.68%,70.98%)");
+				
+	fig3_subfig2.append("path")
+				.attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
+                .style("stroke", "rgb(36.84%,50.68%,70.98%)")
+                .style("stroke-width", 2)
+                .style("fill", "none");
+				
+	fig3_subfig2.append("path")
+				.attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(1 + Math.pow(10,norm_w) * 4))
+                .style("stroke", "rgb(88.07%, 61.10%, 14.21%)")
+                .style("stroke-width", 2)
+                .style("fill", "none");
+  }
+  fig3_init();
+}
+
+function small_norm_w() {
+  var width = 180;
+  var height = 120;
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
+  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
+  var norm_w = -1;
+  
+  var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  
+  function fig3_init() {
+    var fig3_subfig2 = d3.select("#value-w-input2")
+                         .append("svg")
+	                     .attr("width", width)
+	                     .attr("height", height);
+			  
+    fig3_subfig2.append("line")
+                .attr("x1", x(-4))
+	            .attr("y1", y(0))
+	            .attr("x2", x(4))
+	            .attr("y2", y(0))
+                .attr("stroke-width", 0.3)
+	            .attr("stroke", "rgb(0%,0%,0%)")
+                .attr("stroke-opacity",0.8);
+
+    fig3_subfig2.append("line")
+                .attr("x1", x(0))
+	            .attr("y1", y(-1))
+	            .attr("x2", x(0))
+	            .attr("y2", y(4))
+                .attr("stroke-width", 0.3)
+	            .attr("stroke", "rgb(0%,0%,0%)")
+                .attr("stroke-opacity",0.8);
+				
+    fig3_subfig2.selectAll("rect0")
+                .data(dataA)
+                .enter()
+                .append("rect")
+                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+                .attr("y", function(d) {return y(0) - d * height / 3.6;})
+                .attr("width", 5)
+                .attr("height", function(d) {return d * height / 3.6;})
+                .style("stroke-width", 0.3)
+                .style("stroke", "rgb(20%, 20%, 20%)")
+                .style("fill-opacity", 0.2)
+                .style("fill", "rgb(88.07%, 61.10%, 14.21%)");
+			  
+    fig3_subfig2.selectAll("rect1")
+                .data(dataB)
+                .enter()
+                .append("rect")
+                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+                .attr("y", function(d) {return y(0) - d * height / 3.6;})
+                .attr("width", 5)
+                .attr("height", function(d) {return d * height / 3.6;})
+			    .style("stroke-width", 0.3)
+                .style("stroke", "rgb(20%, 20%, 20%)")
+			    .style("fill-opacity", 0.2)
+			    .style("fill", "rgb(36.84%,50.68%,70.98%)");
+				
+	fig3_subfig2.append("path")
+				.attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
+                .style("stroke", "rgb(36.84%,50.68%,70.98%)")
+                .style("stroke-width", 2)
+                .style("fill", "none");
+				
+	fig3_subfig2.append("path")
+				.attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(1 + Math.pow(10,norm_w) * 4))
+                .style("stroke", "rgb(88.07%, 61.10%, 14.21%)")
+                .style("stroke-width", 2)
+                .style("fill", "none");
+  }
+  fig3_init();
+}
+
 function img_to_canvas2(img) {
   var s = d3.scaleLinear().domain([-1, 1]).range([10, 245]);
   var h = Math.sqrt(img.length);
@@ -4737,16 +4767,20 @@ function img_to_canvas2(img) {
   return canvas;
 }
 
-function fig4() {
+function svm_mnist() {
   var width = 420;
   var height = 280;
   var x = d3.scaleLinear().domain([-21,21]).range([0, width]);
   var y = d3.scaleLinear().domain([14,-14]).range([0, height]);
   var left_digit = 2;
   var right_digit = 3;
-  var init_reg_index = 0;
+  var left_color = d3.interpolateBlues(0.3); //rgb(181, 212, 233)
+  var right_color = d3.interpolateBlues(0.7); //rgb(47, 126, 188)
+  var orange = "rgb(255,102,0)";
   var animationRunning = false;
   var requestId;
+  var theta;
+  var reg_index;
 
   function update_buttons(left_digit, right_digit) {
     for (i=0; i<=left_digit; i++) {
@@ -4767,7 +4801,9 @@ function fig4() {
     }
   }
   
-  function draw_fig4(digit0, digit1) {	
+  function draw_fig(digit0, digit1) {
+	reg_index = 0;
+	  
     d3.queue().defer(d3.text,"assets/data/data0_"+digit0+digit1+".csv")
               .defer(d3.text,"assets/data/data1_"+digit0+digit1+".csv")
 		      .defer(d3.text,"assets/data/extras_"+digit0+digit1+".csv")
@@ -4778,43 +4814,73 @@ function fig4() {
 		      .defer(d3.text,"assets/data/ym_"+digit0+digit1+".csv")
               .await(draw_all);
 
-    function draw_all(error, text_data0, text_data1, text_extras, text_w, text_x, text_xm, text_y, text_ym) { //
+    function draw_all(error, text_data0, text_data1, text_extras, text_w, text_x, text_xm, text_y, text_ym) {
       var data0 = d3.csvParseRows(text_data0).map(function(row) {return row.map(function(value) {return +value;});});
 	  var data1 = d3.csvParseRows(text_data1).map(function(row) {return row.map(function(value) {return +value;});});
-	  var extras = d3.csvParseRows(text_extras).map(function(row) {return row.map(function(value) {return +value;});});	// m b w1 w2 x1 x2 y1 y2 xm1 xm2 ym1 ym2
+	  var extras = d3.csvParseRows(text_extras).map(function(row) {return row.map(function(value) {return +value;});});	// b theta x1 x2 xm1 xm2 y1 y2 ym1 ym2 dx dy d_adv err_train err_test
 	  var w = d3.csvParseRows(text_w).map(function(row) {return row.map(function(value) {return +value;});});
 	  var imx = d3.csvParseRows(text_x).map(function(row) {return row.map(function(value) {return +value;});});
 	  var imxm = d3.csvParseRows(text_xm).map(function(row) {return row.map(function(value) {return +value;});});
 	  var imy = d3.csvParseRows(text_y).map(function(row) {return row.map(function(value) {return +value;});});
 	  var imym = d3.csvParseRows(text_ym).map(function(row) {return row.map(function(value) {return +value;});});
 
-	  var max_dAdv = Math.round( Math.max.apply(null, extras[14]) * 10) / 10;
-      var min_errTrain = Math.round( Math.min.apply(null, extras[15]) * 10) / 10;
-	  var min_errTest = Math.round( Math.min.apply(null, extras[16]) * 10) / 10;
+	  var max_dAdv = Math.round( Math.max.apply(null, extras[12]) * 10) / 10;
+      var min_errTrain = Math.round( Math.min.apply(null, extras[13]) * 10) / 10;
+	  var min_errTest = Math.round( Math.min.apply(null, extras[14]) * 10) / 10;
 	  
-      var fig4_right = d3.select("#fig4-right-content");
-      if (!fig4_right.select("canvas").empty()) {
-	    fig4_right.select("canvas").remove()
-	  }
-      var canvas = fig4_right.append("canvas")
-                             .attr("width", width)
-                             .attr("height", height);
-      var context = canvas.node().getContext("2d");  
-      var container = fig4_right.append("custom");
-	  var reg_index = init_reg_index;
+      var fig = d3.select("#fig4-right-content");
+	  fig.style("position","relative");
+	  
+      if (!fig.select("#svm-mnist-layer1").empty())
+	    fig.select("#svm-mnist-layer1").remove();
+	
+      if (!fig.select("#svm-mnist-layer2").empty())
+	    fig.select("#svm-mnist-layer2").remove();
+	
+      if (!fig.select("#svm-mnist-layer3").empty())
+	    fig.select("#svm-mnist-layer3").remove();
+	  
+      var layer1 = fig.append("svg")
+	                  .style("position","absolute")
+					  .attr("id","svm-mnist-layer1")
+                      .attr("width", width)
+                      .attr("height", height)
+					  .style("top", "0px")
+					  .style("left", "0px");
+	  
+      var layer2 = fig.append("canvas")
+					  .style("position","absolute")
+					  .attr("id","svm-mnist-layer2")
+                      .attr("width", width)
+                      .attr("height", height)
+					  .style("top", "0px")
+					  .style("left", "0px");
+	  var ctx_layer2 = layer2.node().getContext("2d");
+	  
+      var layer3 = fig.append("svg")
+	                  .style("position","absolute")
+					  .attr("id","svm-mnist-layer3")
+                      .attr("width", width)
+                      .attr("height", height)
+					  .style("top", "0px")
+					  .style("left", "0px");
+	  
+      var container = fig.append("custom");
 	  var input_time;
+	  
+	  theta = extras[1][80-reg_index];
 
-	  function init_canvas() {	
+	  function init_canvas() {
         container.selectAll("circle0")
                  .data(data0)
 	             .enter()
 	             .append("circle0")
                  .attr("x", function (d) { return x(d[0]);})
 		         .attr("y", function (d) { return y(d[80-reg_index+1]);})
-		         .attr("r", 0.6)
+		         .attr("r", 0.75)
 	             .attr("lineWidth", 0.6)
-                 .attr("strokeStyle", "rgb(88.07%, 61.10%, 14.21%,25%)")
-			     .attr("fillStyle", "rgb(88.07%, 61.10%, 14.21%,25%)");
+                 .attr("strokeStyle", left_color)
+			     .attr("fillStyle", left_color);
   				 
 	    container.selectAll("circle1")
                  .data(data1)
@@ -4822,164 +4888,203 @@ function fig4() {
 		         .append("circle1")
                  .attr("x", function (d) { return x(d[0]);})
 		         .attr("y", function (d) { return y(d[80-reg_index+1]);})
-		         .attr("r", 0.6)
+		         .attr("r", 0.75)
 			     .attr("lineWidth", 0.6)
-                 .attr("strokeStyle", "rgb(36.84%,50.68%,70.98%,25%)")
-			     .attr("fillStyle", "rgb(36.84%,50.68%,70.98%,25%)");
+                 .attr("strokeStyle", right_color)
+			     .attr("fillStyle", right_color);
 	  }
 
-      function draw_canvas() {
-        var theta = -Math.acos(extras[2][80-reg_index]);
+	  function draw_layer1() {
+        layer1.append("rect")
+		      .attr("id","svm-mnist-layer1-left")
+			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+              .attr("fill","rgb(97.5%,97.5%,97.5%)")
+			  .attr("x", x(-extras[0][80-reg_index])-x(0)-width/2)
+              .attr("y", -height/2)
+              .attr("width", width)
+              .attr("height", 2*height);
+			  
+        layer1.append("rect")
+		      .attr("id","svm-mnist-layer1-right")
+			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+              .attr("fill","rgb(90%,90%,90%)")
+			  .attr("x", x(-extras[0][80-reg_index])-x(0)+width/2)
+              .attr("y", -height/2)
+              .attr("width", width)
+              .attr("height", 2*height);
+	  }
 	  
+      function draw_layer2() {
         //Clear canvas
-        context.beginPath();
-	    context.fillStyle = "rgb(100%,100%,100%)";
-	    context.strokeStyle = "rgb(80%,80%,80%)";
-        context.rect(0,0,canvas.attr("width"),canvas.attr("height"));
-	    context.fill();
-	    context.stroke();
-	    context.closePath();
+        ctx_layer2.clearRect(0, 0, width, height);
 	
 	    //Class 0
         container.selectAll("circle0")
                  .each(function(d) {
                          var node = d3.select(this);
-			             context.beginPath();
-                         context.strokeStyle = node.attr("strokeStyle");
-	                     context.lineWidth = node.attr("lineWidth");
-	                     context.fillStyle = node.attr("fillStyle");
-                         context.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
-					     context.fill();
-                         context.stroke();
-                         context.closePath();
+			             ctx_layer2.beginPath();
+                         ctx_layer2.strokeStyle = node.attr("strokeStyle");
+	                     ctx_layer2.lineWidth = node.attr("lineWidth");
+	                     ctx_layer2.fillStyle = node.attr("fillStyle");
+                         ctx_layer2.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
+					     ctx_layer2.fill();
+                         ctx_layer2.stroke();
+                         ctx_layer2.closePath();
                        });
 			 
 	    //Class 1
         container.selectAll("circle1")
                  .each(function(d) {
                          var node = d3.select(this);
-			             context.beginPath();
-	                     context.strokeStyle = node.attr("strokeStyle");
-		                 context.lineWidth = node.attr("lineWidth");
-	                     context.fillStyle = node.attr("fillStyle");
-                         context.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
-                         context.fill();
-					     context.stroke();
-                         context.closePath();
+			             ctx_layer2.beginPath();
+	                     ctx_layer2.strokeStyle = node.attr("strokeStyle");
+		                 ctx_layer2.lineWidth = node.attr("lineWidth");
+	                     ctx_layer2.fillStyle = node.attr("fillStyle");
+                         ctx_layer2.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
+                         ctx_layer2.fill();
+					     ctx_layer2.stroke();
+                         ctx_layer2.closePath();
                        });
-
-	    context.translate(x(0),y(0));
-	    context.rotate(theta);
-	    context.translate(-x(0),-y(0));
-		
-	    //Margin
-        context.beginPath();	  
-	    context.fillStyle = "rgba(50%, 50%, 50%, 10%)";
-	    context.fillRect(x(-extras[0][80-reg_index]-extras[1][80-reg_index]),-200,2*(x(extras[0][80-reg_index])-x(0)),width+200);
-	    context.closePath();
-		
-		//H
-	    context.beginPath();
-        context.strokeStyle = "rgba(100%,0%,0%,30%)";
-	    context.lineWidth = 2;
-        context.moveTo(x(-extras[1][80-reg_index]),-200);
-        context.lineTo(x(-extras[1][80-reg_index]),width+200);
-        context.stroke();
-	    context.closePath();
-		
-		//w
-		context.beginPath();
-        context.strokeStyle = "rgba(100%,0%,0%,100%)";
-	    context.lineWidth = 1;
-        context.moveTo(x(-extras[1][80-reg_index]),y(0));
-        context.lineTo(x(-extras[1][80-reg_index])+x(3)-x(0),y(0));
-        context.stroke();
-	    context.closePath();
-		
-		context.beginPath();
-        context.fillStyle = "rgba(100%,0%,0%,100%)";
-        context.moveTo(x(-extras[1][80-reg_index])+x(3)-x(0),y(0));
-        context.lineTo(x(-extras[1][80-reg_index])+x(3)-x(0)-4,y(0)+3);
-		context.lineTo(x(-extras[1][80-reg_index])+x(3)-x(0)+4,y(0));
-		context.lineTo(x(-extras[1][80-reg_index])+x(3)-x(0)-4,y(0)-3);
-		context.closePath();
-        context.fill();
-		
-		context.fillStyle = "rgba(100%,0%,0%,100%)";
-		context.font = "italic bold 12px Georgia, serif";
-        context.fillText("\u0175",x(-extras[1][80-reg_index])+x(3)-x(0)+10,y(0)+3); 
-		
-	    context.translate(x(0),y(0));
-	    context.rotate(-theta);
-	    context.translate(-x(0),-y(0));
-		
-	    // imx imxm imy imym
-		context.lineWidth = 0.75;
-	    context.strokeStyle = "rgb(78.07%,51.10%,4.21%)";
-	    context.fillStyle = "rgb(78.07%,51.10%,4.21%)";
-		
-		context.beginPath();
-        context.arc(x(extras[4][80-reg_index]), y(extras[5][80-reg_index]), 2, 0, 2 * Math.PI);
-        context.fill();
-		context.stroke();
-        context.closePath();
-		
-		context.beginPath();
-        context.arc(x(extras[10][80-reg_index]), y(extras[11][80-reg_index]), 2, 0, 2 * Math.PI);
-        context.fill();
-		context.stroke();
-        context.closePath();
-		
-		context.font = "italic bold 10px Georgia, serif";
-        context.fillText("x",x(extras[4][80-reg_index])-3, y(extras[5][80-reg_index])+12);
-        context.fillText("y",x(extras[10][80-reg_index])-3, y(extras[11][80-reg_index])+12);
-		context.font = "italic 9px Georgia, serif";
-		context.fillText("m",x(extras[10][80-reg_index])+4, y(extras[11][80-reg_index])+15);
-		
-	    context.strokeStyle = "rgb(26.84%,40.68%,60.98%)";
-	    context.fillStyle = "rgb(26.84%,40.68%,60.98%)";
-		
-		context.beginPath();
-        context.arc(x(extras[6][80-reg_index]), y(extras[7][80-reg_index]), 2, 0, 2 * Math.PI);
-        context.fill();
-		context.stroke();
-        context.closePath();
-
-		context.beginPath();
-        context.arc(x(extras[8][80-reg_index]), y(extras[9][80-reg_index]), 2, 0, 2 * Math.PI);
-        context.fill();
-		context.stroke();
-        context.closePath();
-		
-		context.font = "italic bold 10px Georgia, serif";
-		context.fillText("y",x(extras[8][80-reg_index])-3, y(extras[9][80-reg_index])-8);
-		context.fillText("x",x(extras[6][80-reg_index])-3, y(extras[7][80-reg_index])-8);
-        context.font = "italic 9px Georgia, serif";
-		context.fillText("m",x(extras[6][80-reg_index])+4, y(extras[7][80-reg_index])-5);
-		
-        context.strokeStyle = "rgb(88.07%,61.10%,14.21%)";
-		context.setLineDash([3, 1]);
-	    context.lineWidth = 1;
-		context.beginPath();
-        context.moveTo(x(extras[4][80-reg_index]),y(extras[5][80-reg_index]));
-        context.lineTo(x((extras[4][80-reg_index]+extras[6][80-reg_index])/2),y((extras[5][80-reg_index]+extras[7][80-reg_index])/2));
-        context.moveTo(x(extras[10][80-reg_index]),y(extras[11][80-reg_index]));
-        context.lineTo(x((extras[8][80-reg_index]+extras[10][80-reg_index])/2),y((extras[9][80-reg_index]+extras[11][80-reg_index])/2));
-        context.stroke();
-	    context.closePath();
-
-        context.strokeStyle = "rgb(36.84%,50.68%,70.98%)";		
-		context.beginPath();
-        context.moveTo(x(extras[6][80-reg_index]),y(extras[7][80-reg_index]));
-        context.lineTo(x((extras[4][80-reg_index]+extras[6][80-reg_index])/2),y((extras[5][80-reg_index]+extras[7][80-reg_index])/2));
-        context.moveTo(x(extras[8][80-reg_index]),y(extras[9][80-reg_index]));
-        context.lineTo(x((extras[8][80-reg_index]+extras[10][80-reg_index])/2),y((extras[9][80-reg_index]+extras[11][80-reg_index])/2));
-        context.stroke();
-	    context.closePath();
-		
-		context.setLineDash([]);
 	  }	
 
+	  function draw_layer3() {
+		// boundary
+	    layer3.append("line")
+		      .attr("id","svm-mnist-layer3-boundary")
+			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+	          .attr("stroke-width", 2.5)
+              .attr("x1", x(-extras[0][80-reg_index]))
+	          .attr("y1", -height/2)
+	          .attr("x2", x(-extras[0][80-reg_index]))
+	          .attr("y2", 2*height)
+	          .attr("stroke", orange);
+			  
+	    // w_theta
+        layer3.append("line")
+	          .attr("id","svm-mnist-layer3-w-line")
+			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+              .attr("x1", x(-extras[0][80-reg_index]))
+		      .attr("y1", y(0))
+		      .attr("x2", x(-extras[0][80-reg_index]+6))
+		      .attr("y2", y(0))
+	          .attr("stroke-width", 2)
+			  .attr("stroke-dasharray", "5, 3")
+	          .attr("stroke", orange);
+
+        layer3.append("polygon")
+	          .attr("id","svm-mnist-layer3-w-polygon")
+		  	  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+              .attr("points", x(-extras[0][80-reg_index]+5.6)+","+y(0)+" "+x(-extras[0][80-reg_index]+5.2)+","+y(-0.5)+" "+x(-extras[0][80-reg_index]+6)+","+y(0)+" "+x(-extras[0][80-reg_index]+5.2)+","+y(0.5))
+  	          .attr("fill", orange)
+  	          .attr("stroke-width", 1)
+  	          .attr("stroke", orange);
+		 
+        layer3.append("text")
+	          .attr("id","svm-mnist-layer3-w-text")
+			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+              .attr("x", x(-extras[0][80-reg_index]+7.7))
+	          .attr("y", y(-0.4))
+	          .attr("text-anchor", "middle")
+	          .attr("font-family","Roboto")
+	          .attr("fill", orange)
+ 	          .attr("font-style", "italic")
+ 	          .attr("font-weight", "bold")
+	          .attr("font-size", "15px")
+              .text("\u0175");
+			  
+	    // imx imxm imy imym	  
+	    layer3.append("circle")
+	          .attr("id","svm-mnist-layer3-x-circle")
+	          .attr("cx",x(extras[2][80-reg_index]))
+			  .attr("cy",y(extras[3][80-reg_index]))
+			  .attr("r",3)
+			  .attr("fill","rgb(0%,0%,0%)");
+			
+	    layer3.append("circle")
+	          .attr("id","svm-mnist-layer3-xm-circle")
+	          .attr("cx",x(extras[4][80-reg_index]))
+			  .attr("cy",y(extras[5][80-reg_index]))
+			  .attr("r",3)
+			  .attr("fill","rgb(0%,0%,0%)");
+			
+	    layer3.append("circle")
+	          .attr("id","svm-mnist-layer3-y-circle")
+	          .attr("cx",x(extras[6][80-reg_index]))
+			  .attr("cy",y(extras[7][80-reg_index]))
+			  .attr("r",3)
+			  .attr("fill","rgb(0%,0%,0%)");
+			
+	    layer3.append("circle")
+	          .attr("id","svm-mnist-layer3-ym-circle")
+	          .attr("cx",x(extras[8][80-reg_index]))
+			  .attr("cy",y(extras[9][80-reg_index]))
+			  .attr("r",3)
+			  .attr("fill","rgb(0%,0%,0%)");
+			
+        layer3.append("line")
+	          .attr("id","svm-mnist-layer3-x-xm-line")
+              .attr("x1", x(extras[2][80-reg_index]))
+		      .attr("y1", y(extras[3][80-reg_index]))
+		      .attr("x2", x(extras[4][80-reg_index]))
+		      .attr("y2", y(extras[5][80-reg_index]))
+	          .attr("stroke-width", 1)
+			  .attr("stroke-dasharray", "3, 1")
+	          .attr("stroke", "rgb(0%,0%,0%)");
+
+        layer3.append("line")
+	          .attr("id","svm-mnist-layer3-y-ym-line")
+              .attr("x1", x(extras[6][80-reg_index]))
+		      .attr("y1", y(extras[7][80-reg_index]))
+		      .attr("x2", x(extras[8][80-reg_index]))
+		      .attr("y2", y(extras[9][80-reg_index]))
+	          .attr("stroke-width", 1)
+			  .attr("stroke-dasharray", "3, 1")
+	          .attr("stroke", "rgb(0%,0%,0%)");
+	    
+		// labels
+        var labels = layer3.append("g")
+	                       .attr("text-anchor", "middle")
+	                       .attr("font-family","Roboto")
+	                       .attr("fill", "rgb(0%,0%,0%)")
+ 	                       .attr("font-style", "italic")
+ 	                       .attr("font-weight", "bold")
+	                       .attr("font-size", "15px");
+		
+        labels.append("text")
+	          .attr("id","svm-mnist-layer3-label-x")
+              .attr("x", x(extras[2][80-reg_index])-3)
+	          .attr("y", y(extras[3][80-reg_index])+15)
+              .text("x");
+			  
+        labels.append("text")
+	          .attr("id","svm-mnist-layer3-label-xm")
+              .attr("x", x(extras[4][80-reg_index])-3)
+	          .attr("y", y(extras[5][80-reg_index])-10)
+              .text("x")
+			  .append("tspan")
+	          .attr("font-size", "10px")
+			  .attr("dx",1)
+			  .attr("dy",2)
+			  .text("m");
+			  
+        labels.append("text")
+	          .attr("id","svm-mnist-layer3-label-y")
+              .attr("x", x(extras[6][80-reg_index])-3)
+	          .attr("y", y(extras[7][80-reg_index])-10)
+              .text("y");
+			  
+        labels.append("text")
+	          .attr("id","svm-mnist-layer3-label-ym")
+              .attr("x", x(extras[8][80-reg_index])-3)
+	          .attr("y", y(extras[9][80-reg_index])+15)
+              .text("y")
+			  .append("tspan")
+	          .attr("font-size", "10px")
+			  .attr("dx",1)
+			  .attr("dy",2)
+			  .text("m");
+	  }
+	  
       function draw_digits() {
         var thisCanvas = document.getElementById("fig4-left-canvas-imx");
         var thisContext = thisCanvas.getContext("2d");
@@ -5013,35 +5118,120 @@ function fig4() {
 	  }
 
 	  function update() {
+		theta = extras[1][80-reg_index];
+		  
+		d3.select("#svm-mnist-layer1-left")
+          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+		  .attr("x", x(-extras[0][80-reg_index])-x(0)-width/2);
+		  
+		d3.select("#svm-mnist-layer1-right")
+          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+		  .attr("x", x(-extras[0][80-reg_index])-x(0)+width/2);
+		  
         container.selectAll("circle0")
 	             .attr("y", function (d) {return y(d[80-reg_index+1]);});
 
 	    container.selectAll("circle1")
 	             .attr("y", function (d) {return y(d[80-reg_index+1]);});
+		  
+		d3.select("#svm-mnist-layer3-boundary")
+          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+          .attr("x1", x(-extras[0][80-reg_index]))
+	      .attr("x2", x(-extras[0][80-reg_index]));
+
+		d3.select("#svm-mnist-layer3-w-line")
+          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+		  .attr("x1", x(-extras[0][80-reg_index]))
+		  .attr("x2", x(-extras[0][80-reg_index]+6));
+		  
+		d3.select("#svm-mnist-layer3-w-polygon")
+		  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+            .attr("points", x(-extras[0][80-reg_index]+5.6)+","+y(0)+" "+x(-extras[0][80-reg_index]+5.2)+","+y(-0.5)+" "+x(-extras[0][80-reg_index]+6)+","+y(0)+" "+x(-extras[0][80-reg_index]+5.2)+","+y(0.5));
 				 
-	    if (Math.round( extras[14][80-reg_index] * 10) / 10 == max_dAdv)
+		d3.select("#svm-mnist-layer3-w-text")
+		  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+          .attr("x", x(-extras[0][80-reg_index]+7.7));
+
+		d3.select("#svm-mnist-layer3-x-circle")
+	      .attr("cx",x(extras[2][80-reg_index]))
+		  .attr("cy",y(extras[3][80-reg_index]));
+	    
+		d3.select("#svm-mnist-layer3-xm-circle")
+	      .attr("cx",x(extras[4][80-reg_index]))
+		  .attr("cy",y(extras[5][80-reg_index]));
+		  
+		d3.select("#svm-mnist-layer3-y-circle")
+	      .attr("cx",x(extras[6][80-reg_index]))
+	      .attr("cy",y(extras[7][80-reg_index]));	
+			
+		d3.select("#svm-mnist-layer3-ym-circle")
+	      .attr("cx",x(extras[8][80-reg_index]))
+	      .attr("cy",y(extras[9][80-reg_index]));	
+
+		d3.select("#svm-mnist-layer3-x-xm-line")
+          .attr("x1", x(extras[2][80-reg_index]))
+		  .attr("y1", y(extras[3][80-reg_index]))
+		  .attr("x2", x(extras[4][80-reg_index]))
+		  .attr("y2", y(extras[5][80-reg_index]))
+		  
+		d3.select("#svm-mnist-layer3-y-ym-line")
+          .attr("x1", x(extras[6][80-reg_index]))
+		  .attr("y1", y(extras[7][80-reg_index]))
+		  .attr("x2", x(extras[8][80-reg_index]))
+		  .attr("y2", y(extras[9][80-reg_index]))
+		
+		d3.select("#svm-mnist-layer3-label-x")
+          .attr("x", x(extras[2][80-reg_index])-3)
+	      .attr("y", y(extras[3][80-reg_index])+15)
+		  
+		d3.select("#svm-mnist-layer3-label-xm")
+          .attr("x", x(extras[4][80-reg_index])-3)
+	      .attr("y", y(extras[5][80-reg_index])-10)
+		  
+		d3.select("#svm-mnist-layer3-label-y")
+          .attr("x", x(extras[6][80-reg_index])-3)
+	      .attr("y", y(extras[7][80-reg_index])-10)
+		  
+		d3.select("#svm-mnist-layer3-label-ym")
+          .attr("x", x(extras[8][80-reg_index])-3)
+	      .attr("y", y(extras[9][80-reg_index])+15)
+				 
+	    if (Math.round( extras[12][80-reg_index] * 10) / 10 == max_dAdv)
 		  d3.select("#fig4-left-dAdv").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
 	    else
 		  d3.select("#fig4-left-dAdv").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"});
-	    if (Math.round( extras[15][80-reg_index] * 10) / 10 == min_errTrain)
+	    if (Math.round( extras[13][80-reg_index] * 10) / 10 == min_errTrain)
 		  d3.select("#fig4-left-errTrain").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
 	    else
 		  d3.select("#fig4-left-errTrain").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"});
-	    if (Math.round( extras[16][80-reg_index] * 10) / 10 == min_errTest)
+	    if (Math.round( extras[14][80-reg_index] * 10) / 10 == min_errTest)
 		  d3.select("#fig4-left-errTest").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
 	    else
 		  d3.select("#fig4-left-errTest").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"});
+	  
+	    //if (Math.round( extras[15][80-reg_index] * 10) / 10 == min_errTrain)
+		//  d3.select("#abstract_err_train").style("font-weight","bold")
+		//	                              .style("color",orange);
+	    //else
+		//  d3.select("#abstract_err_train").style("font-weight","normal")
+		//	                              .style("color","rgba(60%,60%,60%)");			 
+	    //if (Math.round( extras[14][80-reg_index] * 10) / 10 == max_dAdv)
+		//  d3.select("#abstract_adv_distance").style("font-weight","bold")
+		//	                                 .style("color",orange);
+	    //else
+		//  d3.select("#abstract_adv_distance").style("font-weight","normal")
+		//	                                 .style("color","rgba(60%,60%,60%)");	
 				 
 		d3.select("#fig4-value-lambda").text(parseFloat(-1+reg_index*0.1).toFixed(1));
-	    d3.select("#fig4-value-dx").text(parseFloat(extras[12][80-reg_index]).toFixed(1));
-	    d3.select("#fig4-value-dy").text(parseFloat(extras[13][80-reg_index]).toFixed(1));
-	    d3.select("#fig4-value-dAdv").text(parseFloat(extras[14][80-reg_index]).toFixed(1));
-	    d3.select("#fig4-value-errTrain").text(parseFloat(extras[15][80-reg_index]).toFixed(1));
-	    d3.select("#fig4-value-errTest").text(parseFloat(extras[16][80-reg_index]).toFixed(1));
+	    d3.select("#fig4-value-dx").text(parseFloat(extras[10][80-reg_index]).toFixed(1));
+	    d3.select("#fig4-value-dy").text(parseFloat(extras[11][80-reg_index]).toFixed(1));
+	    d3.select("#fig4-value-dAdv").text(parseFloat(extras[12][80-reg_index]).toFixed(1));
+	    d3.select("#fig4-value-errTrain").text(parseFloat(extras[13][80-reg_index]).toFixed(1));
+	    d3.select("#fig4-value-errTest").text(parseFloat(extras[14][80-reg_index]).toFixed(1));
 	  }
 	  
 	  function animate() {
-	    draw_canvas();
+	    draw_layer2();
 		draw_digits();
 		
 	    requestId = window.requestAnimationFrame(animate);
@@ -5052,31 +5242,20 @@ function fig4() {
         }
 	  }
 	  
-	  if (Math.round( extras[14][80-reg_index] * 10) / 10 == max_dAdv)
-		d3.select("#fig4-left-dAdv").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
-	  else
-		d3.select("#fig4-left-dAdv").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"})
-	  if (Math.round( extras[15][80-reg_index] * 10) / 10 == min_errTrain)
-		d3.select("#fig4-left-errTrain").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
-	  else
-		d3.select("#fig4-left-errTrain").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"});
-	  if (Math.round( extras[16][80-reg_index] * 10) / 10 == min_errTest)
-		d3.select("#fig4-left-errTest").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
-	  else
-		d3.select("#fig4-left-errTest").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"});
-	  
 	  d3.select("#fig4-value-lambda").text(parseFloat(-1+reg_index*0.1).toFixed(1));
-	  d3.select("#fig4-value-dx").text(parseFloat(extras[12][80-reg_index]).toFixed(1));
-	  d3.select("#fig4-value-dy").text(parseFloat(extras[13][80-reg_index]).toFixed(1));
-	  d3.select("#fig4-value-dAdv").text(parseFloat(extras[14][80-reg_index]).toFixed(1));
-	  d3.select("#fig4-value-errTrain").text(parseFloat(extras[15][80-reg_index]).toFixed(1));
-	  d3.select("#fig4-value-errTest").text(parseFloat(extras[16][80-reg_index]).toFixed(1));
+	  d3.select("#fig4-value-dx").text(parseFloat(extras[10][80-reg_index]).toFixed(1));
+	  d3.select("#fig4-value-dy").text(parseFloat(extras[11][80-reg_index]).toFixed(1));
+	  d3.select("#fig4-value-dAdv").text(parseFloat(extras[12][80-reg_index]).toFixed(1));
+	  d3.select("#fig4-value-errTrain").text(parseFloat(extras[13][80-reg_index]).toFixed(1));
+	  d3.select("#fig4-value-errTest").text(parseFloat(extras[14][80-reg_index]).toFixed(1));
 	  draw_digits();
 	  init_canvas();
-	  draw_canvas();
+	  draw_layer1();
+	  draw_layer2();
+	  draw_layer3();
 	
 	  var input = d3.select("#fig4-left-controler-input");
-	  input.property("value", init_reg_index);
+	  input.property("value", reg_index);
 	  input.on("input", function() {if (!animationRunning) {
 			                          animationRunning = true;
 			                          requestId = window.requestAnimationFrame(animate);
@@ -5090,7 +5269,7 @@ function fig4() {
   d3.select('#left-input-'+left_digit).property('checked', true);
   d3.select('#right-input-'+right_digit).property('checked', true);
   update_buttons(left_digit,right_digit);
-  draw_fig4(left_digit, right_digit);
+  draw_fig(left_digit, right_digit);
   
   d3.selectAll('input[name="left-digit"]').on('click', function() {if (animationRunning) {
                                                                      animationRunning = false;
@@ -5098,14 +5277,14 @@ function fig4() {
                                                                    }
 	                                                               left_digit = +this.value;
                                                                    update_buttons(left_digit,right_digit);
-																   draw_fig4(left_digit, right_digit);});
+																   draw_fig(left_digit, right_digit);});
   d3.selectAll('input[name="right-digit"]').on('click', function() {if (animationRunning) {
                                                                      animationRunning = false;
                                                                      window.cancelAnimationFrame(requestId);
                                                                    }
 	                                                                right_digit = +this.value;
                                                                     update_buttons(left_digit,right_digit);
-																	draw_fig4(left_digit, right_digit);});
+																	draw_fig(left_digit, right_digit);});
 																	
   d3.select("#button-0vs1").on('click', function() {if (animationRunning) {
                                                       animationRunning = false;
@@ -5116,7 +5295,7 @@ function fig4() {
                                                     d3.select('#left-input-'+left_digit).property('checked', true);
                                                     d3.select('#right-input-'+right_digit).property('checked', true); 
                                                     update_buttons(left_digit,right_digit);
-													draw_fig4(left_digit, right_digit);});
+													draw_fig(left_digit, right_digit);});
 											
   d3.select("#button-7vs9").on('click', function() {if (animationRunning) {
                                                       animationRunning = false;
@@ -5127,6 +5306,6 @@ function fig4() {
                                                     d3.select('#left-input-'+left_digit).property('checked', true);
                                                     d3.select('#right-input-'+right_digit).property('checked', true); 
                                                     update_buttons(left_digit,right_digit);
-													draw_fig4(left_digit, right_digit);});
+													draw_fig(left_digit, right_digit);});
 }
 
