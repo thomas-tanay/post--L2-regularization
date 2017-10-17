@@ -68,10 +68,7 @@
   }
   #abstract-fig {
 	width: 816px;
-	height: 233px;
-	//border-style: solid;
-	//border-width: 1.5px;
-	//border-color: rgb(60%,60%,60%);
+	height: 280px;
   }
   #abstract-rest {
     margin-top: 15px;
@@ -83,10 +80,8 @@
     display: -webkit-flex;
     display: flex;
 	flex-direction: column;
-	width: 200px;
-	padding-left: 20px;
-	margin-left: auto;
-	margin-right: auto;
+	width: 194px;
+	margin-left: 10px;
   }
   #abstract-input {
     margin-left: 0px;
@@ -120,9 +115,9 @@
 	  </div>
 	  <div id="abstract-text">
 		In linear models and small neural nets, L2 regularization can be understood as a balancing mechanism between two objectives:
-		minimizing the training error $err_{\text{train}}$ and maximizing the adversarial distance $d_{\text{adv}}$. <br>
+		minimizing the training error $err_{\text{train}}$ and maximizing the distance between the data and the boundary $d_{\text{adv}}$. <br>
 		<br>
-		In practice, using an appropriate level of regularization helps avoid overfitting and constitutes a good defence against adversarial attacks.	
+		In practice, using an appropriate level of regularization helps avoid overfitting and constitutes a simple form of adversarial training.	
 	  </div> 
 	</div>
   </div>
@@ -166,6 +161,8 @@
   <dt-cite key="goodfellow2014explaining"></dt-cite>.
   Here, we challenge this intuition and argue instead that adversarial examples exist when the classification boundary lies close the data manifold&mdash;independently 
   of the image space dimension. </p>
+  
+  <h4> Setup </h4>
   
   <p> Let's start with a minimal toy problem: a two-dimensional image space where each image is a function of $a$ and $b$. </p>
   
@@ -413,7 +410,6 @@
   </style>
   
   <p> Consider for instance a training set containing one noisy data point $\boldsymbol{p}$. </p>
-  <!--constituted of a large number of images from $I$ and $J$, plus the noisy data point $\boldsymbol{p}$ labelled in $I$:-->
   
   <div id="toy-problem5">
   </div>
@@ -470,216 +466,286 @@
 	
   <h3> Scaling the Loss Function </h3>
   
+  <p> Let's start with a simple observation: during training, the norm of the weight vector acts as a scaling parameter on the loss function.
+  
+  <h4> Definitions </h4>
+  
   <p> Let $I$ and $J$ be two classes of images and $\mathcal{C}$ a hyperplane boundary defining a linear classifier in $\mathbb{R}^d$. 
   $\mathcal{C}$ is specified by a normal weight vector $\boldsymbol{w}$ and a bias $b$. For an image $\boldsymbol{x}$ in $\mathbb{R}^d$, 
   we call <em> raw score </em> of $\boldsymbol{x}$ through $\mathcal{C}$ the value:
-  $$s(\boldsymbol{x}) := \boldsymbol{w} \!\cdot\! \boldsymbol{x} + b \quad\quad\quad \boldsymbol{x} \text{ is classified in } \mathrel{\Bigg|}
+  $$s(\boldsymbol{x}) := \boldsymbol{w} \!\cdot\! \boldsymbol{x} + b$$
+  $s(\boldsymbol{x})$ can be seen as a <em>signed distance</em> between $\boldsymbol{x}$ and the classification boundary defined by $\mathcal{C}$. 
+  In particular:
+  $$\boldsymbol{x} \text{ is classified in } \mathrel{\Bigg|}
   \begin{array}{@{}c@{}} \text{$I$ if } s(\boldsymbol{x}) \leq 0 \\ \text{$J$ if } s(\boldsymbol{x}) \geq 0 \end{array}$$</p>
   
   <p> Now, consider a training set $T$ of $n$ pairs $(\boldsymbol{x},y)$ where $\boldsymbol{x}$ is an image and 
-  $y = \{ -1 \text{ if } \boldsymbol{x} \in I \;|\; 1 \text{ if } \boldsymbol{x} \in J\}$ is its label.
-  For a given <em>loss function</em> $f$, the <em>empirical risk</em> on $T$ for the classifier $\mathcal{C}$ is:
+  $y = \{ -1 \text{ if } \boldsymbol{x} \in I \;|\; 1 \text{ if } \boldsymbol{x} \in J\}$ is its label. </p>
+  
+  <style>
+  .fysx-div {
+	position: relative;
+	width: 648px;
+	height: 170px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+  }
+  .fysx-text {
+	position: absolute;
+	width: 380px;
+	top: 20px;
+	left: 20px;
+  }
+  .fysx-fig {
+	position: absolute;
+	width: 203px;
+	height: 170px;
+	top: -10px;
+	left: 445px;
+  }
+  </style>
+  
+  <div class="fysx-div">
+    <p class="fysx-text"> If we plot the histograms of the raw scores $s(\boldsymbol{x})$ over the training set $T$, we typically get two clusters of opposite signs: </p>
+	<div class="fysx-fig" id="sx"> </div>
+  </div>
+  
+  <div class="fysx-div">
+    <p class="fysx-text"> Multiplying by the label $y$ allows us to distinguish the correctly classified data from the misclassified data: </p>
+	<div class="fysx-fig" id="ysx"> </div>
+  </div>
+  
+  <div class="fysx-div">
+    <p class="fysx-text"> We can then attribute a penalty to each training point $\boldsymbol{x}$ by applying a <em>loss function</em> $f$ to $y\,s(\boldsymbol{x})$: </p>
+	<div class="fysx-fig" id="fysx"> </div>
+  </div>
+  
+  <script>
+    sx();
+	ysx();
+	fysx();
+  </script>
+  
+  <p> This leads to the notion of <em>empirical risk</em> for the classifier $\mathcal{C}$ defined as the average penalty over the training set $T$:
   $$R(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(y\,s(\boldsymbol{x})\big)$$
   In general, learning a linear classifier consists of finding a weight vector $\boldsymbol{w}$ and a bias $b$ minimising $R(\boldsymbol{w},b)$ 
   for a well chosen loss function $f$.</p>
   
-  <style>
-  #small-bottom-margin {
-    margin-bottom: 5px;
-  }
-  #small-top-margin {
-    margin-top: 5px;
-  }
-  </style>
-  
-  <p id="small-bottom-margin"> Note that the raw score $s(\boldsymbol{x})$ can be seen as a scaled, signed distance. 
-  If $d(\boldsymbol{x})$ is the actual <em> signed euclidean distance </em> between $\boldsymbol{x}$ and $\mathcal{C}$, we have:
-  $$d(\boldsymbol{x}):= \boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{x} + b^\prime \quad\quad\quad \text{where} \quad\quad \textstyle
-  \boldsymbol{\hat{w}} := \frac{\boldsymbol{w}}{\lVert\boldsymbol{w}\rVert}\,,\quad b^\prime := \frac{b}{\lVert\boldsymbol{w}\rVert}$$
-  $$\text{and} \quad s(\boldsymbol{x}) = \lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
-  Hence the norm $\lVert\boldsymbol{w}\rVert$ can be interpreted as a scaling parameter for the loss function. 
-  The term $f\big(y\,s(\boldsymbol{x})\big)$ in the empirical risk can be written:
-  $$f\big(y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})\big)$$
-  and understood as: </p>
-  
-  <p id="small-top-margin"> <em>"$f$ applied to the signed euclidean distance $d(\boldsymbol{x})$, flipped left/right by the label $y = \pm 1$ and scaled by the parameter 
-  $\lVert\boldsymbol{w}\rVert$"</em>. </p>
-  
   <p>In binary classification, three notable loss functions are:</p>
   
   <style>
-  .loss-functions {
+  #loss-functions {
+    margin-top: 40px;
+	margin-bottom: 40px;
+  }
+  #loss-functions-main-div {
 	display: -webkit-flex;
-    display: inline-flex;
-	flex-direction: column;
-	width: 100%;
+    display: flex;
+	justify-content: space-between;
   }
   .loss-functions-div {
-    margin-bottom: 10px;
     display: -webkit-flex;
-    display: flex;
-  }
-  .loss-functions-def {
-    flex-grow: 1;
-	display: -webkit-flex;
     display: flex;
 	flex-direction: column;
   }
-  .loss-functions-text {
-    font: 18px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+  .loss-functions-header {
+    font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
 	font-weight: bold;
   }
   .loss-functions-equations {
-    margin: auto;
+    display: -webkit-flex;
+    display: flex;
+	align-items: center;
+	font-size: 15px;
+	height: 80px;
+	text-align: center;
   }
   .loss-functions-fig {
     margin-top: 0px;
     margin-left: auto;
 	margin-right: 0px;
-	width: 180px;
-	height: 120px;
+	width: 201px;
+	height: 134px;
 	border-style: solid;
 	border-width: 1px;
 	border-color: rgb(80%,80%,80%);
   }
   </style>
-  
-  <ul> 
-  <li>
-  <div class="loss-functions">
-    <div class="loss-functions-div">
-      <div class="loss-functions-def">
-        <div class="loss-functions-text"> The 0-1 indicator function </div>
-	    <div class="loss-functions-equations">
-          $$f:z \rightarrow
-          \begin{cases}
-          1  \quad & \text{if } z \leq 0\\
-          0        & \text{if } z \gt 0
-          \end{cases}$$
-	    </div>
-      </div>
-	  <div class="loss-functions-fig" id="indicator-01"> </div>
-    </div>
-    <div> With the 0-1 indicator function, the empirical risk $R(\boldsymbol{w},b)$ is simply the <em>error rate</em> on $T$.
-    In a sense, this is the optimal loss function as minimizing the error rate is often the desired objective in practice. However, it cannot be 
-    used with gradient descent (there is no gradient to descend: the devivative is null everywhere).</div>
+
+  <div class="l-body" id="loss-functions">
+  <hr class="horizontal-line">
+  <div id="loss-functions-main-div">
+  <div class="loss-functions-div">
+    <div class="loss-functions-header"> The 0-1 indicator function </div>
+	<div class="loss-functions-equations">
+      $$f:z \rightarrow
+      \begin{cases}
+        1  \quad & \text{if } z \leq 0\\
+        0        & \text{if } z \gt 0
+      \end{cases}$$
+	</div>
+	<div class="loss-functions-fig" id="indicator-01"> </div>
   </div>
-  </li>
-  <li>
-  <div class="loss-functions">
-    <div class="loss-functions-div">
-      <div class="loss-functions-def">
-        <div class="loss-functions-text"> The hinge loss </div>
-	    <div class="loss-functions-equations">
-          $$f:z \rightarrow \max(1-z,0)$$
-	    </div>
-      </div>
-	  <div class="loss-functions-fig" id="hinge-loss"> </div>
-    </div>
+  <div class="loss-functions-div">
+    <div class="loss-functions-header"> The hinge loss </div>
+	<div class="loss-functions-equations">
+      $$f:z \rightarrow \max(1-z,0)$$
+	</div>
+	<div class="loss-functions-fig" id="hinge-loss"> </div>
   </div>
-  <div> The hinge loss is used in Support Vector Machines (SVM). It penalises the misclassified data linearly while encouraging a safety margin of 1.</div> 
-  </li>
-  <li>
-  <div class="loss-functions">
-    <div class="loss-functions-div">
-      <div class="loss-functions-def">
-        <div class="loss-functions-text"> The softplus loss </div>
-	    <div class="loss-functions-equations">
-          $$f:z \rightarrow \ln\left(1+e^{-z}\right)$$
-	    </div>
-      </div>
-	  <div class="loss-functions-fig" id="softplus-loss"> </div>
-    </div>
+  <div class="loss-functions-div">
+    <div class="loss-functions-header"> The softplus loss </div>
+	<div class="loss-functions-equations">
+      $$f:z \rightarrow \ln\left(1+e^{-z}\right)$$
+	</div>
+	<div class="loss-functions-fig" id="softplus-loss"> </div>
   </div>
-  <div> The softplus loss is used in logistic regression. It can be seen as a smooth version of the hinge loss. </div>
-  </li>
-  </ul>
+  </div>
+  <hr class="horizontal-line">
+  </div>
   
   <script>
     loss_functions();
   </script>
   
-  <p> The 0-1 indicator function is invariant to rescaling, but the hinge loss and the softplus loss are strongly affected: </p>
+  <p> With the 0-1 indicator function, the empirical risk is simply the <em>error rate</em> on $T$. In a sense, this is the optimal loss function
+  as minimizing the error rate is often the desired objective in practice. Unfortunately, this loss is incompatible with gradient descent (there is no gradient
+  to descend: the derivative is null everywhere). This limitation is overcome with the hinge loss (used in SVM) and the softplus loss (used in logistic regression) 
+  by replacing the unit penalty on the misclassified data with a monotonically decreasing penalty. Remark that both the hinge loss and the softplus loss penalize 
+  some correctly classified data, effectively enforcing a safety margin in the neighbourhood of the boundary.
+  
+  <h4> The scaling parameter $\lVert\boldsymbol{w}\rVert$ </h4>
+  
+  <p> An important point previously overlooked is that the signed distance $s(\boldsymbol{x})$ is scaled 
+  by the norm of the weight vector.
+  If $d(\boldsymbol{x})$ is the actual <em> signed euclidean distance </em> between $\boldsymbol{x}$ and $\mathcal{C}$, we have:
+  $$d(\boldsymbol{x}):= \boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{x} + b^\prime \quad\quad\quad \text{where} \quad\quad \textstyle
+  \boldsymbol{\hat{w}} := \frac{\boldsymbol{w}}{\lVert\boldsymbol{w}\rVert}\,\quad b^\prime := \frac{b}{\lVert\boldsymbol{w}\rVert}$$
+  $$\text{and} \quad s(\boldsymbol{x}) = \lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
+  Hence, the norm $\lVert\boldsymbol{w}\rVert$ can be interpreted as a scaling parameter for the loss function in the expression of the empirical risk: </p>
   
   <style>
-  #fig3 {
+  #empirical-risk-div {
+    margin-top: -20px;
+	margin-bottom: -20px;
+	position: relative;
+	width: 648px;
+	height: 140px;
+  }
+  #empirical-risk-text {
+ 	position: absolute;
+	width: 648px;
+	height: 140px;
+    font-family: Georgia, serif;
+  }
+  #empirical-risk-svg {
+ 	position: absolute;
+	width: 648px;
+	height: 140px;
+  }
+  </style>
+  
+  <div id="empirical-risk-div">
+    <div id="empirical-risk-text"> $$R(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(\;\lVert\boldsymbol{w}\rVert \times y\,d(\boldsymbol{x})\big)$$ </div>
+	<div id="empirical-risk-svg"> </div>
+  </div>
+  
+  <script>
+    scaling_parameter();
+  </script>
+  
+  <p> The 0-1 indicator function is invariant to rescaling. However, varying $\lVert\boldsymbol{w}\rVert$ has a strong influence on the way the hinge loss 
+  and the softplus loss distribute penalties over the training data: </p>
+  
+  <style>
+  #scaling-f {
     display: -webkit-flex;
     display: flex;
 	flex-direction: column;
+	margin-top: 40px;
+	margin-bottom: 40px;
   }
-  #fig3-controler {
-    margin-bottom: 20px;
-    display: -webkit-flex;
-    display: flex;
-	justify-content: center;
-  }
-  .fig3-caption {
-    font-size: 15px;
-  }
-  #fig3-controler-input {
-    margin-top: 7px;
-    margin-left: 10px;
-	margin-right: 10px;
-  }
-  #fig3-value-w {
-    display: inline-block;
-	text-align: right;
-	width: 30px;
-  }
-  #fig3-content {
+  #scaling-f-content {
 	margin-bottom: 10px;
     display: -webkit-flex;
     display: flex;
 	justify-content: space-between;
-	
   }
-  .fig3-subfig {
+  .scaling-f-subfig {
     display: -webkit-flex;
     display: flex;
 	flex-direction: column;
 	align-items: center;
   }
-  .fig3-subfig-content {
+  .scaling-f-subfig-header {
+    font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	font-weight: bold;
+  }
+  .scaling-f-subfig-content {
     margin-top: 10px;
-	width: 240px;
-	height: 160px;
+	width: 201px;
+	height: 134px;
 	border-style: solid;
 	border-width: 1px;
 	border-color: rgb(80%,80%,80%);
   }
+  #scaling-f-caption {
+    display: -webkit-flex;
+    display: flex;
+  }
+  #scaling-f-controler {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+    flex: 0 0 210px;
+  }
+  .scaling-f-text {
+    font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(60%,60%,60%);
+  }
+  #scaling-f-controler-input {
+    margin-left: 0px;
+	margin-top: 15px;
+  }
+  #scaling-f-value-w {
+    display: inline-block;
+	text-align: right;
+	width: 30px;
+  }
   </style>
   
-  <figure class="l-middle">
-    <div id="fig3">
-      <div id="fig3-controler">
-	    <div class="fig3-caption"> $\lVert\boldsymbol{w}\rVert:$ </div>
-		<input id="fig3-controler-input" type="range" min="-1" max="2" step="0.01"> </input>
-		<div class="fig3-caption"> $\displaystyle 10$ <sup> <span id="fig3-value-w">...</span> </sup> </div>
+  <div class="l-body">
+    <div id="scaling-f">
+	  <div id="scaling-f-content">
+	    <div class="scaling-f-subfig">
+		  <div class="scaling-f-subfig-header"> 0-1 indicator function </div>
+          <div class="scaling-f-subfig-content" id="scaling-f-subfig1"> </div>
+		</div>
+	    <div class="scaling-f-subfig">
+		  <div class="scaling-f-subfig-header"> hinge loss </div>
+          <div class="scaling-f-subfig-content" id="scaling-f-subfig2"> </div>
+		</div>
+	    <div class="scaling-f-subfig">
+		  <div class="scaling-f-subfig-header"> softplus loss </div>
+          <div class="scaling-f-subfig-content" id="scaling-f-subfig3"> </div>
+		</div>
 	  </div>
-	  <div id="fig3-content">
-	    <div class="fig3-subfig">
-		  <div class="fig3-caption"> 0-1 indicator function </div>
-          <div class="fig3-subfig-content" id="fig3-subfig1"> </div>
+	  <div id="scaling-f-caption">
+	    <div id="scaling-f-controler">
+		  <div class="scaling-f-text"> $\lVert\boldsymbol{w}\rVert = 10$ <sup> <span id="scaling-f-value-w">...</span> </sup> </div>
+		  <input id="scaling-f-controler-input" type="range" min="-1" max="2" step="0.01"> </input>
 		</div>
-	    <div class="fig3-subfig">
-		  <div class="fig3-caption"> hinge loss </div>
-          <div class="fig3-subfig-content" id="fig3-subfig2"> </div>
-		</div>
-	    <div class="fig3-subfig">
-		  <div class="fig3-caption"> softplus loss </div>
-          <div class="fig3-subfig-content" id="fig3-subfig3"> </div>
-		</div>
+	    <div class="scaling-f-text"> Effect of the scaling parameter $\lVert\boldsymbol{w}\rVert$ on the three loss functions. 
+		The histograms represent the values of $d(\boldsymbol{x})$ over $T$ for a given $\boldsymbol{w}$ and $b$ and the blue lines represent the values of $f$. </div>
 	  </div>
 	</div>
-	<figcaption> Effect of the scaling parameter $\lVert\boldsymbol{w}\rVert$ on the three loss functions. The histograms represent the values of $d(\boldsymbol{x})$ 
-	over the training data for a given $\boldsymbol{w}$ and $b$ and the full lines represent the values of $f$ (orange: class $I$, blue: class $J$).</figcaption>
-  </figure>
+  </div>
   
   <script>
-   fig3();
+   scaling_f();
   </script>
   
-  <p> Importantly, the hinge loss and the softplus loss behave in the same way for extreme values of the scaling parameter.</p>
+  <p> Remarkably, the two losses behave in the same way for extreme values of the scaling parameter. </p>
   
   <style>
   .value-w {
@@ -692,16 +758,16 @@
   }
   .value-w-header {
     margin-top: 0px;
-    font: 18px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	font-weight: bold;
+    //font: 18px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	//font-weight: bold;
   }
   .value-w-text {
     margin-bottom: 0px;
 	font-style: italic;
   }
   .value-w-input {
-	width: 180px;
-	height: 120px;
+	width: 201px;
+	height: 134px;
 	margin-right: 0px;
 	border-style: solid;
 	border-width: 1px;
@@ -711,8 +777,8 @@
    
   <div class="l-body value-w">
     <div class="value-w-div">
-      <p class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is large: </p>
-      <p class="value-w-text"> The hinge loss and the softplus loss penalize only the misclassified data&mdash;and do so linearly. </p>
+      <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is large: </h4>
+      <p class="value-w-text"> The hinge loss and the softplus loss penalize the misclassified data linearly. </p>
 	</div>
 	<div class="value-w-input" id="value-w-input1"> </div>
   </div>
@@ -753,7 +819,7 @@
   which is similar to minimizing the error rate on the training set</em>.</p>
   <div class="l-body value-w">
     <div class="value-w-div">
-      <p class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is small: </p>
+      <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is small: </h4>
       <p class="value-w-text"> The hinge loss and the softplus loss penalize the entire training data linearly. </p>
 	</div>
 	<div class="value-w-input" id="value-w-input2"> </div>
@@ -788,6 +854,8 @@
     large_norm_w();
 	small_norm_w();
   </script>
+  
+  <h4> Wrapping up </h4>
   
   <p>In practice, the value of $\lVert\boldsymbol{w}\rVert$ can be controlled by adding a regularization term to the empirical risk, yielding the <em>regularized loss</em>:
   $$L(\boldsymbol{w},b) := \underbrace{R(\boldsymbol{w},b)}_{\text{Empirical Risk}} \, + \underbrace{\lambda\,\lVert\boldsymbol{w}\rVert^2}_{\text{L2 Regularization}}$$</p>

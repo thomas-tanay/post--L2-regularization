@@ -1,6 +1,7 @@
 function abstract_fig(){
   var width = 816;
-  var height = 233;
+  var space_width = 408;
+  var height = 2/3*space_width+1;
   var x = d3.scaleLinear().domain([-24,24]).range([0, height*3/2]);
   var y = d3.scaleLinear().domain([16,-16]).range([0, height]);
   var left_digit = 2;
@@ -25,30 +26,32 @@ function abstract_fig(){
 	  var data1 = d3.csvParseRows(text_data1).map(function(row) {return row.map(function(value) {return +value;});});
 	  var extras = d3.csvParseRows(text_extras).map(function(row) {return row.map(function(value) {return +value;});});
 	  
-      var fig = d3.select("#abstract-fig");
-	  fig.style("position","relative");
+      var fig = d3.select("#abstract-fig")
+	              .attr("width",space_width)
+				  .attr("height",height)
+				  .style("position","relative");
 	  
       var layer1 = fig.append("svg")
 	                  .style("position","absolute")
-                      .attr("width", 3/2*height)
+                      .attr("width", space_width)
                       .attr("height", height)
 					  .style("top", "0px")
-					  .style("left", (width-height*3/2)/2 + "px");
+					  .style("left", (width-space_width)/2 + "px");
 	  
       var layer2 = fig.append("canvas")
 					  .style("position","absolute")
-                      .attr("width", 3/2*height)
+                      .attr("width", space_width)
                       .attr("height", height)
 					  .style("top", "0px")
-					  .style("left", (width-height*3/2)/2 + "px");
+					  .style("left", (width-space_width)/2 + "px");
 	  var ctx_layer2 = layer2.node().getContext("2d");
 	  
       var layer3 = fig.append("svg")
 	                  .style("position","absolute")
-                      .attr("width", 3/2*height)
+                      .attr("width", space_width)
                       .attr("height", height)
 					  .style("top", "0px")
-					  .style("left", (width-height*3/2)/2 + "px");
+					  .style("left", (width-space_width)/2 + "px");
 	  
       var layer4 = fig.append("svg")
 	                  .style("position","absolute")
@@ -66,12 +69,12 @@ function abstract_fig(){
 		mean3_x += data1[i][0];
       }
 	  mean_x = (mean3_x-mean2_x)/3000;
-      mean2_x = (width-height*3/2)/2 + x(-mean_x);
-	  mean3_x = (width-height*3/2)/2 + x(mean_x);
+      mean2_x = (width-space_width)/2 + x(-mean_x);
+	  mean3_x = (width-space_width)/2 + x(mean_x);
 		
 	  var mean2_y = y(0), mean3_y = y(0);
-	  var mean2_im_x = (width - height*3/2)/4, mean2_im_y = height/2;  
-	  var mean3_im_x = height*3/2 + 3*(width - height*3/2)/4, mean3_im_y = height/2;
+	  var mean2_im_x = (width - space_width)/4, mean2_im_y = height/2;  
+	  var mean3_im_x = space_width + 3*(width - space_width)/4, mean3_im_y = height/2;
 	  
 	  var theta = extras[1][80-reg_index];
 	  
@@ -106,12 +109,12 @@ function abstract_fig(){
 			  .attr("stroke-width",1)
 			  .attr("x", 0)
               .attr("y", 0)
-              .attr("width", 3/2*height)
+              .attr("width", space_width)
               .attr("height", height);
 	  }
 
       function draw_layer2() {
-        ctx_layer2.clearRect(0, 0, 3/2*height, height);
+        ctx_layer2.clearRect(0, 0, space_width, height);
 	
 	    //Class 0
         container.selectAll("circle0")
@@ -224,16 +227,16 @@ function abstract_fig(){
 			  .attr("stroke-width",1)
 			  .attr("x", 1)
               .attr("y", 0)
-              .attr("width", (width - height*3/2)/2)
+              .attr("width", (width - space_width)/2)
               .attr("height", height);
 			  
         layer4.append("rect")
               .attr("fill",side_boxes_color)
 			  .attr("stroke","rgb(60%,60%,60%)")
 			  .attr("stroke-width",1)
-			  .attr("x", (width - height*3/2)/2 + height*3/2 - 1)
+			  .attr("x", (width - space_width)/2 + space_width - 1)
               .attr("y", 0)
-              .attr("width", (width - height*3/2)/2 + 1)
+              .attr("width", (width - space_width)/2 + 1)
               .attr("height", height);
 			  
 	    layer4.append("circle")
@@ -367,7 +370,7 @@ function abstract_fig(){
 		}
 	    else {
 		  line_y = y(-20.5/Math.sin(theta) - mean_x*Math.cos(theta)*Math.cos(theta)/Math.sin(theta));
-	      text_x = x(16.5);
+	      text_x = x(18);
 		  text_y = y(-25 / Math.tan(theta)) + 10;
 		}
 		d3.select("#abstract-d-adv-line")
@@ -860,6 +863,13 @@ function toy_problem1(){
                .attr("x", text_x)
 	           .attr("y", text_y + 124)
 		       .text("outer square");
+			   
+	gray_labels.append("text")
+	           .attr("text-anchor", "middle")
+	           .attr("id","toy-problem1-text")
+               .attr("x", space_x + space_scale(a))
+	           .attr("y", space_y + space_scale(-b) + 20)
+               .text("("+parseFloat(a).toFixed(1)+", "+parseFloat(b).toFixed(1)+")");
 			
     // bracket
     var bracket = background.append("g")
@@ -4059,38 +4069,466 @@ function noisy_data2(){
   init_toy_problem(init_theta);
 }
 
+function sx() {
+  var width = 203;
+  var height = 170;
+  var plot_width = 201;
+  var plot_height = 134;
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, plot_width]);
+  var y = d3.scaleLinear().domain([3, -0.5]).range([0, plot_height/2]);
+  var left_color = d3.interpolateBlues(0.3);
+  var right_color = d3.interpolateBlues(0.7);
+  var light_left_color = "rgb(95%,95%,95%)";
+  var light_right_color = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
+
+  var dataA = [0., 0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  
+  var plot_x = 1, plot_y = 30;
+			   
+  var background = d3.select("#sx")
+                     .append("svg")
+    	   	  	     .attr("width", width)
+			         .attr("height", height);
+
+  var plot = background.append("svg")
+                       .attr("x",plot_x)
+					   .attr("y",plot_y)
+	                   .attr("width", plot_width)
+		               .attr("height", plot_height);
+					 
+  plot.append("rect")
+      .attr("fill","rgb(98%,98%,98%)")
+	  .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", plot_width+1)
+      .attr("height", plot_height+1);
+  
+  plot.append("line")
+      .attr("x1", x(-4))
+	  .attr("y1", y(0))
+	  .attr("x2", x(4))
+	  .attr("y2", y(0))
+	  .attr('stroke',"rgb(0%,0%,0%)")
+	  .attr("stroke-opacity",0.2)
+	  .attr("stroke-width", 1);
+	   
+  plot.append("line")
+      .attr("x1", x(-4))
+	  .attr("y1", y(0)+plot_height/2)
+	  .attr("x2", x(4))
+	  .attr("y2", y(0)+plot_height/2)
+	  .attr('stroke',"rgb(0%,0%,0%)")
+	  .attr("stroke-opacity",0.2)
+	  .attr("stroke-width", 1);
+	   
+  plot.selectAll("rect0")
+      .data(dataA)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+      .attr("y", function(d) {return y(0) - d * plot_height / 4;})
+      .attr("width", 6.5)
+      .attr("height", function(d) {return d * plot_height / 4;})
+      .style("stroke-width", 0.3)
+      .style("stroke", "rgb(30%, 30%, 30%)")
+      .style("fill-opacity", 1)
+      .style("fill", left_color);
+	   
+  plot.selectAll("rect0")
+      .data(dataB)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+      .attr("y", function(d) {return y(0) - d * plot_height / 4 + plot_height/2;})
+      .attr("width", 6.5)
+      .attr("height", function(d) {return d * plot_height / 4;})
+      .style("stroke-width", 0.3)
+      .style("stroke", "rgb(10%, 10%, 10%)")
+      .style("fill-opacity", 1)
+      .style("fill", right_color);
+
+  plot.append("line")
+      .attr("x1", x(0))
+	  .attr("y1", y(-5))
+	  .attr("x2", x(0))
+	  .attr("y2", y(5))
+	  .attr('stroke',orange)
+	  .attr("stroke-opacity",1)
+	  .attr("stroke-width", 2.5);
+	  
+  background.append("rect")
+            .attr("stroke","rgb(60%,60%,60%)")
+			.attr("stroke-width", 0.5)
+			.attr("fill","none")
+	        .attr("x", plot_x)
+            .attr("y", plot_y)
+            .attr("width", plot_width)
+            .attr("height", plot_height);
+			
+  var black_labels = background.append("g")
+	                           .attr("fill", "rgb(0%,0%,0%)")
+	                           .attr("font-family","Roboto")
+	                           .attr("font-size", "15px");
+
+  black_labels.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("font-style", "italic")
+              .attr("x", plot_x+plot_width/2)
+	          .attr("y", plot_y-10)
+	          .text("s(x) ")
+			  .append("tspan")
+			  .attr("font-style","normal")
+			  .text("\u00A0over ")
+			  .append("tspan")
+			  .attr("font-style","italic")
+			  .text("T");
+			  
+  // gray labels
+  var gray_labels = background.append("g")
+	                          .attr("fill", "rgb(60%,60%,60%)")
+	                          .attr("font-family","Roboto")
+	                          .attr("font-size", "13px");
+								
+  gray_labels.append("text")
+	         .attr("text-anchor", "middle")
+             .attr("x", plot_x+plot_width/5)
+	         .attr("y", plot_y+plot_height/5)
+	         .text("Class ")
+	         .append("tspan")
+		     .attr("font-style", "italic")
+			 .text("I");
+			   
+  gray_labels.append("text")
+	         .attr("text-anchor", "middle")
+             .attr("x", plot_x+4*plot_width/5)
+	         .attr("y", plot_y+4*plot_height/5)
+	         .text("Class ")
+	         .append("tspan")
+			 .attr("font-style", "italic")
+			 .text("J");
+}
+
+function ysx() {
+  var width = 203;
+  var height = 170;
+  var plot_width = 201;
+  var plot_height = 134;
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, plot_width]);
+  var y = d3.scaleLinear().domain([6, -1]).range([0, plot_height]);
+  var left_color = d3.interpolateBlues(0.3);
+  var right_color = d3.interpolateBlues(0.7);
+  var light_left_color = "rgb(95%,95%,95%)";
+  var light_right_color = "rgb(85%,85%,85%)";
+  var orange = "rgb(255,102,0)";
+
+  var dataA = [0., 0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var data = [dataA.slice().reverse(), dataB];
+  data = data[0].map(function(col, i) { return data.map(function(row) { return row[i] })});
+
+  var plot_x = 1, plot_y = 30;
+			   
+  var background = d3.select("#ysx")
+                     .append("svg")
+    	   	  	     .attr("width", width)
+			         .attr("height", height);
+			
+  var plot = background.append("svg")
+                       .attr("x",plot_x)
+					   .attr("y",plot_y)
+	                   .attr("width", plot_width)
+		               .attr("height", plot_height);
+					 
+  plot.append("rect")
+      .attr("fill","rgb(98%,98%,98%)")
+	  .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", plot_width+1)
+      .attr("height", plot_height+1);
+  
+  plot.append("line")
+      .attr("x1", x(-4))
+	  .attr("y1", y(0))
+	  .attr("x2", x(4))
+	  .attr("y2", y(0))
+	  .attr('stroke',"rgb(0%,0%,0%)")
+	  .attr("stroke-opacity",0.2)
+	  .attr("stroke-width", 1);
+	   
+  plot.selectAll("rect0")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+      .attr("y", function(d) {return y(0) - d[1] * plot_height / 4 - d[0] * plot_height / 4;})
+      .attr("width", 6.5)
+      .attr("height", function(d) {return d[0] * plot_height / 4;})
+      .style("stroke-width", 0.3)
+      .style("stroke", "rgb(30%, 30%, 30%)")
+      .style("fill-opacity", 1)
+      .style("fill", left_color);
+	   
+  plot.selectAll("rect1")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+      .attr("y", function(d) {return y(0) - d[1] * plot_height / 4;})
+      .attr("width", 6.5)
+      .attr("height", function(d) {return d[1] * plot_height / 4;})
+      .style("stroke-width", 0.3)
+      .style("stroke", "rgb(10%, 10%, 10%)")
+      .style("fill-opacity", 1)
+      .style("fill", right_color);
+	   
+  plot.append("line")
+      .attr("x1", x(0))
+	  .attr("y1", y(-1))
+	  .attr("x2", x(0))
+	  .attr("y2", y(6))
+	  .attr('stroke', orange)
+	  .attr("stroke-opacity", 1)
+	  .attr("stroke-width", 2.5);
+	   
+  background.append("rect")
+            .attr("stroke","rgb(60%,60%,60%)")
+			.attr("stroke-width", 0.5)
+			.attr("fill","none")
+	        .attr("x", plot_x)
+            .attr("y", plot_y)
+            .attr("width", plot_width)
+            .attr("height", plot_height);
+			
+  var black_labels = background.append("g")
+	                           .attr("fill", "rgb(0%,0%,0%)")
+	                           .attr("font-family","Roboto")
+	                           .attr("font-size", "15px");
+			  
+  black_labels.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("font-style", "italic")
+              .attr("x", plot_x+plot_width/2)
+	          .attr("y", plot_y-10)
+	          .text("y s(x) ")
+			  .append("tspan")
+			  .attr("font-style","normal")
+			  .text("\u00A0over ")
+			  .append("tspan")
+			  .attr("font-style","italic")
+			  .text("T");
+			  
+  // gray labels
+  var gray_labels = background.append("g")
+	                          .attr("fill", "rgb(60%,60%,60%)")
+	                          .attr("font-family","Roboto")
+	                          .attr("font-size", "13px");
+								
+  gray_labels.append("text")
+	         .attr("text-anchor", "middle")
+             .attr("x", plot_x+plot_width/5)
+	         .attr("y", plot_y+plot_height/5)
+	         .text("mis-");
+			
+  gray_labels.append("text")
+	         .attr("text-anchor", "middle")
+             .attr("x", plot_x+plot_width/5)
+	         .attr("y", plot_y+plot_height/5+20)
+	         .text("classified");
+			 
+  gray_labels.append("text")
+	         .attr("text-anchor", "middle")
+             .attr("x", plot_x+plot_width/5)
+	         .attr("y", plot_y+plot_height/5+40)
+	         .text("data");
+			   
+  gray_labels.append("text")
+	         .attr("text-anchor", "middle")
+             .attr("x", plot_x+4*plot_width/5)
+	         .attr("y", plot_y+plot_height/5)
+	         .text("correctly");
+			 
+  gray_labels.append("text")
+	         .attr("text-anchor", "middle")
+             .attr("x", plot_x+4*plot_width/5)
+	         .attr("y", plot_y+plot_height/5+20)
+	         .text("classified");
+			 
+  gray_labels.append("text")
+	         .attr("text-anchor", "middle")
+             .attr("x", plot_x+4*plot_width/5)
+	         .attr("y", plot_y+plot_height/5+40)
+	         .text("data");
+}
+
+function fysx() {
+  var width = 203;
+  var height = 170;
+  var plot_width = 201;
+  var plot_height = 134;
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, plot_width]);
+  var y = d3.scaleLinear().domain([3, -1]).range([0, plot_height]);
+  var left_color = d3.interpolateBlues(0.3);
+  var right_color = d3.interpolateBlues(0.7);
+  var light_left_color = "rgb(95%,95%,95%)";
+  var light_right_color = "rgb(85%,85%,85%)";
+  var blue = d3.interpolateBlues(0.7);
+  var orange = "rgb(255,102,0)";
+
+  var dataA = [0., 0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var data = [dataA.slice().reverse(), dataB];
+  data = data[0].map(function(col, i) { return data.map(function(row) { return row[i] })});
+
+  var plot_x = 1, plot_y = 30;
+			   
+  var background = d3.select("#fysx")
+                     .append("svg")
+    	   	  	     .attr("width", width)
+			         .attr("height", height);
+			
+  var plot = background.append("svg")
+                       .attr("x",plot_x)
+					   .attr("y",plot_y)
+	                   .attr("width", plot_width)
+		               .attr("height", plot_height);
+					 
+  plot.append("rect")
+      .attr("fill","rgb(98%,98%,98%)")
+	  .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", plot_width+1)
+      .attr("height", plot_height+1);
+  
+  plot.append("line")
+      .attr("x1", x(-4))
+	  .attr("y1", y(0))
+	  .attr("x2", x(4))
+	  .attr("y2", y(0))
+	  .attr('stroke',"rgb(0%,0%,0%)")
+	  .attr("stroke-opacity",0.2)
+	  .attr("stroke-width", 1);
+	   
+  plot.selectAll("rect0")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+      .attr("y", function(d) {return y(0) - d[1] * plot_height / 4 - d[0] * plot_height / 4;})
+      .attr("width", 6.5)
+      .attr("height", function(d) {return d[0] * plot_height / 4;})
+      .style("stroke-width", 0.3)
+      .style("stroke", "rgb(30%, 30%, 30%)")
+      .style("fill-opacity", 1)
+      .style("fill", light_left_color);
+	   
+  plot.selectAll("rect1")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+      .attr("y", function(d) {return y(0) - d[1] * plot_height / 4;})
+      .attr("width", 6.5)
+      .attr("height", function(d) {return d[1] * plot_height / 4;})
+      .style("stroke-width", 0.3)
+      .style("stroke", "rgb(10%, 10%, 10%)")
+      .style("fill-opacity", 1)
+      .style("fill", light_right_color);
+	   
+  plot.append("line")
+      .attr("x1", x(0))
+	  .attr("y1", y(-1))
+	  .attr("x2", x(0))
+	  .attr("y2", y(6))
+	  .attr('stroke', orange)
+	  .attr("stroke-opacity", 1)
+	  .attr("stroke-width", 2.5);
+	  
+  plot.append("path")
+	  .attr("d", "M " + x(-4) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(4) + " " + y(0))
+      .style("stroke", blue)
+      .style("stroke-width", 2)
+      .style("fill", "none");
+	   
+  background.append("rect")
+            .attr("stroke","rgb(60%,60%,60%)")
+			.attr("stroke-width", 0.5)
+			.attr("fill","none")
+	        .attr("x", plot_x)
+            .attr("y", plot_y)
+            .attr("width", plot_width)
+            .attr("height", plot_height);
+			
+  var black_labels = background.append("g")
+	                           .attr("fill", "rgb(0%,0%,0%)")
+	                           .attr("font-family","Roboto")
+	                           .attr("font-size", "15px");
+			  
+  black_labels.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("font-style", "italic")
+              .attr("x", plot_x+plot_width/2)
+	          .attr("y", plot_y-10)
+	          .text("f(y s(x)) ")
+			  .append("tspan")
+			  .attr("font-style","normal")
+			  .text("\u00A0over ")
+			  .append("tspan")
+			  .attr("font-style","italic")
+			  .text("T");
+			  
+  background.append("text")
+	        .attr("fill", blue)
+	        .attr("font-family","Roboto")
+	        .attr("font-size", "13px")
+	        .attr("text-anchor", "middle")
+			.attr("font-style","italic")
+            .attr("x", plot_x+10)
+	        .attr("y", plot_y+60)
+	        .text("f");
+}
+
 function loss_functions() {
-  var width = 180;
-  var height = 120;
+  var width = 201;
+  var height = 134;
   var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
   var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
+  var blue = d3.interpolateBlues(0.7);
   
   var indicator_01 = d3.select("#indicator-01")
                        .append("svg")
 	                   .attr("width", width)
 		               .attr("height", height);
+					   
+  indicator_01.append("rect")
+              .attr("fill","rgb(98%,98%,98%)")
+			  .attr("x", 0)
+              .attr("y", 0)
+              .attr("width", width+1)
+              .attr("height", height+1);
   
   indicator_01.append("line")
               .attr("x1", x(-4))
 	          .attr("y1", y(0))
 	          .attr("x2", x(4))
 	          .attr("y2", y(0))
-              .attr("stroke-width", 0.3)
-	          .attr("stroke", "rgb(0%,0%,0%)")
-              .attr("stroke-opacity",0.8);
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1);
 
   indicator_01.append("line")
               .attr("x1", x(0))
 	          .attr("y1", y(-1))
 	          .attr("x2", x(0))
 	          .attr("y2", y(4))
-              .attr("stroke-width", 0.3)
-	          .attr("stroke", "rgb(0%,0%,0%)")
-              .attr("stroke-opacity",0.8);
+	          .attr('stroke',"rgb(0%,0%,0%)")
+			  .attr("stroke-opacity",0.2)
+			  .attr("stroke-width", 1);
 			 
   indicator_01.append("path")
 		      .attr("d", "M " + x(-4) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(4) + " " + y(0))
-              .style("stroke", "rgb(36.84%,50.68%,70.98%)")
+              .style("stroke", blue)
               .style("stroke-width", 2)
               .style("fill", "none");
 			  
@@ -4115,28 +4553,35 @@ function loss_functions() {
                      .append("svg")
 	                 .attr("width", width)
 		             .attr("height", height);
+					 
+  hinge_loss.append("rect")
+            .attr("fill","rgb(98%,98%,98%)")
+			.attr("x", 0)
+            .attr("y", 0)
+            .attr("width", width+1)
+            .attr("height", height+1);
   
   hinge_loss.append("line")
             .attr("x1", x(-4))
 	        .attr("y1", y(0))
 	        .attr("x2", x(4))
 	        .attr("y2", y(0))
-            .attr("stroke-width", 0.3)
-	        .attr("stroke", "rgb(0%,0%,0%)")
-            .attr("stroke-opacity",0.8);
+	        .attr('stroke',"rgb(0%,0%,0%)")
+		    .attr("stroke-opacity",0.2)
+			.attr("stroke-width", 1);
 
   hinge_loss.append("line")
             .attr("x1", x(0))
 	        .attr("y1", y(-1))
 	        .attr("x2", x(0))
 	        .attr("y2", y(4))
-            .attr("stroke-width", 0.3)
-	        .attr("stroke", "rgb(0%,0%,0%)")
-            .attr("stroke-opacity",0.8);
+	        .attr('stroke',"rgb(0%,0%,0%)")
+			.attr("stroke-opacity",0.2)
+			.attr("stroke-width", 1);
 			 
   hinge_loss.append("path")
 			.attr("d", "M " + x(-4) + " " + y(1+4) + " L " + x(1) + " " + y(0) + " L " + x(4) + " " + y(0))
-            .style("stroke", "rgb(36.84%,50.68%,70.98%)")
+            .style("stroke", blue)
             .style("stroke-width", 2)
             .style("fill", "none");
 			  
@@ -4158,8 +4603,8 @@ function loss_functions() {
             .text("1");
 			
   var line = d3.line()
-                   .x(function(d,i) {return x(-3.5 + i * 0.025);})
-                   .y(function(d) {return y(d);});
+               .x(function(d,i) {return x(-3.5 + i * 0.025);})
+               .y(function(d) {return y(d);});
   var softplusA = [];
   for (var i = -3.5; i < 3.5; i+= 0.025)
 	softplusA.push(Math.log(1 + Math.exp(-i)));
@@ -4168,28 +4613,35 @@ function loss_functions() {
                         .append("svg")
 	                    .attr("width", width)
 		                .attr("height", height);
+						
+  softplus_loss.append("rect")
+               .attr("fill","rgb(98%,98%,98%)")
+			   .attr("x", 0)
+               .attr("y", 0)
+               .attr("width", width+1)
+               .attr("height", height+1);
   
   softplus_loss.append("line")
                .attr("x1", x(-4))
 	           .attr("y1", y(0))
 	           .attr("x2", x(4))
 	           .attr("y2", y(0))
-               .attr("stroke-width", 0.3)
-	           .attr("stroke", "rgb(0%,0%,0%)")
-               .attr("stroke-opacity",0.8);
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1);
 
   softplus_loss.append("line")
                .attr("x1", x(0))
 	           .attr("y1", y(-1))
 	           .attr("x2", x(0))
 	           .attr("y2", y(4))
-               .attr("stroke-width", 0.3)
-	           .attr("stroke", "rgb(0%,0%,0%)")
-               .attr("stroke-opacity",0.8);
+	           .attr('stroke',"rgb(0%,0%,0%)")
+			   .attr("stroke-opacity",0.2)
+			   .attr("stroke-width", 1);
 			  
   softplus_loss.append("path")
                .attr("d", line(softplusA))
-               .style("stroke", "rgb(36.84%,50.68%,70.98%)")
+               .style("stroke", blue)
                .style("stroke-width", 2)
                .style("fill", "none");
 			   
@@ -4211,98 +4663,150 @@ function loss_functions() {
                .text("1");
 }
 
-function fig3() {
-  var width = 240;
-  var height = 160;
+function scaling_parameter() {
+  var width = 648;
+  var height = 140;
+  var pos_x = 365;
+  var pos_y = 60;
+  
+  var bracket_width = 45, bracket_height = 5, arrow_length = 30;
+	
+  var svg = d3.select("#empirical-risk-svg")
+              .append("svg")
+	          .attr("width", width)
+		      .attr("height", height);
+					   
+  svg.append("path")
+	 .attr("d", "M " + pos_x + " " + pos_y + " L " + pos_x + " " + (pos_y+bracket_height) + "L " + (pos_x+bracket_width) + " " + (pos_y+bracket_height) + " L " + (pos_x+bracket_width) + " " + pos_y)
+     .style("stroke", "rgb(60%,60%,60%)")
+     .style("stroke-width", 1)
+     .style("fill", "none");
+	 
+  svg.append("line")
+	 .attr("x1", pos_x+bracket_width/2)
+	 .attr("y1", pos_y+bracket_height)
+	 .attr("x2", pos_x+bracket_width/2)
+	 .attr("y2", pos_y+arrow_length)
+     .style("stroke", "rgb(60%,60%,60%)")
+     .style("stroke-width", 1)
+     .style("fill", "none");
+	 
+  svg.append("polygon")
+	 .attr("fill", "rgb(60%,60%,60%)")
+     .attr("points", (pos_x+bracket_width/2-3) + "," + (pos_y+arrow_length) + " " +
+		             (pos_x+bracket_width/2+3) + "," + (pos_y+arrow_length) + " " + 
+				     (pos_x+bracket_width/2) + "," + (pos_y+arrow_length+6));
+			  
+  svg.append("text")
+	 .attr("fill", "rgb(60%,60%,60%)")
+	 .attr("font-family","Roboto")
+	 .attr("font-size", "13px")
+	 .attr("text-anchor", "middle")
+     .attr("x", pos_x+bracket_width/2)
+	 .attr("y", pos_y+arrow_length+20)
+	 .text("scaling parameter for ")
+	 .append("tspan")
+	 .attr("font-style","italic")
+	 .text("f");
+}
+
+function scaling_f() {
+  var width = 201;
+  var height = 134;
   var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
   var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
   var init_w = 0.5;
+  var blue = d3.interpolateBlues(0.7);
+  var orange = "rgb(255,102,0)";
+  var light_left_color = "rgb(95%,95%,95%)";
+  var light_right_color = "rgb(85%,85%,85%)";
   
-  var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
-  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataA = [0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var data = [dataA.slice().reverse(), dataB];
+  data = data[0].map(function(col, i) { return data.map(function(row) { return row[i] })});
+  
   var line = d3.line()
-                   .x(function(d,i) {return x(-3.5 + i * 0.025);})
-                   .y(function(d) {return y(d);});
-  var softplusA = [];
-  var softplusB = [];
-  for (var i = -3.5; i < 3.5; i+= 0.025) {
-	softplusA.push(Math.log(1 + Math.exp(i)));
-	softplusB.push(Math.log(1 + Math.exp(-i)));
-  }	
+               .x(function(d,i) {return x(-3.5 + i * 0.025);})
+               .y(function(d) {return y(d);});
+  var softplus = [];
+  for (var i = -3.5; i < 3.5; i+= 0.025)
+	softplus.push(Math.log(1 + Math.exp(-i)));
 
-  function fig3_init() {
-    d3.select("#fig3-controler-input").property("value", init_w);
-    d3.select("#fig3-value-w").text(parseFloat(init_w-0.5).toFixed(2));	  
+  function init() {
+    d3.select("#scaling-f-controler-input").property("value", init_w);
+    d3.select("#scaling-f-value-w").text(parseFloat(init_w-0.5).toFixed(2));	  
 	  
     // Subfigure 1
-    var fig3_subfig1 = d3.select("#fig3-subfig1")
-                         .append("svg")
-	                     .attr("width", width)
-		                 .attr("height", height);
-			  
-    fig3_subfig1.append("line")
-                .attr("x1", x(-4))
-	            .attr("y1", y(0))
-	            .attr("x2", x(4))
-	            .attr("y2", y(0))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
-
-    fig3_subfig1.append("line")
-                .attr("x1", x(0))
-	            .attr("y1", y(-1))
-	            .attr("x2", x(0))
-	            .attr("y2", y(4))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
+    var subfig1 = d3.select("#scaling-f-subfig1")
+                    .append("svg")
+	                .attr("width", width)
+		            .attr("height", height);
+						 
+    subfig1.append("rect")
+           .attr("fill","rgb(98%,98%,98%)")
+		   .attr("x", 0)
+           .attr("y", 0)
+           .attr("width", width+1)
+           .attr("height", height+1);
+  
+    subfig1.append("line")
+           .attr("x1", x(-4))
+	       .attr("y1", y(0))
+	       .attr("x2", x(4))
+	       .attr("y2", y(0))
+	       .attr('stroke',"rgb(0%,0%,0%)")
+		   .attr("stroke-opacity",0.2)
+		   .attr("stroke-width", 1);
 				
-    fig3_subfig1.selectAll("rect0")
-                .data(dataA)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 8)
-                .attr("height", function(d) {return d * height / 3.6;})
-                .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-                .style("fill-opacity", 0.2)
-                .style("fill", "rgb(88.07%, 61.10%, 14.21%)");
-			  
-    fig3_subfig1.selectAll("rect1")
-                .data(dataB)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 8)
-                .attr("height", function(d) {return d * height / 3.6;})
-			    .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-			    .style("fill-opacity", 0.2)
-			    .style("fill", "rgb(36.84%,50.68%,70.98%)");
+    subfig1.selectAll("rect0")
+           .data(data)
+           .enter()
+           .append("rect")
+           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
+           .attr("width", 6.5)
+           .attr("height", function(d) {return d[0] * height / 4;})
+           .style("stroke-width", 0.3)
+           .style("stroke", "rgb(30%, 30%, 30%)")
+           .style("fill-opacity", 1)
+           .style("fill", light_left_color);
+	   
+    subfig1.selectAll("rect1")
+           .data(data)
+           .enter()
+           .append("rect")
+           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("y", function(d) {return y(0) - d[1] * height / 4;})
+           .attr("width", 6.5)
+           .attr("height", function(d) {return d[1] * height / 4;})
+           .style("stroke-width", 0.3)
+           .style("stroke", "rgb(10%, 10%, 10%)")
+           .style("fill-opacity", 1)
+           .style("fill", light_right_color);
+		   
+    subfig1.append("line")
+           .attr("x1", x(0))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(0))
+	       .attr("y2", y(6))
+	       .attr('stroke', orange)
+	       .attr("stroke-opacity", 1)
+	       .attr("stroke-width", 2.5);
 				
-	fig3_subfig1.append("path")
-				.attr("d", "M " + x(-4) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(4) + " " + y(0))
-                .style("stroke", "rgb(36.84%,50.68%,70.98%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-				
-	fig3_subfig1.append("path")
-				.attr("d", "M " + x(-4) + " " + y(0) + " L " + x(0) + " " + y(0) + "M " + x(0) + " " + y(1) + " L " + x(4) + " " + y(1))
-                .style("stroke", "rgb(88.07%, 61.10%, 14.21%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
+	subfig1.append("path")
+		   .attr("d", "M " + x(-4) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(4) + " " + y(0))
+           .style("stroke", blue)
+           .style("stroke-width", 2)
+           .style("fill", "none");
 	
-    var tick1 = fig3_subfig1.append("g")
-	                        .attr("id", "fig3-group1")
-	                        .attr("transform", "translate(" + (x(1)-x(0)) + ",0)");
+    var tick1 = subfig1.append("g")
+	                   .attr("id", "scaling-f-group1")
+	                   .attr("transform", "translate(" + (x(1)-x(0)) + ",0)");
 	
 	tick1.append("line")
 	     .attr("stroke-width", 1)
-	     .attr("stroke", "rgb(50%,50%,50%)")
+	     .attr("stroke", blue)
          .attr("x1", x(0))
 	     .attr("y1", y(-0.05))
 	     .attr("x2", x(0))
@@ -4313,13 +4817,13 @@ function fig3() {
          .attr("y",y(-0.3))
   	     .attr("text-anchor", "middle")
 	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", "rgb(50%,50%,50%)")
+	     .attr("fill", blue)
 	     .attr("font-size", "10px")
          .text("1");
 			  
 	tick1.append("line")
 	     .attr("stroke-width", 1)
-	     .attr("stroke", "rgb(50%,50%,50%)")
+	     .attr("stroke", blue)
          .attr("x1", x(-0.3))
 	     .attr("y1", y(-0.4))
 	     .attr("x2", x(0.3))
@@ -4330,7 +4834,7 @@ function fig3() {
          .attr("y",y(-0.7))
   	     .attr("text-anchor", "middle")
 	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", "rgb(50%,50%,50%)")
+	     .attr("fill", blue)
 	     .attr("font-size", "10px")
          .text("|| \u00A0\u00A0 ||");
 			  
@@ -4339,82 +4843,91 @@ function fig3() {
          .attr("y",y(-0.7))
   	     .attr("text-anchor", "middle")
 	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", "rgb(50%,50%,50%)")
+	     .attr("fill", blue)
 		 .attr("font-weight", "bold")
 	     .attr("font-size", "10px")
          .text("w");
 
     // Subfigure 2
-    var fig3_subfig2 = d3.select("#fig3-subfig2")
-                         .append("svg")
-	                     .attr("width", width)
-	                     .attr("height", height);
+    var subfig2 = d3.select("#scaling-f-subfig2")
+                    .append("svg")
+	                .attr("width", width)
+	                .attr("height", height);
 			  
-    fig3_subfig2.append("line")
-                .attr("x1", x(-4))
-	            .attr("y1", y(0))
-	            .attr("x2", x(4))
-	            .attr("y2", y(0))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
+    subfig2.append("rect")
+           .attr("fill","rgb(98%,98%,98%)")
+		   .attr("x", 0)
+           .attr("y", 0)
+           .attr("width", width+1)
+           .attr("height", height+1);
+  
+    subfig2.append("line")
+           .attr("x1", x(-4))
+	       .attr("y1", y(0))
+	       .attr("x2", x(4))
+	       .attr("y2", y(0))
+	       .attr('stroke',"rgb(0%,0%,0%)")
+		   .attr("stroke-opacity",0.2)
+		   .attr("stroke-width", 1);
 
-    fig3_subfig2.append("line")
-                .attr("x1", x(0))
-	            .attr("y1", y(-1))
-	            .attr("x2", x(0))
-	            .attr("y2", y(4))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
+    subfig2.append("line")
+           .attr("x1", x(0))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(0))
+	       .attr("y2", y(4))
+	       .attr('stroke',"rgb(0%,0%,0%)")
+		   .attr("stroke-opacity",0.2)
+		   .attr("stroke-width", 1);
 				
-    fig3_subfig2.selectAll("rect0")
-                .data(dataA)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 8)
-                .attr("height", function(d) {return d * height / 3.6;})
-                .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-                .style("fill-opacity", 0.2)
-                .style("fill", "rgb(88.07%, 61.10%, 14.21%)");
-			  
-    fig3_subfig2.selectAll("rect1")
-                .data(dataB)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 8)
-                .attr("height", function(d) {return d * height / 3.6;})
-			    .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-			    .style("fill-opacity", 0.2)
-			    .style("fill", "rgb(36.84%,50.68%,70.98%)");
+    subfig2.selectAll("rect0")
+           .data(data)
+           .enter()
+           .append("rect")
+           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
+           .attr("width", 6.5)
+           .attr("height", function(d) {return d[0] * height / 4;})
+           .style("stroke-width", 0.3)
+           .style("stroke", "rgb(30%, 30%, 30%)")
+           .style("fill-opacity", 1)
+           .style("fill", light_left_color);
+	   
+    subfig2.selectAll("rect1")
+           .data(data)
+           .enter()
+           .append("rect")
+           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("y", function(d) {return y(0) - d[1] * height / 4;})
+           .attr("width", 6.5)
+           .attr("height", function(d) {return d[1] * height / 4;})
+           .style("stroke-width", 0.3)
+           .style("stroke", "rgb(10%, 10%, 10%)")
+           .style("fill-opacity", 1)
+           .style("fill", light_right_color);
+		   
+    subfig2.append("line")
+           .attr("x1", x(0))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(0))
+	       .attr("y2", y(6))
+	       .attr('stroke', orange)
+	       .attr("stroke-opacity", 1)
+	       .attr("stroke-width", 2.5);
 				
-	fig3_subfig2.append("path")
-	            .attr("id","fig3-hingeA")
-				.attr("d", "M " + x(-4) + " " + y(1+4) + " L " + x(1) + " " + y(0) + " L " + x(4) + " " + y(0))
-                .style("stroke", "rgb(36.84%,50.68%,70.98%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
+	subfig2.append("path")
+	       .attr("id","scaling-f-hingeA")
+		   .attr("d", "M " + x(-4) + " " + y(1+4) + " L " + x(1) + " " + y(0) + " L " + x(4) + " " + y(0))
+           .style("stroke", blue)
+           .style("stroke-width", 2)
+           .style("fill", "none");
 				
-	fig3_subfig2.append("path")
-	            .attr("id","fig3-hingeB")
-				.attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1) + " " + y(0) + " L " + x(4) + " " + y(1+4))
-                .style("stroke", "rgb(88.07%, 61.10%, 14.21%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-				
-    var tick2 = fig3_subfig2.append("g")
-	                        .attr("id", "fig3-group2")
-	                        .attr("transform", "translate(" + (x(1)-x(0)) + ",0)");
+    var tick2 = subfig2.append("g")
+	                   .attr("id", "scaling-f-group2")
+	                   .attr("transform", "translate(" + (x(1)-x(0)) + ",0)");
 	
 	tick2.append("line")
 	     .attr("stroke-width", 1)
-	     .attr("stroke", "rgb(50%,50%,50%)")
+	     .attr("stroke", blue)
          .attr("x1", x(0))
 	     .attr("y1", y(-0.05))
 	     .attr("x2", x(0))
@@ -4425,13 +4938,13 @@ function fig3() {
          .attr("y",y(-0.3))
   	     .attr("text-anchor", "middle")
 	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", "rgb(50%,50%,50%)")
+	     .attr("fill", blue)
 	     .attr("font-size", "10px")
          .text("1");
 			  
 	tick2.append("line")
 	     .attr("stroke-width", 1)
-	     .attr("stroke", "rgb(50%,50%,50%)")
+	     .attr("stroke", blue)
          .attr("x1", x(-0.3))
 	     .attr("y1", y(-0.4))
 	     .attr("x2", x(0.3))
@@ -4442,7 +4955,7 @@ function fig3() {
          .attr("y",y(-0.7))
   	     .attr("text-anchor", "middle")
 	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", "rgb(50%,50%,50%)")
+	     .attr("fill", blue)
 	     .attr("font-size", "10px")
          .text("|| \u00A0\u00A0 ||");
 			  
@@ -4451,81 +4964,91 @@ function fig3() {
          .attr("y",y(-0.7))
   	     .attr("text-anchor", "middle")
 	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", "rgb(50%,50%,50%)")
+	     .attr("fill", blue)
 		 .attr("font-weight", "bold")
 	     .attr("font-size", "10px")
          .text("w");
 	
     // Subfigure 3
-    var fig3_subfig3 = d3.select("#fig3-subfig3")
-                         .append("svg")
-	                     .attr("width", width)
-                         .attr("height", height);
+    var subfig3 = d3.select("#scaling-f-subfig3")
+                    .append("svg")
+	                .attr("width", width)
+                    .attr("height", height);
 			  
-    fig3_subfig3.append("line")
-                .attr("x1", x(-4))
-	            .attr("y1", y(0))
-	            .attr("x2", x(4))
-	            .attr("y2", y(0))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
+    subfig3.append("rect")
+           .attr("fill","rgb(98%,98%,98%)")
+		   .attr("x", 0)
+           .attr("y", 0)
+           .attr("width", width+1)
+           .attr("height", height+1);
+  
+    subfig3.append("line")
+           .attr("x1", x(-4))
+	       .attr("y1", y(0))
+	       .attr("x2", x(4))
+	       .attr("y2", y(0))
+	       .attr('stroke',"rgb(0%,0%,0%)")
+		   .attr("stroke-opacity",0.2)
+		   .attr("stroke-width", 1);
 
-    fig3_subfig3.append("line")
-                .attr("x1", x(0))
-	            .attr("y1", y(-1))
-	            .attr("x2", x(0))
-	            .attr("y2", y(4))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
+    subfig3.append("line")
+           .attr("x1", x(0))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(0))
+	       .attr("y2", y(4))
+	       .attr('stroke',"rgb(0%,0%,0%)")
+		   .attr("stroke-opacity",0.2)
+		   .attr("stroke-width", 1);
 				
-    fig3_subfig3.selectAll("rect0")
-                .data(dataA)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 8)
-                .attr("height", function(d) {return d * height / 3.6;})
-                .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-                .style("fill-opacity", 0.2)
-                .style("fill", "rgb(88.07%, 61.10%, 14.21%)");
-			  
-    fig3_subfig3.selectAll("rect1")
-                .data(dataB)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 8)
-                .attr("height", function(d) {return d * height / 3.6;})
-			    .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-			    .style("fill-opacity", 0.2)
-			    .style("fill", "rgb(36.84%,50.68%,70.98%)");
+    subfig3.selectAll("rect0")
+           .data(data)
+           .enter()
+           .append("rect")
+           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
+           .attr("width", 6.5)
+           .attr("height", function(d) {return d[0] * height / 4;})
+           .style("stroke-width", 0.3)
+           .style("stroke", "rgb(30%, 30%, 30%)")
+           .style("fill-opacity", 1)
+           .style("fill", light_left_color);
+	   
+    subfig3.selectAll("rect1")
+           .data(data)
+           .enter()
+           .append("rect")
+           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("y", function(d) {return y(0) - d[1] * height / 4;})
+           .attr("width", 6.5)
+           .attr("height", function(d) {return d[1] * height / 4;})
+           .style("stroke-width", 0.3)
+           .style("stroke", "rgb(10%, 10%, 10%)")
+           .style("fill-opacity", 1)
+           .style("fill", light_right_color);
+				
+    subfig3.append("line")
+           .attr("x1", x(0))
+	       .attr("y1", y(-1))
+	       .attr("x2", x(0))
+	       .attr("y2", y(6))
+	       .attr('stroke', orange)
+	       .attr("stroke-opacity", 1)
+	       .attr("stroke-width", 2.5);
 
-    fig3_subfig3.append("path")
-	            .attr("id","fig3-softplusB")
-                .attr("d", line(softplusB))
-                .style("stroke", "rgb(36.84%,50.68%,70.98%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");				
-    fig3_subfig3.append("path")
-	            .attr("id","fig3-softplusA")
-                .attr("d", line(softplusA))
-                .style("stroke", "rgb(88.07%, 61.10%, 14.21%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
+    subfig3.append("path")
+	       .attr("id","scaling-f-softplus")
+           .attr("d", line(softplus))
+           .style("stroke", blue)
+           .style("stroke-width", 2)
+           .style("fill", "none");				
 				
-    var tick3 = fig3_subfig3.append("g")
-	                        .attr("id", "fig3-group3")
-	                        .attr("transform", "translate(" + (x(1)-x(0)) + ",0)");
+    var tick3 = subfig3.append("g")
+	                   .attr("id", "scaling-f-group3")
+	                   .attr("transform", "translate(" + (x(1)-x(0)) + ",0)");
 	
 	tick3.append("line")
 	     .attr("stroke-width", 1)
-	     .attr("stroke", "rgb(50%,50%,50%)")
+	     .attr("stroke", blue)
          .attr("x1", x(0))
 	     .attr("y1", y(-0.05))
 	     .attr("x2", x(0))
@@ -4536,13 +5059,13 @@ function fig3() {
          .attr("y", y(-0.3))
   	     .attr("text-anchor", "middle")
 	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", "rgb(50%,50%,50%)")
+	     .attr("fill", blue)
 	     .attr("font-size", "10px")
          .text("1");
 			  
 	tick3.append("line")
 	     .attr("stroke-width", 1)
-	     .attr("stroke", "rgb(50%,50%,50%)")
+	     .attr("stroke", blue)
          .attr("x1", x(-0.3))
 	     .attr("y1", y(-0.4))
 	     .attr("x2", x(0.3))
@@ -4553,7 +5076,7 @@ function fig3() {
          .attr("y",y(-0.7))
   	     .attr("text-anchor", "middle")
 	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", "rgb(50%,50%,50%)")
+	     .attr("fill", blue)
 	     .attr("font-size", "10px")
          .text("|| \u00A0\u00A0 ||");
 			  
@@ -4562,185 +5085,191 @@ function fig3() {
          .attr("y",y(-0.7))
   	     .attr("text-anchor", "middle")
 	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", "rgb(50%,50%,50%)")
+	     .attr("fill", blue)
 		 .attr("font-weight", "bold")
 	     .attr("font-size", "10px")
          .text("w");
   }
   
-  function fig3_update(norm_w) {
-    var softplusA = [];
-    var softplusB = [];
-    for (var i = -3.5; i < 3.5; i+= 0.025) {
-	  softplusA.push(Math.log(1 + Math.exp(Math.pow(10,norm_w) * i)));
-	  softplusB.push(Math.log(1 + Math.exp(- Math.pow(10,norm_w) * i)));
-    }
+  function update(norm_w) {
+    var softplus = [];
+    for (var i = -3.5; i < 3.5; i+= 0.025)
+	  softplus.push(Math.log(1 + Math.exp(- Math.pow(10,norm_w) * i)));
 	  
-   d3.select("#fig3-value-w").text(parseFloat(norm_w-0.5).toFixed(2));   
-   d3.select("#fig3-hingeA").attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0));
-   d3.select("#fig3-hingeB").attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(1 + Math.pow(10,norm_w) * 4));
-   d3.select("#fig3-softplusA").attr("d", line(softplusA));
-   d3.select("#fig3-softplusB").attr("d", line(softplusB));
-   d3.select("#fig3-group1").attr("transform", "translate(" + (x(1 / Math.pow(10,norm_w)) - x(0)) + ", 0)");
-   d3.select("#fig3-group2").attr("transform", "translate(" + (x(1 / Math.pow(10,norm_w)) - x(0)) + ", 0)");
-   d3.select("#fig3-group3").attr("transform", "translate(" + (x(1 / Math.pow(10,norm_w)) - x(0)) + ", 0)");
+   d3.select("#scaling-f-value-w").text(parseFloat(norm_w-0.5).toFixed(2));   
+   d3.select("#scaling-f-hingeA").attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0));
+   d3.select("#scaling-f-hingeB").attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(1 + Math.pow(10,norm_w) * 4));
+   d3.select("#scaling-f-softplus").attr("d", line(softplus));
+   d3.select("#scaling-f-group1").attr("transform", "translate(" + (x(1 / Math.pow(10,norm_w)) - x(0)) + ", 0)");
+   d3.select("#scaling-f-group2").attr("transform", "translate(" + (x(1 / Math.pow(10,norm_w)) - x(0)) + ", 0)");
+   d3.select("#scaling-f-group3").attr("transform", "translate(" + (x(1 / Math.pow(10,norm_w)) - x(0)) + ", 0)");
   }
 		  
-  fig3_init();
-  fig3_update(init_w);
+  init();
+  update(init_w);
 
-  d3.select("#fig3-controler-input")
-    .on("input", function() {fig3_update(this.value);});
+  d3.select("#scaling-f-controler-input")
+    .on("input", function() {update(this.value);});
 }
 
 function large_norm_w() {
-  var width = 180;
-  var height = 120;
+  var width = 201;
+  var height = 134;
   var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
   var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
+  var blue = d3.interpolateBlues(0.7);
+  var orange = "rgb(255,102,0)";
+  var light_left_color = "rgb(95%,95%,95%)";
+  var light_right_color = "rgb(85%,85%,85%)";
   var norm_w = 1.5;
   
-  var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
-  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataA = [0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var data = [dataA.slice().reverse(), dataB];
+  data = data[0].map(function(col, i) { return data.map(function(row) { return row[i] })});
   
-  function fig3_init() {
-    var fig3_subfig2 = d3.select("#value-w-input1")
-                         .append("svg")
-	                     .attr("width", width)
-	                     .attr("height", height);
+  var fig = d3.select("#value-w-input1")
+              .append("svg")
+	          .attr("width", width)
+	          .attr("height", height);
 			  
-    fig3_subfig2.append("line")
-                .attr("x1", x(-4))
-	            .attr("y1", y(0))
-	            .attr("x2", x(4))
-	            .attr("y2", y(0))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
+  fig.append("rect")
+     .attr("fill","rgb(98%,98%,98%)")
+	 .attr("x", 0)
+     .attr("y", 0)
+     .attr("width", width+1)
+     .attr("height", height+1);
+			  
+  fig.append("line")
+     .attr("x1", x(-4))
+	 .attr("y1", y(0))
+	 .attr("x2", x(4))
+	 .attr("y2", y(0))
+	 .attr('stroke',"rgb(0%,0%,0%)")
+	 .attr("stroke-opacity",0.2)
+	 .attr("stroke-width", 1);
 
-    fig3_subfig2.append("line")
-                .attr("x1", x(0))
-	            .attr("y1", y(-1))
-	            .attr("x2", x(0))
-	            .attr("y2", y(4))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
 				
-    fig3_subfig2.selectAll("rect0")
-                .data(dataA)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 5)
-                .attr("height", function(d) {return d * height / 3.6;})
-                .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-                .style("fill-opacity", 0.2)
-                .style("fill", "rgb(88.07%, 61.10%, 14.21%)");
-			  
-    fig3_subfig2.selectAll("rect1")
-                .data(dataB)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 5)
-                .attr("height", function(d) {return d * height / 3.6;})
-			    .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-			    .style("fill-opacity", 0.2)
-			    .style("fill", "rgb(36.84%,50.68%,70.98%)");
+  fig.selectAll("rect0")
+     .data(data)
+     .enter()
+     .append("rect")
+     .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+     .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
+     .attr("width", 6.5)
+     .attr("height", function(d) {return d[0] * height / 4;})
+     .style("stroke-width", 0.3)
+     .style("stroke", "rgb(30%, 30%, 30%)")
+     .style("fill-opacity", 1)
+     .style("fill", light_left_color);
+	   
+  fig.selectAll("rect1")
+     .data(data)
+     .enter()
+     .append("rect")
+     .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+     .attr("y", function(d) {return y(0) - d[1] * height / 4;})
+     .attr("width", 6.5)
+     .attr("height", function(d) {return d[1] * height / 4;})
+     .style("stroke-width", 0.3)
+     .style("stroke", "rgb(10%, 10%, 10%)")
+     .style("fill-opacity", 1)
+     .style("fill", light_right_color);
+	 
+  fig.append("line")
+     .attr("x1", x(0))
+	 .attr("y1", y(-1))
+	 .attr("x2", x(0))
+	 .attr("y2", y(6))
+	 .attr('stroke', orange)
+	 .attr("stroke-opacity", 1)
+     .attr("stroke-width", 2.5);
 				
-	fig3_subfig2.append("path")
-				.attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
-                .style("stroke", "rgb(36.84%,50.68%,70.98%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-				
-	fig3_subfig2.append("path")
-				.attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(1 + Math.pow(10,norm_w) * 4))
-                .style("stroke", "rgb(88.07%, 61.10%, 14.21%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-  }
-  fig3_init();
+  fig.append("path")
+     .attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
+     .style("stroke", blue)
+     .style("stroke-width", 2)
+     .style("fill", "none");
 }
 
 function small_norm_w() {
-  var width = 180;
-  var height = 120;
+  var width = 201;
+  var height = 134;
   var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
   var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
+  var blue = d3.interpolateBlues(0.7);
+  var orange = "rgb(255,102,0)";
+  var light_left_color = "rgb(95%,95%,95%)";
+  var light_right_color = "rgb(85%,85%,85%)";
   var norm_w = -1;
   
-  var dataA = [0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
-  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataA = [0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
+  var data = [dataA.slice().reverse(), dataB];
+  data = data[0].map(function(col, i) { return data.map(function(row) { return row[i] })});
   
-  function fig3_init() {
-    var fig3_subfig2 = d3.select("#value-w-input2")
-                         .append("svg")
-	                     .attr("width", width)
-	                     .attr("height", height);
+  var fig = d3.select("#value-w-input2")
+              .append("svg")
+	          .attr("width", width)
+	          .attr("height", height);
 			  
-    fig3_subfig2.append("line")
-                .attr("x1", x(-4))
-	            .attr("y1", y(0))
-	            .attr("x2", x(4))
-	            .attr("y2", y(0))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
+  fig.append("rect")
+     .attr("fill","rgb(98%,98%,98%)")
+	 .attr("x", 0)
+     .attr("y", 0)
+     .attr("width", width+1)
+     .attr("height", height+1);
+			  
+  fig.append("line")
+     .attr("x1", x(-4))
+	 .attr("y1", y(0))
+	 .attr("x2", x(4))
+	 .attr("y2", y(0))
+	 .attr('stroke',"rgb(0%,0%,0%)")
+	 .attr("stroke-opacity",0.2)
+	 .attr("stroke-width", 1);
 
-    fig3_subfig2.append("line")
-                .attr("x1", x(0))
-	            .attr("y1", y(-1))
-	            .attr("x2", x(0))
-	            .attr("y2", y(4))
-                .attr("stroke-width", 0.3)
-	            .attr("stroke", "rgb(0%,0%,0%)")
-                .attr("stroke-opacity",0.8);
 				
-    fig3_subfig2.selectAll("rect0")
-                .data(dataA)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 5)
-                .attr("height", function(d) {return d * height / 3.6;})
-                .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-                .style("fill-opacity", 0.2)
-                .style("fill", "rgb(88.07%, 61.10%, 14.21%)");
-			  
-    fig3_subfig2.selectAll("rect1")
-                .data(dataB)
-                .enter()
-                .append("rect")
-                .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-                .attr("y", function(d) {return y(0) - d * height / 3.6;})
-                .attr("width", 5)
-                .attr("height", function(d) {return d * height / 3.6;})
-			    .style("stroke-width", 0.3)
-                .style("stroke", "rgb(20%, 20%, 20%)")
-			    .style("fill-opacity", 0.2)
-			    .style("fill", "rgb(36.84%,50.68%,70.98%)");
+  fig.selectAll("rect0")
+     .data(data)
+     .enter()
+     .append("rect")
+     .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+     .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
+     .attr("width", 6.5)
+     .attr("height", function(d) {return d[0] * height / 4;})
+     .style("stroke-width", 0.3)
+     .style("stroke", "rgb(30%, 30%, 30%)")
+     .style("fill-opacity", 1)
+     .style("fill", light_left_color);
+	   
+  fig.selectAll("rect1")
+     .data(data)
+     .enter()
+     .append("rect")
+     .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+     .attr("y", function(d) {return y(0) - d[1] * height / 4;})
+     .attr("width", 6.5)
+     .attr("height", function(d) {return d[1] * height / 4;})
+     .style("stroke-width", 0.3)
+     .style("stroke", "rgb(10%, 10%, 10%)")
+     .style("fill-opacity", 1)
+     .style("fill", light_right_color);
+	 
+  fig.append("line")
+     .attr("x1", x(0))
+	 .attr("y1", y(-1))
+	 .attr("x2", x(0))
+	 .attr("y2", y(6))
+	 .attr('stroke', orange)
+	 .attr("stroke-opacity", 1)
+     .attr("stroke-width", 2.5);
 				
-	fig3_subfig2.append("path")
-				.attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
-                .style("stroke", "rgb(36.84%,50.68%,70.98%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-				
-	fig3_subfig2.append("path")
-				.attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(1 + Math.pow(10,norm_w) * 4))
-                .style("stroke", "rgb(88.07%, 61.10%, 14.21%)")
-                .style("stroke-width", 2)
-                .style("fill", "none");
-  }
-  fig3_init();
+  fig.append("path")
+     .attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
+     .style("stroke", blue)
+     .style("stroke-width", 2)
+     .style("fill", "none");
 }
 
 function img_to_canvas2(img) {
@@ -4982,7 +5511,7 @@ function svm_mnist() {
         layer3.append("text")
 	          .attr("id","svm-mnist-layer3-w-text")
 			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-              .attr("x", x(-extras[0][80-reg_index]+7.7))
+              .attr("x", x(-extras[0][80-reg_index]+7))
 	          .attr("y", y(-0.4))
 	          .attr("text-anchor", "middle")
 	          .attr("font-family","Roboto")
@@ -5150,7 +5679,7 @@ function svm_mnist() {
 				 
 		d3.select("#svm-mnist-layer3-w-text")
 		  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-          .attr("x", x(-extras[0][80-reg_index]+7.7));
+          .attr("x", x(-extras[0][80-reg_index]+7));
 
 		d3.select("#svm-mnist-layer3-x-circle")
 	      .attr("cx",x(extras[2][80-reg_index]))
