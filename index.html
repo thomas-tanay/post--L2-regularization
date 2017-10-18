@@ -480,44 +480,63 @@
   \begin{array}{@{}c@{}} \text{$I$ if } s(\boldsymbol{x}) \leq 0 \\ \text{$J$ if } s(\boldsymbol{x}) \geq 0 \end{array}$$</p>
   
   <p> Now, consider a training set $T$ of $n$ pairs $(\boldsymbol{x},y)$ where $\boldsymbol{x}$ is an image and 
-  $y = \{ -1 \text{ if } \boldsymbol{x} \in I \;|\; 1 \text{ if } \boldsymbol{x} \in J\}$ is its label. </p>
+  $y = \{ -1 \text{ if } \boldsymbol{x} \in I \;|\; 1 \text{ if } \boldsymbol{x} \in J\}$ is its label. We are interested in the distributions of the 
+  following quantities over $T$: </p>
   
   <style>
+  #fysx-container {
+    margin-top: 40px;
+	margin-bottom: 40px;
+  }
   .fysx-div {
-	position: relative;
-	width: 648px;
-	height: 170px;
+	display: -webkit-flex;
+    display: flex;
 	margin-top: 20px;
 	margin-bottom: 20px;
   }
-  .fysx-text {
-	position: absolute;
-	width: 380px;
-	top: 20px;
-	left: 20px;
+  .fysx-header {
+    font-family: Georgia, serif;
+	margin-top: auto;
+	margin-bottom: auto;
+	margin-left: 20px;
+	margin-right: 20px;
+	width: 100px;
+	text-align: center;
   }
   .fysx-fig {
-	position: absolute;
-	width: 203px;
-	height: 170px;
-	top: -10px;
-	left: 445px;
+	width: 201px;
+	height: 134px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(80%,80%,80%);
+  }
+  .fysx-text {
+    font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(60%,60%,60%);
+	width: 280px;
+	margin-top: auto;
+	margin-bottom: auto;
+	margin-left: 20px;
+	text-align: center;
   }
   </style>
   
+  <div id="fysx-container">
   <div class="fysx-div">
-    <p class="fysx-text"> If we plot the histograms of the raw scores $s(\boldsymbol{x})$ over the training set $T$, we typically get two clusters of opposite signs: </p>
-	<div class="fysx-fig" id="sx"> </div>
+    <div class="fysx-header"> $s(\boldsymbol{x})$ </div>
+    <div class="fysx-fig" id="sx"> </div>
+    <div class="fysx-text"> If we plot the histograms of the raw scores over the training set, we typically get two clusters of opposite signs </div>
   </div>
-  
   <div class="fysx-div">
-    <p class="fysx-text"> Multiplying by the label $y$ allows us to distinguish the correctly classified data from the misclassified data: </p>
-	<div class="fysx-fig" id="ysx"> </div>
+    <div class="fysx-header"> $y\,s(\boldsymbol{x})$ </div>
+    <div class="fysx-fig" id="ysx"> </div>
+    <div class="fysx-text"> Multiplying by the label allows us to distinguish the correctly classified data from the misclassified data </div>
   </div>
-  
   <div class="fysx-div">
-    <p class="fysx-text"> We can then attribute a penalty to each training point $\boldsymbol{x}$ by applying a <em>loss function</em> $f$ to $y\,s(\boldsymbol{x})$: </p>
-	<div class="fysx-fig" id="fysx"> </div>
+    <div class="fysx-header"> $f\big(y\,s(\boldsymbol{x})\big)$ </div>
+    <div class="fysx-fig" id="fysx"> </div>
+    <div class="fysx-text"> We can then attribute a penalty to <br> each training point $\boldsymbol{x}$ by applying a <br> <em>loss function</em> to $y\,s(\boldsymbol{x})$ </div>
+  </div>
   </div>
   
   <script>
@@ -610,8 +629,9 @@
   
   <p> With the 0-1 indicator function, the empirical risk is simply the <em>error rate</em> on $T$. In a sense, this is the optimal loss function
   as minimizing the error rate is often the desired objective in practice. Unfortunately, this loss is incompatible with gradient descent (there is no gradient
-  to descend: the derivative is null everywhere). This limitation is overcome with the hinge loss (used in SVM) and the softplus loss (used in logistic regression) 
-  by replacing the unit penalty on the misclassified data with a monotonically decreasing penalty. Remark that both the hinge loss and the softplus loss penalize 
+  to descend: the derivative is null everywhere). </p>
+  <p> This limitation is overcome with the hinge loss (used in SVM) and the softplus loss (used in logistic regression) 
+  by replacing the unit penalty on the misclassified data with a strictly decreasing penalty. Remark that both the hinge loss and the softplus loss also penalize 
   some correctly classified data, effectively enforcing a safety margin in the neighbourhood of the boundary.
   
   <h4> The scaling parameter $\lVert\boldsymbol{w}\rVert$ </h4>
@@ -625,29 +645,29 @@
   Hence, the norm $\lVert\boldsymbol{w}\rVert$ can be interpreted as a scaling parameter for the loss function in the expression of the empirical risk: </p>
   
   <style>
-  #empirical-risk-div {
+  .equation-div {
     margin-top: -20px;
 	margin-bottom: -20px;
 	position: relative;
 	width: 648px;
 	height: 140px;
   }
-  #empirical-risk-text {
+  .equation-text {
  	position: absolute;
 	width: 648px;
 	height: 140px;
     font-family: Georgia, serif;
   }
-  #empirical-risk-svg {
+  .equation-svg {
  	position: absolute;
 	width: 648px;
 	height: 140px;
   }
   </style>
   
-  <div id="empirical-risk-div">
-    <div id="empirical-risk-text"> $$R(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(\;\lVert\boldsymbol{w}\rVert \times y\,d(\boldsymbol{x})\big)$$ </div>
-	<div id="empirical-risk-svg"> </div>
+  <div class="equation-div">
+    <div class="equation-text"> $$R(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(\;\lVert\boldsymbol{w}\rVert \times y\,d(\boldsymbol{x})\big)$$ </div>
+	<div class="equation-svg" id="equation-svg1"> </div>
   </div>
   
   <script>
@@ -666,7 +686,7 @@
 	margin-bottom: 40px;
   }
   #scaling-f-content {
-	margin-bottom: 10px;
+	margin-bottom: 15px;
     display: -webkit-flex;
     display: flex;
 	justify-content: space-between;
@@ -692,14 +712,15 @@
   #scaling-f-caption {
     display: -webkit-flex;
     display: flex;
+	justify-content: space-around;
   }
   #scaling-f-controler {
     display: -webkit-flex;
     display: flex;
 	flex-direction: column;
-    flex: 0 0 210px;
+    flex: 0 0 215px;
   }
-  .scaling-f-text {
+  #scaling-f-text1 {
     font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
 	color: rgb(60%,60%,60%);
   }
@@ -711,6 +732,11 @@
     display: inline-block;
 	text-align: right;
 	width: 30px;
+  }
+  #scaling-f-text2 {
+    font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(60%,60%,60%);
+	width: 400px;
   }
   </style>
   
@@ -732,11 +758,11 @@
 	  </div>
 	  <div id="scaling-f-caption">
 	    <div id="scaling-f-controler">
-		  <div class="scaling-f-text"> $\lVert\boldsymbol{w}\rVert = 10$ <sup> <span id="scaling-f-value-w">...</span> </sup> </div>
-		  <input id="scaling-f-controler-input" type="range" min="-1" max="2" step="0.01"> </input>
+		  <div id="scaling-f-text1"> $\lVert\boldsymbol{w}\rVert = 10$ <sup> <span id="scaling-f-value-w">...</span> </sup> </div>
+		  <input id="scaling-f-controler-input" type="range" min="-1.5" max="1.5" step="0.01"> </input>
 		</div>
-	    <div class="scaling-f-text"> Effect of the scaling parameter $\lVert\boldsymbol{w}\rVert$ on the three loss functions. 
-		The histograms represent the values of $d(\boldsymbol{x})$ over $T$ for a given $\boldsymbol{w}$ and $b$ and the blue lines represent the values of $f$. </div>
+	    <div id="scaling-f-text2"> Effect of the scaling parameter $\lVert\boldsymbol{w}\rVert$ on the three loss functions. 
+		The histograms represent the values of $d(\boldsymbol{x})$ over $T$ and the blue lines represent the values of $f$. </div>
 	  </div>
 	</div>
   </div>
@@ -745,42 +771,48 @@
    scaling_f();
   </script>
   
-  <p> Remarkably, the two losses behave in the same way for extreme values of the scaling parameter. </p>
+  <p> Remarkably, the hinge loss and the softplus loss behave in the same way for extreme values of the scaling parameter. </p>
   
   <style>
   .value-w {
     display: -webkit-flex;
     display: flex;
 	align-items: center;
+	justify-content: space-between;
   }
-  .value-w-div {
-    margin-right: 30px;
+  .value-w-left {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	height: 134px;
   }
   .value-w-header {
     margin-top: 0px;
-    //font: 18px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
-	//font-weight: bold;
+	margin-bottom: 0px;
   }
   .value-w-text {
-    margin-bottom: 0px;
-	font-style: italic;
+    font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(60%,60%,60%);
+	margin-top: auto;
+	margin-bottom: auto;
+	width: 420px;
+	text-align: right;
   }
   .value-w-input {
 	width: 201px;
 	height: 134px;
-	margin-right: 0px;
 	border-style: solid;
 	border-width: 1px;
 	border-color: rgb(80%,80%,80%);
   }
   </style>
-   
+  
   <div class="l-body value-w">
-    <div class="value-w-div">
-      <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is large: </h4>
-      <p class="value-w-text"> The hinge loss and the softplus loss penalize the misclassified data linearly. </p>
+    <div class="value-w-left">
+	  <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is large: </h4>
+      <p class="value-w-text"> The hinge loss and the softplus loss penalize only the misclassified data&mdash;and do so linearly. </p>
 	</div>
-	<div class="value-w-input" id="value-w-input1"> </div>
+    <div class="value-w-input" id="value-w-input1"> </div>
   </div>
   <p>  More precisely, both losses satisfy<dt-fn>
   <u>Hinge loss</u><br>
@@ -817,13 +849,15 @@
   $$\text{minimize: }R(\boldsymbol{w},b) \;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\iff}\; \text{minimize: $d_{\text{err}}$}$$
   In words, when $\lVert\boldsymbol{w}\rVert$ is large, <em>minimizing the empirical risk for the hinge loss or the softplus loss is equivalent to minimizing the error distance, 
   which is similar to minimizing the error rate on the training set</em>.</p>
+  
   <div class="l-body value-w">
-    <div class="value-w-div">
-      <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is small: </h4>
+    <div class="value-w-left">
+	  <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is small: </h4>
       <p class="value-w-text"> The hinge loss and the softplus loss penalize the entire training data linearly. </p>
 	</div>
-	<div class="value-w-input" id="value-w-input2"> </div>
+    <div class="value-w-input" id="value-w-input2"> </div>
   </div>
+  
   <p> More precisely, both losses satisfy<dt-fn>
   <u>Hinge loss</u><br>
   $$\max(1-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x}),0) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{=}\; 1-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
@@ -857,30 +891,46 @@
   
   <h4> Wrapping up </h4>
   
-  <p>In practice, the value of $\lVert\boldsymbol{w}\rVert$ can be controlled by adding a regularization term to the empirical risk, yielding the <em>regularized loss</em>:
-  $$L(\boldsymbol{w},b) := \underbrace{R(\boldsymbol{w},b)}_{\text{Empirical Risk}} \, + \underbrace{\lambda\,\lVert\boldsymbol{w}\rVert^2}_{\text{L2 Regularization}}$$</p>
+  <p>In practice, the value of $\lVert\boldsymbol{w}\rVert$ can be controlled by adding a regularization term to the empirical risk, yielding the <em>regularized loss</em>:</p>
+  
+  <div class="equation-div">
+    <div class="equation-text"> $$L(\boldsymbol{w},b) := R(\boldsymbol{w},b) \; + \; \lambda\,\lVert\boldsymbol{w}\rVert^2$$ </div>
+	<div class="equation-svg" id="equation-svg2"> </div>
+  </div>
+  
+  <script>
+    regularized_loss();
+  </script>
   
   <p> A small <em>regularization parameter</em> $\lambda$ lets $\lVert\boldsymbol{w}\rVert$ grow unchecked while a larger $\lambda$ encourages $\lVert\boldsymbol{w}\rVert$ to shrink.</p>
   
   <style>
   .sum-paragraph-container {
-    margin: 20px;
-    background-color: rgb(95%,95%,95%);
-	border-top: 15px solid rgb(95%,95%,95%);
-	border-bottom: 15px solid rgb(95%,95%,95%);
-	border-left: 20px solid rgb(95%,95%,95%);
-	border-right: 20px solid rgb(95%,95%,95%);
+	margin-left: 50px;
+	margin-right: 50px;
+    background-color: rgb(98%,98%,98%);
+	border-top: 15px solid rgb(98%,98%,98%);
+	border-bottom: 15px solid rgb(98%,98%,98%);
+	border-left: 15px solid rgb(98%,98%,98%);
+	border-right: 15px solid rgb(98%,98%,98%);
 	border-radius: 10px;
-	font-size: 17px;
-	//font-style: italic;
+	font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(60%,60%,60%);
 	text-align: center;
+  }
+  .sum-paragraph-span {
+    color: rgb(40%,40%,40%);
+	font-weight: bold;
+	font-style: italic;
   }
   </style>
   
   <div>
   <div class="sum-paragraph-container">
-    <i>In summary, the two standard models used in linear classification <br>(SVM and logistic regression) balance between two objectives:<br>
-	they</i> <b>minimize the error distance</b> <i>when regularization is low and<br> they </i><b>maximize the adversarial distance</b> <i>when regularization is high.</i>
+    In summary, the two standard models used in linear classification <br>
+	(SVM and logistic regression) balance between two objectives:<br>
+	they <span class="sum-paragraph-span"> minimize the error distance </span> when regularization is low and<br> 
+	they <span class="sum-paragraph-span"> maximize the adversarial distance </span> when regularization is high.
   </div>
   </div>
   
@@ -1252,8 +1302,10 @@
   
   <div>
   <div class="sum-paragraph-container">
-  In summary, a 2-layer network differs from a linear classifier in <br> that the distances on which the loss function is applied are<br> <u>linear approximations</u> of the 
-  actual distances between the data and<br> the boundary and the scaling parameter $\lVert W_2 W_1^x \rVert$ is <u>local</u>.
+  In summary, a 2-layer network differs from a linear classifier in <br>
+  that the distances on which the loss function is applied are<br> 
+  <span class="sum-paragraph-span">linear approximations</span> of the actual distances between the data and<br>
+  the boundary and the scaling parameter $\lVert W_2 W_1^x \rVert$ is <span class="sum-paragraph-span">local</span>.
   </div>
   </div>
   

@@ -4070,12 +4070,10 @@ function noisy_data2(){
 }
 
 function sx() {
-  var width = 203;
-  var height = 170;
-  var plot_width = 201;
-  var plot_height = 134;
-  var x = d3.scaleLinear().domain([-3, 3]).range([0, plot_width]);
-  var y = d3.scaleLinear().domain([3, -0.5]).range([0, plot_height/2]);
+  var width = 201;
+  var height = 134;
+  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
+  var y = d3.scaleLinear().domain([3, -0.5]).range([0, height/2]);
   var left_color = d3.interpolateBlues(0.3);
   var right_color = d3.interpolateBlues(0.7);
   var light_left_color = "rgb(95%,95%,95%)";
@@ -4084,26 +4082,18 @@ function sx() {
 
   var dataA = [0., 0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0.];
   var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
-  
-  var plot_x = 1, plot_y = 30;
 			   
-  var background = d3.select("#sx")
-                     .append("svg")
-    	   	  	     .attr("width", width)
-			         .attr("height", height);
-
-  var plot = background.append("svg")
-                       .attr("x",plot_x)
-					   .attr("y",plot_y)
-	                   .attr("width", plot_width)
-		               .attr("height", plot_height);
+  var plot = d3.select("#sx")
+               .append("svg")
+    	   	   .attr("width", width)
+			   .attr("height", height);
 					 
   plot.append("rect")
       .attr("fill","rgb(98%,98%,98%)")
 	  .attr("x", 0)
       .attr("y", 0)
-      .attr("width", plot_width+1)
-      .attr("height", plot_height+1);
+      .attr("width", width)
+      .attr("height", height);
   
   plot.append("line")
       .attr("x1", x(-4))
@@ -4116,9 +4106,9 @@ function sx() {
 	   
   plot.append("line")
       .attr("x1", x(-4))
-	  .attr("y1", y(0)+plot_height/2)
+	  .attr("y1", y(0)+height/2)
 	  .attr("x2", x(4))
-	  .attr("y2", y(0)+plot_height/2)
+	  .attr("y2", y(0)+height/2)
 	  .attr('stroke',"rgb(0%,0%,0%)")
 	  .attr("stroke-opacity",0.2)
 	  .attr("stroke-width", 1);
@@ -4128,9 +4118,9 @@ function sx() {
       .enter()
       .append("rect")
       .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-      .attr("y", function(d) {return y(0) - d * plot_height / 4;})
+      .attr("y", function(d) {return y(0) - d * height / 4;})
       .attr("width", 6.5)
-      .attr("height", function(d) {return d * plot_height / 4;})
+      .attr("height", function(d) {return d * height / 4;})
       .style("stroke-width", 0.3)
       .style("stroke", "rgb(30%, 30%, 30%)")
       .style("fill-opacity", 1)
@@ -4141,9 +4131,9 @@ function sx() {
       .enter()
       .append("rect")
       .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-      .attr("y", function(d) {return y(0) - d * plot_height / 4 + plot_height/2;})
+      .attr("y", function(d) {return y(0) - d * height / 4 + height/2;})
       .attr("width", 6.5)
-      .attr("height", function(d) {return d * plot_height / 4;})
+      .attr("height", function(d) {return d * height / 4;})
       .style("stroke-width", 0.3)
       .style("stroke", "rgb(10%, 10%, 10%)")
       .style("fill-opacity", 1)
@@ -4157,44 +4147,17 @@ function sx() {
 	  .attr('stroke',orange)
 	  .attr("stroke-opacity",1)
 	  .attr("stroke-width", 2.5);
-	  
-  background.append("rect")
-            .attr("stroke","rgb(60%,60%,60%)")
-			.attr("stroke-width", 0.5)
-			.attr("fill","none")
-	        .attr("x", plot_x)
-            .attr("y", plot_y)
-            .attr("width", plot_width)
-            .attr("height", plot_height);
-			
-  var black_labels = background.append("g")
-	                           .attr("fill", "rgb(0%,0%,0%)")
-	                           .attr("font-family","Roboto")
-	                           .attr("font-size", "15px");
-
-  black_labels.append("text")
-	          .attr("text-anchor", "middle")
-              .attr("font-style", "italic")
-              .attr("x", plot_x+plot_width/2)
-	          .attr("y", plot_y-10)
-	          .text("s(x) ")
-			  .append("tspan")
-			  .attr("font-style","normal")
-			  .text("\u00A0over ")
-			  .append("tspan")
-			  .attr("font-style","italic")
-			  .text("T");
 			  
   // gray labels
-  var gray_labels = background.append("g")
-	                          .attr("fill", "rgb(60%,60%,60%)")
-	                          .attr("font-family","Roboto")
-	                          .attr("font-size", "13px");
+  var gray_labels = plot.append("g")
+	                    .attr("fill", "rgb(60%,60%,60%)")
+	                    .attr("font-family","Roboto")
+	                    .attr("font-size", "13px");
 								
   gray_labels.append("text")
 	         .attr("text-anchor", "middle")
-             .attr("x", plot_x+plot_width/5)
-	         .attr("y", plot_y+plot_height/5)
+             .attr("x", width/5)
+	         .attr("y", height/5)
 	         .text("Class ")
 	         .append("tspan")
 		     .attr("font-style", "italic")
@@ -4202,8 +4165,8 @@ function sx() {
 			   
   gray_labels.append("text")
 	         .attr("text-anchor", "middle")
-             .attr("x", plot_x+4*plot_width/5)
-	         .attr("y", plot_y+4*plot_height/5)
+             .attr("x", 4*width/5)
+	         .attr("y", 4*height/5)
 	         .text("Class ")
 	         .append("tspan")
 			 .attr("font-style", "italic")
@@ -4211,12 +4174,10 @@ function sx() {
 }
 
 function ysx() {
-  var width = 203;
-  var height = 170;
-  var plot_width = 201;
-  var plot_height = 134;
-  var x = d3.scaleLinear().domain([-3, 3]).range([0, plot_width]);
-  var y = d3.scaleLinear().domain([6, -1]).range([0, plot_height]);
+  var width = 201;
+  var height = 134;
+  var x = d3.scaleLinear().domain([-6, 6]).range([0, width]);
+  var y = d3.scaleLinear().domain([6, -1]).range([0, height]);
   var left_color = d3.interpolateBlues(0.3);
   var right_color = d3.interpolateBlues(0.7);
   var light_left_color = "rgb(95%,95%,95%)";
@@ -4227,31 +4188,23 @@ function ysx() {
   var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
   var data = [dataA.slice().reverse(), dataB];
   data = data[0].map(function(col, i) { return data.map(function(row) { return row[i] })});
-
-  var plot_x = 1, plot_y = 30;
 			   
-  var background = d3.select("#ysx")
-                     .append("svg")
-    	   	  	     .attr("width", width)
-			         .attr("height", height);
-			
-  var plot = background.append("svg")
-                       .attr("x",plot_x)
-					   .attr("y",plot_y)
-	                   .attr("width", plot_width)
-		               .attr("height", plot_height);
+  var plot = d3.select("#ysx")
+               .append("svg")
+    	   	   .attr("width", width)
+			   .attr("height", height);
 					 
   plot.append("rect")
       .attr("fill","rgb(98%,98%,98%)")
 	  .attr("x", 0)
       .attr("y", 0)
-      .attr("width", plot_width+1)
-      .attr("height", plot_height+1);
+      .attr("width", width)
+      .attr("height", height);
   
   plot.append("line")
-      .attr("x1", x(-4))
+      .attr("x1", x(-8))
 	  .attr("y1", y(0))
-	  .attr("x2", x(4))
+	  .attr("x2", x(8))
 	  .attr("y2", y(0))
 	  .attr('stroke',"rgb(0%,0%,0%)")
 	  .attr("stroke-opacity",0.2)
@@ -4261,10 +4214,10 @@ function ysx() {
       .data(data)
       .enter()
       .append("rect")
-      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-      .attr("y", function(d) {return y(0) - d[1] * plot_height / 4 - d[0] * plot_height / 4;})
+      .attr("x", function(d, i) {return x(i * 0.4 - 8);})
+      .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
       .attr("width", 6.5)
-      .attr("height", function(d) {return d[0] * plot_height / 4;})
+      .attr("height", function(d) {return d[0] * height / 4;})
       .style("stroke-width", 0.3)
       .style("stroke", "rgb(30%, 30%, 30%)")
       .style("fill-opacity", 1)
@@ -4274,10 +4227,10 @@ function ysx() {
       .data(data)
       .enter()
       .append("rect")
-      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-      .attr("y", function(d) {return y(0) - d[1] * plot_height / 4;})
+      .attr("x", function(d, i) {return x(i * 0.4 - 8);})
+      .attr("y", function(d) {return y(0) - d[1] * height / 4;})
       .attr("width", 6.5)
-      .attr("height", function(d) {return d[1] * plot_height / 4;})
+      .attr("height", function(d) {return d[1] * height / 4;})
       .style("stroke-width", 0.3)
       .style("stroke", "rgb(10%, 10%, 10%)")
       .style("fill-opacity", 1)
@@ -4285,94 +4238,65 @@ function ysx() {
 	   
   plot.append("line")
       .attr("x1", x(0))
-	  .attr("y1", y(-1))
+	  .attr("y1", y(-2))
 	  .attr("x2", x(0))
-	  .attr("y2", y(6))
+	  .attr("y2", y(8))
 	  .attr('stroke', orange)
 	  .attr("stroke-opacity", 1)
 	  .attr("stroke-width", 2.5);
-	   
-  background.append("rect")
-            .attr("stroke","rgb(60%,60%,60%)")
-			.attr("stroke-width", 0.5)
-			.attr("fill","none")
-	        .attr("x", plot_x)
-            .attr("y", plot_y)
-            .attr("width", plot_width)
-            .attr("height", plot_height);
-			
-  var black_labels = background.append("g")
-	                           .attr("fill", "rgb(0%,0%,0%)")
-	                           .attr("font-family","Roboto")
-	                           .attr("font-size", "15px");
-			  
-  black_labels.append("text")
-	          .attr("text-anchor", "middle")
-              .attr("font-style", "italic")
-              .attr("x", plot_x+plot_width/2)
-	          .attr("y", plot_y-10)
-	          .text("y s(x) ")
-			  .append("tspan")
-			  .attr("font-style","normal")
-			  .text("\u00A0over ")
-			  .append("tspan")
-			  .attr("font-style","italic")
-			  .text("T");
 			  
   // gray labels
-  var gray_labels = background.append("g")
-	                          .attr("fill", "rgb(60%,60%,60%)")
-	                          .attr("font-family","Roboto")
-	                          .attr("font-size", "13px");
+  var gray_labels = plot.append("g")
+	                    .attr("fill", "rgb(60%,60%,60%)")
+	                    .attr("font-family","Roboto")
+	                    .attr("font-size", "13px");
 								
   gray_labels.append("text")
 	         .attr("text-anchor", "middle")
-             .attr("x", plot_x+plot_width/5)
-	         .attr("y", plot_y+plot_height/5)
+             .attr("x", width/5)
+	         .attr("y", height/5)
 	         .text("mis-");
 			
   gray_labels.append("text")
 	         .attr("text-anchor", "middle")
-             .attr("x", plot_x+plot_width/5)
-	         .attr("y", plot_y+plot_height/5+20)
+             .attr("x", width/5)
+	         .attr("y", height/5+20)
 	         .text("classified");
 			 
   gray_labels.append("text")
 	         .attr("text-anchor", "middle")
-             .attr("x", plot_x+plot_width/5)
-	         .attr("y", plot_y+plot_height/5+40)
+             .attr("x", width/5)
+	         .attr("y", height/5+40)
 	         .text("data");
 			   
   gray_labels.append("text")
 	         .attr("text-anchor", "middle")
-             .attr("x", plot_x+4*plot_width/5)
-	         .attr("y", plot_y+plot_height/5)
+             .attr("x", 4*width/5)
+	         .attr("y", height/5)
 	         .text("correctly");
 			 
   gray_labels.append("text")
 	         .attr("text-anchor", "middle")
-             .attr("x", plot_x+4*plot_width/5)
-	         .attr("y", plot_y+plot_height/5+20)
+             .attr("x", 4*width/5)
+	         .attr("y", height/5+20)
 	         .text("classified");
 			 
   gray_labels.append("text")
 	         .attr("text-anchor", "middle")
-             .attr("x", plot_x+4*plot_width/5)
-	         .attr("y", plot_y+plot_height/5+40)
+             .attr("x", 4*width/5)
+	         .attr("y", height/5+40)
 	         .text("data");
 }
 
 function fysx() {
-  var width = 203;
-  var height = 170;
-  var plot_width = 201;
-  var plot_height = 134;
-  var x = d3.scaleLinear().domain([-3, 3]).range([0, plot_width]);
-  var y = d3.scaleLinear().domain([3, -1]).range([0, plot_height]);
+  var width = 201;
+  var height = 134;
+  var x = d3.scaleLinear().domain([-6, 6]).range([0, width]);
+  var y = d3.scaleLinear().domain([6, -1]).range([0, height]);
   var left_color = d3.interpolateBlues(0.3);
   var right_color = d3.interpolateBlues(0.7);
   var light_left_color = "rgb(95%,95%,95%)";
-  var light_right_color = "rgb(85%,85%,85%)";
+  var light_right_color = "rgb(90%,90%,90%)";
   var blue = d3.interpolateBlues(0.7);
   var orange = "rgb(255,102,0)";
 
@@ -4380,31 +4304,23 @@ function fysx() {
   var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
   var data = [dataA.slice().reverse(), dataB];
   data = data[0].map(function(col, i) { return data.map(function(row) { return row[i] })});
-
-  var plot_x = 1, plot_y = 30;
 			   
-  var background = d3.select("#fysx")
-                     .append("svg")
-    	   	  	     .attr("width", width)
-			         .attr("height", height);
-			
-  var plot = background.append("svg")
-                       .attr("x",plot_x)
-					   .attr("y",plot_y)
-	                   .attr("width", plot_width)
-		               .attr("height", plot_height);
+  var plot = d3.select("#fysx")
+               .append("svg")
+    	   	   .attr("width", width)
+			   .attr("height", height);
 					 
   plot.append("rect")
       .attr("fill","rgb(98%,98%,98%)")
 	  .attr("x", 0)
       .attr("y", 0)
-      .attr("width", plot_width+1)
-      .attr("height", plot_height+1);
+      .attr("width", width)
+      .attr("height", height);
   
   plot.append("line")
-      .attr("x1", x(-4))
+      .attr("x1", x(-8))
 	  .attr("y1", y(0))
-	  .attr("x2", x(4))
+	  .attr("x2", x(8))
 	  .attr("y2", y(0))
 	  .attr('stroke',"rgb(0%,0%,0%)")
 	  .attr("stroke-opacity",0.2)
@@ -4414,10 +4330,10 @@ function fysx() {
       .data(data)
       .enter()
       .append("rect")
-      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-      .attr("y", function(d) {return y(0) - d[1] * plot_height / 4 - d[0] * plot_height / 4;})
+      .attr("x", function(d, i) {return x(i * 0.4 - 8);})
+      .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
       .attr("width", 6.5)
-      .attr("height", function(d) {return d[0] * plot_height / 4;})
+      .attr("height", function(d) {return d[0] * height / 4;})
       .style("stroke-width", 0.3)
       .style("stroke", "rgb(30%, 30%, 30%)")
       .style("fill-opacity", 1)
@@ -4427,10 +4343,10 @@ function fysx() {
       .data(data)
       .enter()
       .append("rect")
-      .attr("x", function(d, i) {return x(i * 0.2 - 4);})
-      .attr("y", function(d) {return y(0) - d[1] * plot_height / 4;})
+      .attr("x", function(d, i) {return x(i * 0.4 - 8);})
+      .attr("y", function(d) {return y(0) - d[1] * height / 4;})
       .attr("width", 6.5)
-      .attr("height", function(d) {return d[1] * plot_height / 4;})
+      .attr("height", function(d) {return d[1] * height / 4;})
       .style("stroke-width", 0.3)
       .style("stroke", "rgb(10%, 10%, 10%)")
       .style("fill-opacity", 1)
@@ -4438,62 +4354,35 @@ function fysx() {
 	   
   plot.append("line")
       .attr("x1", x(0))
-	  .attr("y1", y(-1))
+	  .attr("y1", y(-2))
 	  .attr("x2", x(0))
-	  .attr("y2", y(6))
+	  .attr("y2", y(8))
 	  .attr('stroke', orange)
 	  .attr("stroke-opacity", 1)
 	  .attr("stroke-width", 2.5);
 	  
   plot.append("path")
-	  .attr("d", "M " + x(-4) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(4) + " " + y(0))
+	  .attr("d", "M " + x(-8) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(8) + " " + y(0))
       .style("stroke", blue)
       .style("stroke-width", 2)
       .style("fill", "none");
-	   
-  background.append("rect")
-            .attr("stroke","rgb(60%,60%,60%)")
-			.attr("stroke-width", 0.5)
-			.attr("fill","none")
-	        .attr("x", plot_x)
-            .attr("y", plot_y)
-            .attr("width", plot_width)
-            .attr("height", plot_height);
-			
-  var black_labels = background.append("g")
-	                           .attr("fill", "rgb(0%,0%,0%)")
-	                           .attr("font-family","Roboto")
-	                           .attr("font-size", "15px");
 			  
-  black_labels.append("text")
-	          .attr("text-anchor", "middle")
-              .attr("font-style", "italic")
-              .attr("x", plot_x+plot_width/2)
-	          .attr("y", plot_y-10)
-	          .text("f(y s(x)) ")
-			  .append("tspan")
-			  .attr("font-style","normal")
-			  .text("\u00A0over ")
-			  .append("tspan")
-			  .attr("font-style","italic")
-			  .text("T");
-			  
-  background.append("text")
-	        .attr("fill", blue)
-	        .attr("font-family","Roboto")
-	        .attr("font-size", "13px")
-	        .attr("text-anchor", "middle")
-			.attr("font-style","italic")
-            .attr("x", plot_x+10)
-	        .attr("y", plot_y+60)
-	        .text("f");
+  plot.append("text")
+	  .attr("fill", blue)
+	  .attr("font-family","Roboto")
+	  .attr("font-size", "13px")
+	  .attr("text-anchor", "middle")
+	  .attr("font-style","italic")
+      .attr("x", x(-5.5))
+	  .attr("y", y(1.5))
+	  .text("f");
 }
 
 function loss_functions() {
   var width = 201;
   var height = 134;
-  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
-  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
+  var x = d3.scaleLinear().domain([-6, 6]).range([0, width]);
+  var y = d3.scaleLinear().domain([6, -1]).range([0, height]);
   var blue = d3.interpolateBlues(0.7);
   
   var indicator_01 = d3.select("#indicator-01")
@@ -4509,9 +4398,9 @@ function loss_functions() {
               .attr("height", height+1);
   
   indicator_01.append("line")
-              .attr("x1", x(-4))
+              .attr("x1", x(-8))
 	          .attr("y1", y(0))
-	          .attr("x2", x(4))
+	          .attr("x2", x(8))
 	          .attr("y2", y(0))
 	          .attr('stroke',"rgb(0%,0%,0%)")
 			  .attr("stroke-opacity",0.2)
@@ -4519,34 +4408,34 @@ function loss_functions() {
 
   indicator_01.append("line")
               .attr("x1", x(0))
-	          .attr("y1", y(-1))
+	          .attr("y1", y(-2))
 	          .attr("x2", x(0))
-	          .attr("y2", y(4))
+	          .attr("y2", y(8))
 	          .attr('stroke',"rgb(0%,0%,0%)")
 			  .attr("stroke-opacity",0.2)
 			  .attr("stroke-width", 1);
 			 
   indicator_01.append("path")
-		      .attr("d", "M " + x(-4) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(4) + " " + y(0))
+		      .attr("d", "M " + x(-8) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(8) + " " + y(0))
               .style("stroke", blue)
               .style("stroke-width", 2)
               .style("fill", "none");
 			  
   indicator_01.append("line")
 	          .attr("stroke-width", 1)
-	          .attr("stroke", "rgb(50%,50%,50%)")
+	          .attr("stroke", blue)
               .attr("x1", x(1))
-	          .attr("y1", y(-0.05))
+	          .attr("y1", y(-0.1))
 	          .attr("x2", x(1))
-	          .attr("y2", y(0.05));
+	          .attr("y2", y(0.1));
 				
   indicator_01.append("text")
               .attr("x",x(1))
-              .attr("y",y(-0.5))
+              .attr("y",y(-0.7))
   	          .attr("text-anchor", "middle")
-	          .attr("font-family", "Georgia, serif")
-	          .attr("fill", "rgb(50%,50%,50%)")
+	          .attr("font-family","Roboto")
 	          .attr("font-size", "10px")
+	          .attr("fill", blue)
               .text("1");
 			  
   var hinge_loss = d3.select("#hinge-loss")
@@ -4558,13 +4447,13 @@ function loss_functions() {
             .attr("fill","rgb(98%,98%,98%)")
 			.attr("x", 0)
             .attr("y", 0)
-            .attr("width", width+1)
-            .attr("height", height+1);
+            .attr("width", width)
+            .attr("height", height);
   
   hinge_loss.append("line")
-            .attr("x1", x(-4))
+            .attr("x1", x(-8))
 	        .attr("y1", y(0))
-	        .attr("x2", x(4))
+	        .attr("x2", x(8))
 	        .attr("y2", y(0))
 	        .attr('stroke',"rgb(0%,0%,0%)")
 		    .attr("stroke-opacity",0.2)
@@ -4572,41 +4461,41 @@ function loss_functions() {
 
   hinge_loss.append("line")
             .attr("x1", x(0))
-	        .attr("y1", y(-1))
+	        .attr("y1", y(-2))
 	        .attr("x2", x(0))
-	        .attr("y2", y(4))
+	        .attr("y2", y(8))
 	        .attr('stroke',"rgb(0%,0%,0%)")
 			.attr("stroke-opacity",0.2)
 			.attr("stroke-width", 1);
 			 
   hinge_loss.append("path")
-			.attr("d", "M " + x(-4) + " " + y(1+4) + " L " + x(1) + " " + y(0) + " L " + x(4) + " " + y(0))
+			.attr("d", "M " + x(-8) + " " + y(1+8) + " L " + x(1) + " " + y(0) + " L " + x(8) + " " + y(0))
             .style("stroke", blue)
             .style("stroke-width", 2)
             .style("fill", "none");
 			  
   hinge_loss.append("line")
 	        .attr("stroke-width", 1)
-	        .attr("stroke", "rgb(50%,50%,50%)")
+	        .attr("stroke", blue)
             .attr("x1", x(1))
-	        .attr("y1", y(-0.05))
+	        .attr("y1", y(-0.1))
 	        .attr("x2", x(1))
-	        .attr("y2", y(0.05));
+	        .attr("y2", y(0.1));
 				
   hinge_loss.append("text")
             .attr("x",x(1))
-            .attr("y",y(-0.5))
+            .attr("y",y(-0.7))
   	        .attr("text-anchor", "middle")
-	        .attr("font-family", "Georgia, serif")
-	        .attr("fill", "rgb(50%,50%,50%)")
+	        .attr("font-family","Roboto")
 	        .attr("font-size", "10px")
+	        .attr("fill", blue)
             .text("1");
 			
   var line = d3.line()
-               .x(function(d,i) {return x(-3.5 + i * 0.025);})
+               .x(function(d,i) {return x(-6.5 + i * 0.05);})
                .y(function(d) {return y(d);});
   var softplusA = [];
-  for (var i = -3.5; i < 3.5; i+= 0.025)
+  for (var i = -6.5; i < 6.5; i+= 0.05)
 	softplusA.push(Math.log(1 + Math.exp(-i)));
 			
   var softplus_loss = d3.select("#softplus-loss")
@@ -4618,13 +4507,13 @@ function loss_functions() {
                .attr("fill","rgb(98%,98%,98%)")
 			   .attr("x", 0)
                .attr("y", 0)
-               .attr("width", width+1)
-               .attr("height", height+1);
+               .attr("width", width)
+               .attr("height", height);
   
   softplus_loss.append("line")
-               .attr("x1", x(-4))
+               .attr("x1", x(-8))
 	           .attr("y1", y(0))
-	           .attr("x2", x(4))
+	           .attr("x2", x(8))
 	           .attr("y2", y(0))
 	           .attr('stroke',"rgb(0%,0%,0%)")
 			   .attr("stroke-opacity",0.2)
@@ -4632,9 +4521,9 @@ function loss_functions() {
 
   softplus_loss.append("line")
                .attr("x1", x(0))
-	           .attr("y1", y(-1))
+	           .attr("y1", y(-2))
 	           .attr("x2", x(0))
-	           .attr("y2", y(4))
+	           .attr("y2", y(8))
 	           .attr('stroke',"rgb(0%,0%,0%)")
 			   .attr("stroke-opacity",0.2)
 			   .attr("stroke-width", 1);
@@ -4647,19 +4536,19 @@ function loss_functions() {
 			   
   softplus_loss.append("line")
 	           .attr("stroke-width", 1)
-	           .attr("stroke", "rgb(50%,50%,50%)")
+	           .attr("stroke", blue)
                .attr("x1", x(1))
-	           .attr("y1", y(-0.05))
+	           .attr("y1", y(-0.1))
 	           .attr("x2", x(1))
-	           .attr("y2", y(0.05));
+	           .attr("y2", y(0.1));
 				
   softplus_loss.append("text")
                .attr("x",x(1))
-               .attr("y",y(-0.5))
+               .attr("y",y(-0.7))
   	           .attr("text-anchor", "middle")
-	           .attr("font-family", "Georgia, serif")
-	           .attr("fill", "rgb(50%,50%,50%)")
+	           .attr("font-family","Roboto")
 	           .attr("font-size", "10px")
+	           .attr("fill", blue)
                .text("1");
 }
 
@@ -4671,7 +4560,7 @@ function scaling_parameter() {
   
   var bracket_width = 45, bracket_height = 5, arrow_length = 30;
 	
-  var svg = d3.select("#empirical-risk-svg")
+  var svg = d3.select("#equation-svg1")
               .append("svg")
 	          .attr("width", width)
 		      .attr("height", height);
@@ -4713,13 +4602,13 @@ function scaling_parameter() {
 function scaling_f() {
   var width = 201;
   var height = 134;
-  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
-  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
-  var init_w = 0.5;
+  var x = d3.scaleLinear().domain([-6, 6]).range([0, width]);
+  var y = d3.scaleLinear().domain([6, -1]).range([0, height]);
+  var init_w = 0.;
   var blue = d3.interpolateBlues(0.7);
   var orange = "rgb(255,102,0)";
   var light_left_color = "rgb(95%,95%,95%)";
-  var light_right_color = "rgb(85%,85%,85%)";
+  var light_right_color = "rgb(90%,90%,90%)";
   
   var dataA = [0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
   var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
@@ -4727,15 +4616,15 @@ function scaling_f() {
   data = data[0].map(function(col, i) { return data.map(function(row) { return row[i] })});
   
   var line = d3.line()
-               .x(function(d,i) {return x(-3.5 + i * 0.025);})
+               .x(function(d,i) {return x(-8 + i * 0.05);})
                .y(function(d) {return y(d);});
   var softplus = [];
-  for (var i = -3.5; i < 3.5; i+= 0.025)
+  for (var i = -8; i < 8; i+= 0.05)
 	softplus.push(Math.log(1 + Math.exp(-i)));
 
   function init() {
     d3.select("#scaling-f-controler-input").property("value", init_w);
-    d3.select("#scaling-f-value-w").text(parseFloat(init_w-0.5).toFixed(2));	  
+    d3.select("#scaling-f-value-w").text(parseFloat(init_w).toFixed(2));	  
 	  
     // Subfigure 1
     var subfig1 = d3.select("#scaling-f-subfig1")
@@ -4747,13 +4636,13 @@ function scaling_f() {
            .attr("fill","rgb(98%,98%,98%)")
 		   .attr("x", 0)
            .attr("y", 0)
-           .attr("width", width+1)
-           .attr("height", height+1);
+           .attr("width", width)
+           .attr("height", height);
   
     subfig1.append("line")
-           .attr("x1", x(-4))
+           .attr("x1", x(-8))
 	       .attr("y1", y(0))
-	       .attr("x2", x(4))
+	       .attr("x2", x(8))
 	       .attr("y2", y(0))
 	       .attr('stroke',"rgb(0%,0%,0%)")
 		   .attr("stroke-opacity",0.2)
@@ -4763,7 +4652,7 @@ function scaling_f() {
            .data(data)
            .enter()
            .append("rect")
-           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("x", function(d, i) {return x(i * 0.4 - 8);})
            .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
            .attr("width", 6.5)
            .attr("height", function(d) {return d[0] * height / 4;})
@@ -4776,7 +4665,7 @@ function scaling_f() {
            .data(data)
            .enter()
            .append("rect")
-           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("x", function(d, i) {return x(i * 0.4 - 8);})
            .attr("y", function(d) {return y(0) - d[1] * height / 4;})
            .attr("width", 6.5)
            .attr("height", function(d) {return d[1] * height / 4;})
@@ -4787,15 +4676,15 @@ function scaling_f() {
 		   
     subfig1.append("line")
            .attr("x1", x(0))
-	       .attr("y1", y(-1))
+	       .attr("y1", y(-2))
 	       .attr("x2", x(0))
-	       .attr("y2", y(6))
+	       .attr("y2", y(8))
 	       .attr('stroke', orange)
 	       .attr("stroke-opacity", 1)
 	       .attr("stroke-width", 2.5);
 				
 	subfig1.append("path")
-		   .attr("d", "M " + x(-4) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(4) + " " + y(0))
+		   .attr("d", "M " + x(-8) + " " + y(1) + " L " + x(0) + " " + y(1) + "M " + x(0) + " " + y(0) + " L " + x(8) + " " + y(0))
            .style("stroke", blue)
            .style("stroke-width", 2)
            .style("fill", "none");
@@ -4805,48 +4694,44 @@ function scaling_f() {
 	                   .attr("transform", "translate(" + (x(1)-x(0)) + ",0)");
 	
 	tick1.append("line")
-	     .attr("stroke-width", 1)
+	     .attr("stroke-width", 0.5)
 	     .attr("stroke", blue)
          .attr("x1", x(0))
-	     .attr("y1", y(-0.05))
+	     .attr("y1", y(-0.1))
 	     .attr("x2", x(0))
-	     .attr("y2", y(0.05));
+	     .attr("y2", y(0.1));
 				
 	tick1.append("text")
          .attr("x",x(0))
-         .attr("y",y(-0.3))
+         .attr("y",y(-0.4))
   	     .attr("text-anchor", "middle")
-	     .attr("font-family", "Georgia, serif")
+	     .attr("font-family", "Roboto")
 	     .attr("fill", blue)
-	     .attr("font-size", "10px")
+	     .attr("font-size", "8px")
          .text("1");
 			  
 	tick1.append("line")
-	     .attr("stroke-width", 1)
+	     .attr("stroke-width", 0.5)
 	     .attr("stroke", blue)
          .attr("x1", x(-0.3))
-	     .attr("y1", y(-0.4))
+	     .attr("y1", y(-0.45))
 	     .attr("x2", x(0.3))
-	     .attr("y2", y(-0.4));
+	     .attr("y2", y(-0.45));
 			  
 	tick1.append("text")
          .attr("x",x(0))
-         .attr("y",y(-0.7))
+         .attr("y",y(-0.85))
   	     .attr("text-anchor", "middle")
-	     .attr("font-family", "Georgia, serif")
+	     .attr("font-family", "Roboto")
 	     .attr("fill", blue)
-	     .attr("font-size", "10px")
-         .text("|| \u00A0\u00A0 ||");
-			  
-	tick1.append("text")
-         .attr("x",x(0))
-         .attr("y",y(-0.7))
-  	     .attr("text-anchor", "middle")
-	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", blue)
+	     .attr("font-size", "9px")
+         .text("||")
+		 .append("tspan")
 		 .attr("font-weight", "bold")
-	     .attr("font-size", "10px")
-         .text("w");
+		 .text("w")
+		 .append("tspan")
+		 .attr("font-weight", "normal")
+		 .text("||");
 
     // Subfigure 2
     var subfig2 = d3.select("#scaling-f-subfig2")
@@ -4858,13 +4743,13 @@ function scaling_f() {
            .attr("fill","rgb(98%,98%,98%)")
 		   .attr("x", 0)
            .attr("y", 0)
-           .attr("width", width+1)
-           .attr("height", height+1);
+           .attr("width", width)
+           .attr("height", height);
   
     subfig2.append("line")
-           .attr("x1", x(-4))
+           .attr("x1", x(-8))
 	       .attr("y1", y(0))
-	       .attr("x2", x(4))
+	       .attr("x2", x(8))
 	       .attr("y2", y(0))
 	       .attr('stroke',"rgb(0%,0%,0%)")
 		   .attr("stroke-opacity",0.2)
@@ -4872,9 +4757,9 @@ function scaling_f() {
 
     subfig2.append("line")
            .attr("x1", x(0))
-	       .attr("y1", y(-1))
+	       .attr("y1", y(-2))
 	       .attr("x2", x(0))
-	       .attr("y2", y(4))
+	       .attr("y2", y(8))
 	       .attr('stroke',"rgb(0%,0%,0%)")
 		   .attr("stroke-opacity",0.2)
 		   .attr("stroke-width", 1);
@@ -4883,7 +4768,7 @@ function scaling_f() {
            .data(data)
            .enter()
            .append("rect")
-           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("x", function(d, i) {return x(i * 0.4 - 8);})
            .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
            .attr("width", 6.5)
            .attr("height", function(d) {return d[0] * height / 4;})
@@ -4896,7 +4781,7 @@ function scaling_f() {
            .data(data)
            .enter()
            .append("rect")
-           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("x", function(d, i) {return x(i * 0.4 - 8);})
            .attr("y", function(d) {return y(0) - d[1] * height / 4;})
            .attr("width", 6.5)
            .attr("height", function(d) {return d[1] * height / 4;})
@@ -4907,16 +4792,16 @@ function scaling_f() {
 		   
     subfig2.append("line")
            .attr("x1", x(0))
-	       .attr("y1", y(-1))
+	       .attr("y1", y(-2))
 	       .attr("x2", x(0))
-	       .attr("y2", y(6))
+	       .attr("y2", y(8))
 	       .attr('stroke', orange)
 	       .attr("stroke-opacity", 1)
 	       .attr("stroke-width", 2.5);
 				
 	subfig2.append("path")
-	       .attr("id","scaling-f-hingeA")
-		   .attr("d", "M " + x(-4) + " " + y(1+4) + " L " + x(1) + " " + y(0) + " L " + x(4) + " " + y(0))
+	       .attr("id","scaling-f-hinge")
+		   .attr("d", "M " + x(-8) + " " + y(1+8) + " L " + x(1) + " " + y(0) + " L " + x(8) + " " + y(0))
            .style("stroke", blue)
            .style("stroke-width", 2)
            .style("fill", "none");
@@ -4926,48 +4811,44 @@ function scaling_f() {
 	                   .attr("transform", "translate(" + (x(1)-x(0)) + ",0)");
 	
 	tick2.append("line")
-	     .attr("stroke-width", 1)
+	     .attr("stroke-width", 0.5)
 	     .attr("stroke", blue)
          .attr("x1", x(0))
-	     .attr("y1", y(-0.05))
+	     .attr("y1", y(-0.1))
 	     .attr("x2", x(0))
-	     .attr("y2", y(0.05));
+	     .attr("y2", y(0.1));
 				
 	tick2.append("text")
          .attr("x",x(0))
-         .attr("y",y(-0.3))
+         .attr("y",y(-0.4))
   	     .attr("text-anchor", "middle")
-	     .attr("font-family", "Georgia, serif")
+	     .attr("font-family", "Roboto")
 	     .attr("fill", blue)
-	     .attr("font-size", "10px")
+	     .attr("font-size", "8px")
          .text("1");
 			  
 	tick2.append("line")
-	     .attr("stroke-width", 1)
+	     .attr("stroke-width", 0.5)
 	     .attr("stroke", blue)
          .attr("x1", x(-0.3))
-	     .attr("y1", y(-0.4))
+	     .attr("y1", y(-0.45))
 	     .attr("x2", x(0.3))
-	     .attr("y2", y(-0.4));
+	     .attr("y2", y(-0.45));
 			  
 	tick2.append("text")
          .attr("x",x(0))
-         .attr("y",y(-0.7))
+         .attr("y",y(-0.85))
   	     .attr("text-anchor", "middle")
-	     .attr("font-family", "Georgia, serif")
+	     .attr("font-family", "Roboto")
 	     .attr("fill", blue)
-	     .attr("font-size", "10px")
-         .text("|| \u00A0\u00A0 ||");
-			  
-	tick2.append("text")
-         .attr("x",x(0))
-         .attr("y",y(-0.7))
-  	     .attr("text-anchor", "middle")
-	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", blue)
+	     .attr("font-size", "9px")
+         .text("||")
+		 .append("tspan")
 		 .attr("font-weight", "bold")
-	     .attr("font-size", "10px")
-         .text("w");
+		 .text("w")
+		 .append("tspan")
+		 .attr("font-weight", "normal")
+		 .text("||");
 	
     // Subfigure 3
     var subfig3 = d3.select("#scaling-f-subfig3")
@@ -4983,9 +4864,9 @@ function scaling_f() {
            .attr("height", height+1);
   
     subfig3.append("line")
-           .attr("x1", x(-4))
+           .attr("x1", x(-8))
 	       .attr("y1", y(0))
-	       .attr("x2", x(4))
+	       .attr("x2", x(8))
 	       .attr("y2", y(0))
 	       .attr('stroke',"rgb(0%,0%,0%)")
 		   .attr("stroke-opacity",0.2)
@@ -4993,9 +4874,9 @@ function scaling_f() {
 
     subfig3.append("line")
            .attr("x1", x(0))
-	       .attr("y1", y(-1))
+	       .attr("y1", y(-2))
 	       .attr("x2", x(0))
-	       .attr("y2", y(4))
+	       .attr("y2", y(8))
 	       .attr('stroke',"rgb(0%,0%,0%)")
 		   .attr("stroke-opacity",0.2)
 		   .attr("stroke-width", 1);
@@ -5004,7 +4885,7 @@ function scaling_f() {
            .data(data)
            .enter()
            .append("rect")
-           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("x", function(d, i) {return x(i * 0.4 - 8);})
            .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
            .attr("width", 6.5)
            .attr("height", function(d) {return d[0] * height / 4;})
@@ -5017,7 +4898,7 @@ function scaling_f() {
            .data(data)
            .enter()
            .append("rect")
-           .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+           .attr("x", function(d, i) {return x(i * 0.4 - 8);})
            .attr("y", function(d) {return y(0) - d[1] * height / 4;})
            .attr("width", 6.5)
            .attr("height", function(d) {return d[1] * height / 4;})
@@ -5028,9 +4909,9 @@ function scaling_f() {
 				
     subfig3.append("line")
            .attr("x1", x(0))
-	       .attr("y1", y(-1))
+	       .attr("y1", y(-2))
 	       .attr("x2", x(0))
-	       .attr("y2", y(6))
+	       .attr("y2", y(8))
 	       .attr('stroke', orange)
 	       .attr("stroke-opacity", 1)
 	       .attr("stroke-width", 2.5);
@@ -5047,58 +4928,53 @@ function scaling_f() {
 	                   .attr("transform", "translate(" + (x(1)-x(0)) + ",0)");
 	
 	tick3.append("line")
-	     .attr("stroke-width", 1)
+	     .attr("stroke-width", 0.5)
 	     .attr("stroke", blue)
          .attr("x1", x(0))
-	     .attr("y1", y(-0.05))
+	     .attr("y1", y(-0.1))
 	     .attr("x2", x(0))
-	     .attr("y2", y(0.05));
+	     .attr("y2", y(0.1));
 				
 	tick3.append("text")
-         .attr("x", x(0))
-         .attr("y", y(-0.3))
+         .attr("x",x(0))
+         .attr("y",y(-0.4))
   	     .attr("text-anchor", "middle")
-	     .attr("font-family", "Georgia, serif")
+	     .attr("font-family", "Roboto")
 	     .attr("fill", blue)
-	     .attr("font-size", "10px")
+	     .attr("font-size", "8px")
          .text("1");
 			  
 	tick3.append("line")
-	     .attr("stroke-width", 1)
+	     .attr("stroke-width", 0.5)
 	     .attr("stroke", blue)
          .attr("x1", x(-0.3))
-	     .attr("y1", y(-0.4))
+	     .attr("y1", y(-0.45))
 	     .attr("x2", x(0.3))
-	     .attr("y2", y(-0.4));
+	     .attr("y2", y(-0.45));
 			  
 	tick3.append("text")
-         .attr("x", x(0))
-         .attr("y",y(-0.7))
+         .attr("x",x(0))
+         .attr("y",y(-0.85))
   	     .attr("text-anchor", "middle")
-	     .attr("font-family", "Georgia, serif")
+	     .attr("font-family", "Roboto")
 	     .attr("fill", blue)
-	     .attr("font-size", "10px")
-         .text("|| \u00A0\u00A0 ||");
-			  
-	tick3.append("text")
-         .attr("x", x(0))
-         .attr("y",y(-0.7))
-  	     .attr("text-anchor", "middle")
-	     .attr("font-family", "Georgia, serif")
-	     .attr("fill", blue)
+	     .attr("font-size", "9px")
+         .text("||")
+		 .append("tspan")
 		 .attr("font-weight", "bold")
-	     .attr("font-size", "10px")
-         .text("w");
+		 .text("w")
+		 .append("tspan")
+		 .attr("font-weight", "normal")
+		 .text("||");
   }
   
   function update(norm_w) {
     var softplus = [];
-    for (var i = -3.5; i < 3.5; i+= 0.025)
+    for (var i = -8; i < 8; i+= 0.05)
 	  softplus.push(Math.log(1 + Math.exp(- Math.pow(10,norm_w) * i)));
 	  
-   d3.select("#scaling-f-value-w").text(parseFloat(norm_w-0.5).toFixed(2));   
-   d3.select("#scaling-f-hingeA").attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0));
-   d3.select("#scaling-f-hingeB").attr("d", "M " + x(-4) + " " + y(0) + " L " + x(-1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(1 + Math.pow(10,norm_w) * 4));
+   d3.select("#scaling-f-value-w").text(parseFloat(norm_w).toFixed(2));   
+   d3.select("#scaling-f-hinge").attr("d", "M " + x(-8) + " " + y(1 + Math.pow(10,norm_w) * 8) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(8) + " " + y(0));
    d3.select("#scaling-f-softplus").attr("d", line(softplus));
    d3.select("#scaling-f-group1").attr("transform", "translate(" + (x(1 / Math.pow(10,norm_w)) - x(0)) + ", 0)");
    d3.select("#scaling-f-group2").attr("transform", "translate(" + (x(1 / Math.pow(10,norm_w)) - x(0)) + ", 0)");
@@ -5115,12 +4991,12 @@ function scaling_f() {
 function large_norm_w() {
   var width = 201;
   var height = 134;
-  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
-  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
+  var x = d3.scaleLinear().domain([-6, 6]).range([0, width]);
+  var y = d3.scaleLinear().domain([6, -1]).range([0, height]);
   var blue = d3.interpolateBlues(0.7);
   var orange = "rgb(255,102,0)";
   var light_left_color = "rgb(95%,95%,95%)";
-  var light_right_color = "rgb(85%,85%,85%)";
+  var light_right_color = "rgb(90%,90%,90%)";
   var norm_w = 1.5;
   
   var dataA = [0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
@@ -5137,13 +5013,13 @@ function large_norm_w() {
      .attr("fill","rgb(98%,98%,98%)")
 	 .attr("x", 0)
      .attr("y", 0)
-     .attr("width", width+1)
-     .attr("height", height+1);
+     .attr("width", width)
+     .attr("height", height);
 			  
   fig.append("line")
-     .attr("x1", x(-4))
+     .attr("x1", x(-8))
 	 .attr("y1", y(0))
-	 .attr("x2", x(4))
+	 .attr("x2", x(8))
 	 .attr("y2", y(0))
 	 .attr('stroke',"rgb(0%,0%,0%)")
 	 .attr("stroke-opacity",0.2)
@@ -5154,7 +5030,7 @@ function large_norm_w() {
      .data(data)
      .enter()
      .append("rect")
-     .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+     .attr("x", function(d, i) {return x(i * 0.4 - 8);})
      .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
      .attr("width", 6.5)
      .attr("height", function(d) {return d[0] * height / 4;})
@@ -5167,7 +5043,7 @@ function large_norm_w() {
      .data(data)
      .enter()
      .append("rect")
-     .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+     .attr("x", function(d, i) {return x(i * 0.4 - 8);})
      .attr("y", function(d) {return y(0) - d[1] * height / 4;})
      .attr("width", 6.5)
      .attr("height", function(d) {return d[1] * height / 4;})
@@ -5178,15 +5054,15 @@ function large_norm_w() {
 	 
   fig.append("line")
      .attr("x1", x(0))
-	 .attr("y1", y(-1))
+	 .attr("y1", y(-2))
 	 .attr("x2", x(0))
-	 .attr("y2", y(6))
+	 .attr("y2", y(8))
 	 .attr('stroke', orange)
 	 .attr("stroke-opacity", 1)
      .attr("stroke-width", 2.5);
 				
   fig.append("path")
-     .attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
+     .attr("d", "M " + x(-8) + " " + y(1 + Math.pow(10,norm_w) * 8) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(8) + " " + y(0))
      .style("stroke", blue)
      .style("stroke-width", 2)
      .style("fill", "none");
@@ -5195,13 +5071,13 @@ function large_norm_w() {
 function small_norm_w() {
   var width = 201;
   var height = 134;
-  var x = d3.scaleLinear().domain([-3, 3]).range([0, width]);
-  var y = d3.scaleLinear().domain([3, -1]).range([0, height]);
+  var x = d3.scaleLinear().domain([-6, 6]).range([0, width]);
+  var y = d3.scaleLinear().domain([6, -1]).range([0, height]);
   var blue = d3.interpolateBlues(0.7);
   var orange = "rgb(255,102,0)";
   var light_left_color = "rgb(95%,95%,95%)";
-  var light_right_color = "rgb(85%,85%,85%)";
-  var norm_w = -1;
+  var light_right_color = "rgb(90%,90%,90%)";
+  var norm_w = -1.5;
   
   var dataA = [0., 0., 0., 0., 0.001, 0.001, 0.015, 0.02, 0.037, 0.089, 0.146, 0.186, 0.283, 0.419, 0.505, 0.679, 0.743, 0.706, 0.535, 0.331, 0.212, 0.054, 0.023, 0.005, 0.006, 0.003, 0., 0., 0., 0.001, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
   var dataB = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.001, 0.003, 0.01, 0.019, 0.05, 0.437, 1.149, 1.504, 1.048, 0.508, 0.181, 0.06, 0.023, 0.005, 0.002, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.];
@@ -5217,13 +5093,13 @@ function small_norm_w() {
      .attr("fill","rgb(98%,98%,98%)")
 	 .attr("x", 0)
      .attr("y", 0)
-     .attr("width", width+1)
-     .attr("height", height+1);
+     .attr("width", width)
+     .attr("height", height);
 			  
   fig.append("line")
-     .attr("x1", x(-4))
+     .attr("x1", x(-8))
 	 .attr("y1", y(0))
-	 .attr("x2", x(4))
+	 .attr("x2", x(8))
 	 .attr("y2", y(0))
 	 .attr('stroke',"rgb(0%,0%,0%)")
 	 .attr("stroke-opacity",0.2)
@@ -5234,7 +5110,7 @@ function small_norm_w() {
      .data(data)
      .enter()
      .append("rect")
-     .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+     .attr("x", function(d, i) {return x(i * 0.4 - 8);})
      .attr("y", function(d) {return y(0) - d[1] * height / 4 - d[0] * height / 4;})
      .attr("width", 6.5)
      .attr("height", function(d) {return d[0] * height / 4;})
@@ -5247,7 +5123,7 @@ function small_norm_w() {
      .data(data)
      .enter()
      .append("rect")
-     .attr("x", function(d, i) {return x(i * 0.2 - 4);})
+     .attr("x", function(d, i) {return x(i * 0.4 - 8);})
      .attr("y", function(d) {return y(0) - d[1] * height / 4;})
      .attr("width", 6.5)
      .attr("height", function(d) {return d[1] * height / 4;})
@@ -5258,18 +5134,93 @@ function small_norm_w() {
 	 
   fig.append("line")
      .attr("x1", x(0))
-	 .attr("y1", y(-1))
+	 .attr("y1", y(-2))
 	 .attr("x2", x(0))
-	 .attr("y2", y(6))
+	 .attr("y2", y(8))
 	 .attr('stroke', orange)
 	 .attr("stroke-opacity", 1)
      .attr("stroke-width", 2.5);
 				
   fig.append("path")
-     .attr("d", "M " + x(-4) + " " + y(1 + Math.pow(10,norm_w) * 4) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(4) + " " + y(0))
+     .attr("d", "M " + x(-8) + " " + y(1 + Math.pow(10,norm_w) * 8) + " L " + x(1 / Math.pow(10,norm_w)) + " " + y(0) + " L " + x(8) + " " + y(0))
      .style("stroke", blue)
      .style("stroke-width", 2)
      .style("fill", "none");
+}
+
+function regularized_loss() {
+  var width = 648;
+  var height = 140;
+  
+  var pos_x1 = 285, pos_y1 = 50, bracket_width1 = 80, bracket_height1 = 5, arrow_length1 = 25;
+  var pos_x2 = 395, pos_y2 = 50, bracket_width2 = 70, bracket_height2 = 5, arrow_length2 = 25;
+	
+  var svg = d3.select("#equation-svg2")
+              .append("svg")
+	          .attr("width", width)
+		      .attr("height", height);
+  
+  // 1  
+  svg.append("path")
+	 .attr("d", "M " + pos_x1 + " " + pos_y1 + " L " + pos_x1 + " " + (pos_y1+bracket_height1) + "L " + (pos_x1+bracket_width1) + " " + (pos_y1+bracket_height1) + " L " + (pos_x1+bracket_width1) + " " + pos_y1)
+     .style("stroke", "rgb(60%,60%,60%)")
+     .style("stroke-width", 1)
+     .style("fill", "none");
+	 
+  svg.append("line")
+	 .attr("x1", pos_x1+bracket_width1/2)
+	 .attr("y1", pos_y1+bracket_height1)
+	 .attr("x2", pos_x1+bracket_width1/2)
+	 .attr("y2", pos_y1+arrow_length1)
+     .style("stroke", "rgb(60%,60%,60%)")
+     .style("stroke-width", 1)
+     .style("fill", "none");
+	 
+  svg.append("polygon")
+	 .attr("fill", "rgb(60%,60%,60%)")
+     .attr("points", (pos_x1+bracket_width1/2-3) + "," + (pos_y1+arrow_length1) + " " +
+		             (pos_x1+bracket_width1/2+3) + "," + (pos_y1+arrow_length1) + " " + 
+				     (pos_x1+bracket_width1/2) + "," + (pos_y1+arrow_length1+6));
+			  
+  svg.append("text")
+	 .attr("fill", "rgb(60%,60%,60%)")
+	 .attr("font-family","Roboto")
+	 .attr("font-size", "13px")
+	 .attr("text-anchor", "middle")
+     .attr("x", pos_x1+bracket_width1/2-2)
+	 .attr("y", pos_y1+arrow_length1+20)
+	 .text("empirical risk");
+	 
+  // 2
+  svg.append("path")
+	 .attr("d", "M " + pos_x2 + " " + pos_y2 + " L " + pos_x2 + " " + (pos_y2+bracket_height2) + "L " + (pos_x2+bracket_width2) + " " + (pos_y2+bracket_height2) + " L " + (pos_x2+bracket_width2) + " " + pos_y2)
+     .style("stroke", "rgb(60%,60%,60%)")
+     .style("stroke-width", 1)
+     .style("fill", "none");
+	 
+  svg.append("line")
+	 .attr("x1", pos_x2+bracket_width2/2)
+	 .attr("y1", pos_y2+bracket_height2)
+	 .attr("x2", pos_x2+bracket_width2/2)
+	 .attr("y2", pos_y2+arrow_length2)
+     .style("stroke", "rgb(60%,60%,60%)")
+     .style("stroke-width", 1)
+     .style("fill", "none");
+	 
+  svg.append("polygon")
+	 .attr("fill", "rgb(60%,60%,60%)")
+     .attr("points", (pos_x2+bracket_width2/2-3) + "," + (pos_y2+arrow_length2) + " " +
+		             (pos_x2+bracket_width2/2+3) + "," + (pos_y2+arrow_length2) + " " + 
+				     (pos_x2+bracket_width2/2) + "," + (pos_y2+arrow_length2+6));
+			  
+  svg.append("text")
+	 .attr("fill", "rgb(60%,60%,60%)")
+	 .attr("font-family","Roboto")
+	 .attr("font-size", "13px")
+	 .attr("text-anchor", "middle")
+     .attr("x", pos_x2+bracket_width2/2+15)
+	 .attr("y", pos_y2+arrow_length2+20)
+	 .text("L2 regularization");
 }
 
 function img_to_canvas2(img) {
