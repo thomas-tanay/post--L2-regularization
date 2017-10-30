@@ -68,9 +68,13 @@
   }
   #abstract-fig {
 	width: 816px;
-	height: 280px;
+	height: 273px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(60%,60%,60%);
   }
   #abstract-rest {
+    width: 816px;
     margin-top: 15px;
     display: -webkit-flex;
     display: flex;
@@ -94,7 +98,7 @@
 	color: rgb(60%,60%,60%);
   }
   #abstract-text {
-    width: 570px;
+    width: 580px;
 	font: 15px/1.55em "Roboto";
 	line-height: 1.5em;
 	color: rgb(60%,60%,60%);
@@ -114,8 +118,11 @@
 		<div class="abstract-text-content"> $d_{\text{adv}} =$ <span id="abstract_adv_distance"> ... </span> </div>
 	  </div>
 	  <div id="abstract-text">
+	    <!-- In linear models and small neural nets, L2 regularization acts as a scaling mechanism for the loss function.
+		With standard losses, varying the regularization level then balances two objectives: minimizing the training error $err_{\text{train}}$ 
+		and maximizing the distance between the data and the boundary $d_{\text{adv}}$.-->
 		In linear models and small neural nets, L2 regularization can be understood as a balancing mechanism between two objectives:
-		minimizing the training error $err_{\text{train}}$ and maximizing the distance between the data and the boundary $d_{\text{adv}}$. <br>
+		minimizing the training error $err_{\text{train}}$ and maximizing the average distance between the data and the boundary $d_{\text{adv}}$. <br>
 		<br>
 		In practice, using an appropriate level of regularization helps avoid overfitting and constitutes a simple form of adversarial training.	
 	  </div> 
@@ -138,20 +145,22 @@
     Carell_Deschanel();
   </script>
   
-  <p> This result is puzzling for two reasons. First, it challenges conventional wisdom on generalization in machine learning.
-  Second, it constitutes a potential threat to real-world applications <dt-cite key="papernot2016practical,kurakin2016adversarial"></dt-cite>. Researchers at 
-  OpenAI have for instance recently created images that <a href="https://blog.openai.com/robust-adversarial-inputs/"> reliably fool neural network classifiers 
+  <p> This result is puzzling for two reasons. 
+  First, it challenges a common belief according to which good generalization to novel data and robustness to small perturbations go hand in hand. 
+  Second, it constitutes a potential threat to real-world applications <dt-cite key="papernot2016practical,kurakin2016adversarial,evtimov2017robust"></dt-cite>. 
+  Researchers at OpenAI have for instance recently created images that <a href="https://blog.openai.com/robust-adversarial-inputs/"> reliably fool neural network classifiers 
   when viewed from varied scales and perspectives</a>. Understanding this phenomenon and improving deep networks' robustness has thus become an important 
   research objective.</p>
   
   <p>Several approaches have been explored already. The phenomenon has been described in detail <dt-cite key="moosavi2016deepfool,carlini2016towards"></dt-cite> 
-  and some theoretical analysis has been provided <dt-cite key="bastani2016measuring,fawzi2016robustness"></dt-cite>. Attempts have been made at designing more robust 
-  architectures <dt-cite key="gu2014towards,papernot2016distillation,zhao2016suppressing"></dt-cite> or at detecting adversarial examples during evaluation 
-  <dt-cite key="bhagoji2017dimensionality,feinman2017detecting,grosse2017statistical,metzen2017detecting"></dt-cite>. <em>Adversarial training</em> has also been 
-  introduced as a new regularization technique penalising adversarial directions <dt-cite key="goodfellow2014explaining,shaham2015understanding,miyato2017virtual,sankaranarayanan2017regularizing"></dt-cite>.
-  Despite these numerous contributions, the problem stays largely unresolved <dt-cite key="goodfellow2017attacking,carlini2017adversarial"></dt-cite>.
+  and some theoretical analysis has been provided <dt-cite key="bastani2016measuring,fawzi2016robustness,carlini2017ground"></dt-cite>. 
+  Attempts have been made at designing more robust architectures <dt-cite key="gu2014towards,papernot2016distillation,zhao2016suppressing,rozsa2016towards"></dt-cite> 
+  or at detecting adversarial examples during evaluation <dt-cite key="bhagoji2017dimensionality,feinman2017detecting,grosse2017statistical,metzen2017detecting"></dt-cite>. 
+  <em>Adversarial training</em> has also been introduced as a new regularization technique penalising adversarial directions 
+  <dt-cite key="goodfellow2014explaining,shaham2015understanding,miyato2017virtual,sankaranarayanan2017regularizing,madry2017towards"></dt-cite>.
+  Unfortunately, despite some successes on the MNIST dataset, the problem stays largely unresolved <dt-cite key="goodfellow2017attacking,carlini2017adversarial"></dt-cite>.
   Confronted with this difficulty, we propose to proceed from fundamentals: focusing on linear classification first and then increasing complexity incrementally.</p>
-
+  
   <hr>
   
   <h2> A Toy Problem </h2>
@@ -160,11 +169,20 @@
   "for high dimensional problems, we can make many infinitesimal changes to the input that add up to one large change to the output" 
   <dt-cite key="goodfellow2014explaining"></dt-cite>.
   Here, we challenge this intuition and argue instead that adversarial examples exist when the classification boundary lies close the data manifold&mdash;independently 
-  of the image space dimension. </p>
+  of the image space dimension<dt-fn>
+  This idea was originally inspired by the work of Marron et al. <dt-cite key="marron2007distance"></dt-cite> on the <em>data piling phenomenon</em> affecting 
+  SVMs on high-dimensional low sample size data. </dt-fn>. </p>
   
   <h4> Setup </h4>
   
   <p> Let's start with a minimal toy problem: a two-dimensional image space where each image is a function of $a$ and $b$. </p>
+  
+  <style>
+  #toy-problem1 {
+    width:648px;
+    height: 370px;
+  }  
+  </style>
   
   <div id="toy-problem1">
   </div>
@@ -175,6 +193,13 @@
 
   <p> In this simple image space, we define two classes of images that we will soon try to separate with a linear classifier. </p>
   
+  <style>
+  #toy-problem2 {
+    width:648px;
+    height: 350px;
+  }  
+  </style>
+  
   <div id="toy-problem2">
   </div>
   
@@ -183,7 +208,14 @@
   </script>
 
   <p> The two classes just defined can be separated by an infinite number of linear classifiers. Consider for instance the following line $\mathscr{L}_{\theta}$: </p>
-  
+
+  <style>
+  #toy-problem3 {
+    width:648px;
+    height: 350px;
+  }  
+  </style>
+ 
   <div id="toy-problem3">
   </div>
   
@@ -258,6 +290,13 @@
   <h4> A mirror image as a function of $\theta$ </h4>
   
   <p> Coming back to our original toy problem, we can now plot an image $\boldsymbol{x}$ and its mirror image $\boldsymbol{x}_m$ as a function of $\theta$. </p>
+  
+  <style>
+  #toy-problem4 {
+    width:648px;
+    height: 350px;
+  }  
+  </style>
   
   <div id="toy-problem4">
   </div>
@@ -359,8 +398,9 @@
   
   <p> Our working hypothesis is that the classification boundary defined by standard linear learning algorithms such as Support Vector Machines (SVM) 
   or logistic regression tilts by overfitting noisy data points in the training set. 
-  This hypothesis has a corrollary that can be easily tested: regularization techniques designed to reduce overfitting are expected 
-  to mitigate the adversarial example phenomenon. </p>
+  This hypothesis is supported by the result of Xu et al. <dt-cite key="xu2009robustness"></dt-cite> relating robustness and regularization in SVMs
+  and its corrolary can be tested easily: regularization techniques designed to reduce overfitting are expected to mitigate the adversarial example phenomenon.
+  </p>
 
   <style>
   #noisy-data {
@@ -410,6 +450,13 @@
   </style>
   
   <p> Consider for instance a training set containing one noisy data point $\boldsymbol{p}$. </p>
+
+  <style>
+  #toy-problem5 {
+    width:648px;
+    height: 350px;
+  }  
+  </style>
   
   <div id="toy-problem5">
   </div>
@@ -474,7 +521,7 @@
   $\mathcal{C}$ is specified by a normal weight vector $\boldsymbol{w}$ and a bias $b$. For an image $\boldsymbol{x}$ in $\mathbb{R}^d$, 
   we call <em> raw score </em> of $\boldsymbol{x}$ through $\mathcal{C}$ the value:
   $$s(\boldsymbol{x}) := \boldsymbol{w} \!\cdot\! \boldsymbol{x} + b$$
-  $s(\boldsymbol{x})$ can be seen as a <em>signed distance</em> between $\boldsymbol{x}$ and the classification boundary defined by $\mathcal{C}$. 
+  The raw score can be seen as a <em>signed distance</em> between $\boldsymbol{x}$ and the classification boundary defined by $\mathcal{C}$. 
   In particular:
   $$\boldsymbol{x} \text{ is classified in } \mathrel{\Bigg|}
   \begin{array}{@{}c@{}} \text{$I$ if } s(\boldsymbol{x}) \leq 0 \\ \text{$J$ if } s(\boldsymbol{x}) \geq 0 \end{array}$$</p>
@@ -632,7 +679,7 @@
   to descend: the derivative is null everywhere). </p>
   <p> This limitation is overcome with the hinge loss (used in SVM) and the softplus loss (used in logistic regression) 
   by replacing the unit penalty on the misclassified data with a strictly decreasing penalty. Remark that both the hinge loss and the softplus loss also penalize 
-  some correctly classified data, effectively enforcing a safety margin in the neighbourhood of the boundary.
+  some correctly classified data in the neighbourhood of the boundary, effectively enforcing a safety margin.
   
   <h4> The scaling parameter $\lVert\boldsymbol{w}\rVert$ </h4>
   
@@ -645,29 +692,29 @@
   Hence, the norm $\lVert\boldsymbol{w}\rVert$ can be interpreted as a scaling parameter for the loss function in the expression of the empirical risk: </p>
   
   <style>
-  .equation-div {
+  #equation-div1 {
     margin-top: -20px;
 	margin-bottom: -20px;
 	position: relative;
 	width: 648px;
 	height: 140px;
   }
-  .equation-text {
+  #equation-text1 {
  	position: absolute;
 	width: 648px;
 	height: 140px;
     font-family: Georgia, serif;
   }
-  .equation-svg {
+  #equation-svg1 {
  	position: absolute;
 	width: 648px;
 	height: 140px;
   }
   </style>
   
-  <div class="equation-div">
-    <div class="equation-text"> $$R(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(\;\lVert\boldsymbol{w}\rVert \times y\,d(\boldsymbol{x})\big)$$ </div>
-	<div class="equation-svg" id="equation-svg1"> </div>
+  <div id="equation-div1">
+    <div id="equation-text1"> $$R(\boldsymbol{w},b) = \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(\;\lVert\boldsymbol{w}\rVert \times y\,d(\boldsymbol{x})\big)$$ </div>
+	<div id="equation-svg1"> </div>
   </div>
   
   <script>
@@ -762,7 +809,7 @@
 		  <input id="scaling-f-controler-input" type="range" min="-1.5" max="1.5" step="0.01"> </input>
 		</div>
 	    <div id="scaling-f-text2"> Effect of the scaling parameter $\lVert\boldsymbol{w}\rVert$ on the three loss functions. 
-		The histograms represent the values of $d(\boldsymbol{x})$ over $T$ and the blue lines represent the values of $f$. </div>
+		The histograms represent the values of $y\,d(\boldsymbol{x})$ over $T$ and the blue lines represent the values of $f$. </div>
 	  </div>
 	</div>
   </div>
@@ -795,12 +842,13 @@
 	color: rgb(60%,60%,60%);
 	margin-top: auto;
 	margin-bottom: auto;
-	width: 420px;
+	width: 320px;
 	text-align: right;
   }
   .value-w-input {
 	width: 201px;
 	height: 134px;
+	margin-right: 105px;
 	border-style: solid;
 	border-width: 1px;
 	border-color: rgb(80%,80%,80%);
@@ -810,7 +858,7 @@
   <div class="l-body value-w">
     <div class="value-w-left">
 	  <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is large: </h4>
-      <p class="value-w-text"> The hinge loss and the softplus loss penalize only the misclassified data&mdash;and do so linearly. </p>
+      <p class="value-w-text"> The hinge loss and the softplus loss penalize <br> only the misclassified data&mdash;and do so linearly. </p>
 	</div>
     <div class="value-w-input" id="value-w-input1"> </div>
   </div>
@@ -831,7 +879,7 @@
 	&\;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\; \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)
   \end{align}
   </dt-fn>:
-  $$f\big(y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\, 
+  $$f\big(\lVert\boldsymbol{w}\rVert \times y\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\, 
   \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)$$
   For convenience, we name the set of misclassified data:
   $$M := \{ (\boldsymbol{x},y) \in T \;|\; y\,d(\boldsymbol{x}) \leq 0 \}$$ 
@@ -867,7 +915,7 @@
   \ln(2)-\frac{1}{2}\,y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
   $$\alpha = \ln(2) \quad\text{and}\quad \beta = \frac{1}{2}$$
   </dt-fn>:
-  $$f\big(y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\, 
+  $$f\big(\lVert\boldsymbol{w}\rVert \times y\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\, 
   \alpha - \beta\;y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
   for some positive values $\alpha$ and $\beta$.</p>
   <p> We can then write the empirical risk as:
@@ -892,10 +940,31 @@
   <h4> Wrapping up </h4>
   
   <p>In practice, the value of $\lVert\boldsymbol{w}\rVert$ can be controlled by adding a regularization term to the empirical risk, yielding the <em>regularized loss</em>:</p>
+
+  <style>
+  #equation-div2 {
+    margin-top: -20px;
+	margin-bottom: -20px;
+	position: relative;
+	width: 648px;
+	height: 120px;
+  }
+  #equation-text2 {
+ 	position: absolute;
+	width: 648px;
+	height: 120px;
+    font-family: Georgia, serif;
+  }
+  #equation-svg2 {
+ 	position: absolute;
+	width: 648px;
+	height: 120px;
+  }
+  </style>
   
-  <div class="equation-div">
-    <div class="equation-text"> $$L(\boldsymbol{w},b) := R(\boldsymbol{w},b) \; + \; \lambda\,\lVert\boldsymbol{w}\rVert^2$$ </div>
-	<div class="equation-svg" id="equation-svg2"> </div>
+  <div id="equation-div2">
+    <div id="equation-text2"> $$L(\boldsymbol{w},b) := R(\boldsymbol{w},b) \; + \; \lambda\,\lVert\boldsymbol{w}\rVert^2$$ </div>
+	<div id="equation-svg2"> </div>
   </div>
   
   <script>
@@ -936,8 +1005,9 @@
   
   <h3> Adversarial Distance and Tilting Angle </h3>
   
-  <p> The adversarial distance $d_{\text{adv}}$ naturally emerged as a measure of robustness to adversarial perturbations.
-  Rather conveniently, it can be expressed as a function of a single parameter.</p>
+  <p> The adversarial distance emerged in the previous section as a measure of robustness to adversarial perturbations.
+  Rather conveniently, it can be expressed as a function of a single parameter: the angle between the classification boundary
+  and the nearest centroid classifier.</p>
 
   <p>If $T_I$ and $T_J$ are the restrictions of $T$ to the elements in $I$ and $J$ respectively, we can write: 
   \begin{align}
@@ -960,236 +1030,131 @@
   and we we call the angle $\theta$ between $\boldsymbol{\hat{w}}$ and $\boldsymbol{\hat{z}}$ the <em>tilting angle</em> of $\mathcal{C}$:
   $$d_{\text{adv}} = \frac{1}{2}\;\lVert\boldsymbol{j}-\boldsymbol{i}\rVert\;\cos(\theta)$$</p>
 
-  <p> Hence, on a given training set $T$ where the distance between the two centroids $\lVert\boldsymbol{j}-\boldsymbol{i}\rVert$ is fixed, 
-  $d_{\text{adv}}$ depends only on the tilting angle $\theta$. <br>Two observations follow:<br>
-  <ul> 
-  <li> The adversarial example phenomenon is minimized by the nearest centroid classifier<dt-fn>
-  ... <u>and</u> the classifiers parallel to it ($d_{\text{adv}}$ is independent 
-  of the bias $b$). This explains why the biases found by SVM are poorly adjusted when regularization is high, resulting in very high training and test errors 
-  (see for instance the classification of 1s vs 8s when $\lambda = 10^7$ in the next section).</dt-fn> (i.e. $\theta = 0$).</li>
-  <li> Adversarial examples can be arbitrarily strong when $\theta \to \pi/2$ (as was the case with the classifier $\mathscr{L}_{\theta}$ in the introductory toy problem).</li>
-  </ul>
-  
-  <h3> Example: SVM on MNIST </h3>
-  
-  <p> We illustrate the previous considerations on binary classification of MNIST digits. For each possible pair of digit classes, we compute the normalized 
-  weight vector $\boldsymbol{\hat{z}}$ of the nearest centroid classifier and train multiple SVM models $(\boldsymbol{w},b)$ for $\lambda \in [10^{-1}, 10^7]$
-  (using a training set of $3000$ images per class).</p>
-  
-  <p> Then, we look at representative images $\boldsymbol{x}$, $\boldsymbol{y}$ (one per class) and, for each SVM model, their mirror images 
-  $\boldsymbol{x}_m$, $\boldsymbol{y}_m$. We also look at their projections in the tilting plane of $\boldsymbol{\hat{w}}$ along with the 
-  projections of the rest of the training data:</p>
+  <p> This equation can be interpreted geometrically in the tilting plane: </p>
   
   <style>
-  #fig4 {
+  #d-adv {
     display: -webkit-flex;
     display: flex;
-  }
-  #fig4-left {
-    flex-grow: 1;
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-	justify-content: flex-end;
-  }
-  #fig4-left-controler {
-    margin-left: auto;
-	margin-right: auto;
+	margin-top: 40px;
 	margin-bottom: 40px;
-    display: -webkit-flex;
-    display: flex;
-	justify-content: center;
   }
-  .fig4-left-caption0 {
-    font-size: 15px;
-  }
-  .fig4-left-caption1 {
-    margin-bottom: 10px;
-  }
-  .fig4-left-caption2 {
-	margin-bottom: 5px;
-	text-align: center;
-  }
-  .fig4-left-caption3 {
-    margin-top: auto;
-	margin-bottom: 33px;
-  }
-  #fig4-value-lambda {
-    display: inline-block;
-	width: 23px;
-	text-align: right;
-  }
-  .fig4-span {
-    display: inline-block;
-	width: 30px;
-	text-align: right;
-  }
-  #fig4-left-controler-input {
-    margin-top: 7px;
-    margin-left: 10px;
-	margin-right: 10px;
-  }
-  #fig4-left-line1 {
-	margin-top: 5px;
-	margin-bottom: auto;
-	margin-right: 30px;
-    display: -webkit-flex;
-    display: flex;
-	//justify-content: space-around;
-  }
-  #fig4-left-line1-errors {
-    margin-right: 60px;
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-  }
-  .fig4-left-line {
-	margin-bottom: 20px;
-    display: -webkit-flex;
-    display: flex;
-  }
-  .fig4-left-cell {
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-  }
-  #fig4-right {
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-  }
-  #fig4-right-buttons {
-    flex-grow: 1;
-	margin-bottom: 10px;
-    display: -webkit-flex;
-    display: flex;
-	justify-content: space-between;
-	font-size: 13px;
-  }
-  .top-row {
-    color: rgb(181, 212, 233);
-  }
-  .bottom-row {
-    color: rgb(47, 126, 188);
-  }
-  #fig4-right-content {
-	width: 420px;
-	height: 280px;
+  #d-adv-fig {
+    width: 300px;
+	height: 200px;
 	border-style: solid;
 	border-width: 1px;
 	border-color: rgb(80%,80%,80%);
   }
-  #fig4-caption {
-    margin-top: 10px;
+  #d-adv-text {
+	font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(60%,60%,60%);
+	text-align: center;
+	margin: auto;
   }
   </style>
   
-  <figure class="l-middle">
-	<div id="fig4-left-controler">
-	  <div class="fig4-left-caption0"> Regularization parameter $\lambda:$ </div>
-	  <input id="fig4-left-controler-input" type="range" min="0" max="80" step="1"> </input>
-	  <div class="fig4-left-caption0"> $\displaystyle 10$ <sup> <span id="fig4-value-lambda">...</span> </sup> </div>
+  <div id="d-adv">
+    <div id="d-adv-fig">
     </div>
-    <div id="fig4">
-	  <div id="fig4-left">
-		<div id="fig4-left-line1">
-		  <div id="fig4-left-line1-errors">
-		    <figcaption id="fig4-left-errTrain" class="fig4-left-caption1"> $err_{\text{train}} = $ <span class="fig4-span" id="fig4-value-errTrain">...</span>% </figcaption>
-			<figcaption id="fig4-left-errTest" class="fig4-left-caption1"> $err_{\text{test}} = $ <span class="fig4-span" id="fig4-value-errTest">...</span>% </figcaption>
-	      </div>
-		  <figcaption id="fig4-left-dAdv"> $d_{\text{adv}} =  $ <span class="fig4-span" id="fig4-value-dAdv">...</span> </figcaption>
-		</div>
-		<div class="fig4-left-line">
-		  <div class="fig4-left-cell">
-		    <figcaption class="fig4-left-caption2"> $\boldsymbol{x}$ </figcaption>
-		    <canvas id="fig4-left-canvas-imx" width="90" height="90"> </canvas>
-		  </div>
-		  <figcaption class="fig4-left-caption3"> $\;+$ <span class="fig4-span" id="fig4-value-dx">...</span> $\,\times\,$ </figcaption>
-		  <div class="fig4-left-cell">
-		    <figcaption class="fig4-left-caption2"> $\boldsymbol{\hat{w}}$ </figcaption>
-			<canvas id="fig4-left-canvas-w" width="90" height="90"> </canvas>
-		  </div>
-		  <figcaption class="fig4-left-caption3"> $\;=\;$ </figcaption>
-		  <div class="fig4-left-cell">
-			<figcaption class="fig4-left-caption2"> $\boldsymbol{x}_m$ </figcaption>
-			<canvas id="fig4-left-canvas-imxm" width="90" height="90"> </canvas>
-		  </div>
-		</div>
-		<div class="fig4-left-line">
-		  <div class="fig4-left-cell">
-		    <figcaption class="fig4-left-caption2"> $\boldsymbol{y}$ </figcaption>
-		    <canvas id="fig4-left-canvas-imy" width="90" height="90"> </canvas>
-		  </div>
-		  <figcaption class="fig4-left-caption3"> $\;+$ <span class="fig4-span" id="fig4-value-dy">...</span> $\,\times\,$ </figcaption>
-		  <div class="fig4-left-cell">
-			<figcaption class="fig4-left-caption2"> $-\boldsymbol{\hat{w}}$ </figcaption>
-			<canvas id="fig4-left-canvas-minus-w" width="90" height="90"> </canvas>
-		  </div>
-		  <figcaption class="fig4-left-caption3"> $\;=\;$ </figcaption>
-		  <div class="fig4-left-cell">
-			<figcaption class="fig4-left-caption2"> $\boldsymbol{y}_m$ </figcaption>
-			<canvas id="fig4-left-canvas-imym" width="90" height="90"> </canvas>
-		  </div>
-		</div>
-	  </div>
-	  <div id="fig4-right">
-        <div id="fig4-right-buttons">
-          <div>
-            <span class="top-row"> Left digit:</span> <br>
-	        <span class="bottom-row"> Right digit:</span>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-0" type="radio" name="left-digit" value="0"> <label class="top-row" id="left-label-0" for="0"> 0 </label></input> <br>
-	        <input id="right-input-0" type="radio" name="right-digit" value="0"> <label class="bottom-row" id="right-label-0" for="0"> 0 </label></input>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-1" type="radio" name="left-digit" value="1"> <label class="top-row" id="left-label-1" for="1"> 1 </label></input> <br>
-	        <input id="right-input-1" type="radio" name="right-digit" value="1"> <label class="bottom-row" id="right-label-1" for="1"> 1 </label></input>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-2" type="radio" name="left-digit" value="2"> <label class="top-row" id="left-label-2" for="2"> 2 </label></input> <br>
-	        <input id="right-input-2" type="radio" name="right-digit" value="2"> <label class="bottom-row" id="right-label-2" for="2"> 2 </label></input>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-3" type="radio" name="left-digit" value="3"> <label class="top-row" id="left-label-3" for="3"> 3 </label></input> <br>
-	        <input id="right-input-3" type="radio" name="right-digit" value="3"> <label class="bottom-row" id="right-label-3" for="3"> 3 </label></input>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-4" type="radio" name="left-digit" value="4"> <label class="top-row" id="left-label-4" for="4"> 4 </label></input> <br>
-	        <input id="right-input-4" type="radio" name="right-digit" value="4"> <label class="bottom-row" id="right-label-4" for="4"> 4 </label></input>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-5" type="radio" name="left-digit" value="5"> <label class="top-row" id="left-label-5" for="5"> 5 </label></input> <br>
-	        <input id="right-input-5" type="radio" name="right-digit" value="5"> <label class="bottom-row" id="right-label-5" for="5"> 5 </label></input>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-6" type="radio" name="left-digit" value="6"> <label class="top-row" id="left-label-6" for="6"> 6 </label></input> <br>
-	        <input id="right-input-6" type="radio" name="right-digit" value="6"> <label class="bottom-row" id="right-label-6" for="6"> 6 </label></input>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-7" type="radio" name="left-digit" value="7"> <label class="top-row" id="left-label-7" for="7"> 7 </label></input> <br>
-	        <input id="right-input-7" type="radio" name="right-digit" value="7"> <label class="bottom-row" id="right-label-7" for="7"> 7 </label></input>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-8" type="radio" name="left-digit" value="8"> <label class="top-row" id="left-label-8" for="8"> 8 </label></input> <br>
-	        <input id="right-input-8" type="radio" name="right-digit" value="8"> <label class="bottom-row" id="right-label-8" for="8"> 8 </label></input>
-	      </div>
-	      <div class="digit-div">
-	        <input id="left-input-9" type="radio" name="left-digit" value="9"> <label class="top-row" id="left-label-9" for="9"> 9 </label></input> <br>
-	        <input id="right-input-9" type="radio" name="right-digit" value="9"> <label class="bottom-row" id="right-label-9" for="9"> 9 </label></input>
-	      </div>
-        </div>
-        <div id="fig4-right-content">
-	    </div>
-	  </div>
-	</div>
-	<figcaption id="fig4-caption"> Binary classification with SVM on MNIST as a function of the regularization parameter $\lambda$. The training error $err_{\text{train}}$,
-	the test error $err_{\text{test}}$ and the adversarial distance $d_{\text{adv}}$ are indicated in the top left corner. Below are two representative images $\boldsymbol{x}$,
-	$\boldsymbol{y}$ and their mirror images $\boldsymbol{x}_m$, $\boldsymbol{y}_m$. On the right are their projections in the tilting plane of $\boldsymbol{\hat{w}}$
-	along with the projections of the training data. The horizontal direction is $\boldsymbol{\hat{z}}$ (joining the two centroids) and the vertical direction is 
-	$\boldsymbol{\hat{n}}$ with $\boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$. </figcaption>
-  </figure>
+    <div id="d-adv-text">
+	  $d_{\text{adv}}$ is the average distance between <br> the classification boundary $\mathcal{C}$ <br> and the two centroids $\boldsymbol{i}$ and $\boldsymbol{j}$
+    </div>
+  </div>
+  
+  <script>
+    d_adv();
+  </script>
+  
+  <p> On a given training set $T$ where the distance between the two centroids $\lVert\boldsymbol{j}-\boldsymbol{i}\rVert$ is fixed, 
+  $d_{\text{adv}}$ depends only on the tilting angle $\theta$. Two observations follow: <br>
+  <ul> 
+  <li> The adversarial example phenomenon is minimized by the nearest centroid classifier ($\theta = 0$) and the classifiers parallel to it ($d_{\text{adv}}$ is independent 
+  of the bias $b$) <dt-fn>
+   The fact that the adversarial distance is independent of the bias explains why the models defined by SVM are poorly adjusted when regularization is high, 
+   resulting in very high training and test errors (see for instance the classification of 1s vs 8s when $\lambda = 10^7$ in the next section).</dt-fn>.</li>
+  <li> Adversarial examples can be arbitrarily strong when $\theta \to \pi/2$ <br>(as was the case with the classifier $\mathscr{L}_{\theta}$ in the toy problem section).</li>
+  </ul>
+  
+  <h3> Example: SVM on MNIST </h3>
+  
+  <p> We illustrate the previous considerations on binary classification of MNIST digits. For each possible pair of digit classes, 
+  we train multiple SVM models $(\boldsymbol{w}, b)$ for $\lambda \in [10^{-1}, 10^7]$ using a training set $T$ of $3000$ images per class.
+  Remember that each model is trained by minimizing:
+  $$L(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(y\,s(\boldsymbol{x})\big) \; + \; \lambda\,\lVert\boldsymbol{w}\rVert^2$$
+  where $f$ is the <em>hinge loss</em>.</p> 
+  
+  <p> After training, the distributions of penalties $f\big(y\,s(\boldsymbol{x})\big)$ over the training set are as follow: </p>
+
+  <style>
+  #svm-mnist1 {
+    width: 655px;
+	height: 370px;
+	margin-top: 40px;
+	margin-bottom: 40px;
+  }
+  </style>
+  
+  <div id="svm-mnist1">
+  </div>
+  
+  <script>
+    svm_mnist1();
+  </script>
+  
+  <p> We see that the scaling of the hinge loss has a strong influence on the training error and adversarial distance obtained.
+  Unfortunately, minimising the training error and maximizing the adversarial distance are conflicting goals: 
+  $err_{train}$ is minimized when $\lambda$ is small and $d_{adv}$ is maximized when $\lambda$ is large. 
+  Note that the test error is minimized for an intermediate level of regularization $\lambda_{\text{optimal}}$.
+  When $\lambda \lt \lambda_{\text{optimal}}$, the classifier is <em>overfitted</em> and when $\lambda \gt \lambda_{\text{optimal}}$, the classifier is <em>underfitted</em>.</p>
+  
+  <p> To get a better understanding of how the two objectives are balanced, we can look at what happens in the tilting plane of each model.
+  We first compute the unit weight vector $\boldsymbol{\hat{z}}$ of the nearest centroid classifier and then project the training data in the plane 
+  $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$ containing $\boldsymbol{w}$ <dt-fn>
+  The vector $\boldsymbol{\hat{n}}$ is defined for each model as:
+  $$\boldsymbol{\hat{n}} = \frac{\boldsymbol{n}}{\lVert\boldsymbol{n}\rVert} \quad\quad \text{with} \quad\quad \boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$$
+  </dt-fn>:
+  </p>
+  
+  <style>
+  #svm-mnist2 {
+    width: 648px;
+	height: 370px;
+	margin-top: 40px;
+	margin-bottom: 40px;
+  }
+  </style>
+  
+  <div id="svm-mnist2">
+  </div>
+  
+  <script>
+    svm_mnist2();
+  </script>
+  
+  <p> For high regularization levels, the model is parallel to the nearest centroid classifier and the adversarial distance is maximized. 
+  As $\lambda$ decreases, the classification boundary improves its fit of the training data by tilting along directions of decreasing variance.
+  Eventually, a small number of training samples is overfitted, resulting in a very small adversarial distance and a weight vector that looks random. </p>
+  
+  <p> Finally, we can look at two representative images $\boldsymbol{x}$, $\boldsymbol{y}$ (one per class) and their mirror images 
+  $\boldsymbol{x}_m$, $\boldsymbol{y}_m$ for each model. Their projections in the tilting plane of $\boldsymbol{w}$ gives a very intuitive
+  picture of the adversarial example phenomenon in linear classification:</p>
+  
+  <style>
+  #svm-mnist3 {
+    width: 648px;
+	height: 370px;
+	margin-top: 40px;
+	margin-bottom: 40px;
+  }
+  </style>
+  
+  <div id="svm-mnist3">
+  </div>
+  
+  <script>
+    svm_mnist3();
+  </script>
   
   <style>
   #button-0vs1 {
@@ -1202,17 +1167,9 @@
   }
   </style>
   
-  <p>We can make several observations:</p>
-  <ul>
-    <li> Minimising the training error and maximizing the adversarial distance are conflicting goals: 
-	$err_{train}$ is minimized when $\lambda$ is small and $d_{adv}$ is maximized when $\lambda$ is large.</li>
-    <li> The test error is minimized for an intermediate level of regularization $\lambda_{\text{optimal}}$.
-	When $\lambda \lt \lambda_{\text{optimal}}$, the classifier is <em>overfitted</em> and when $\lambda \gt \lambda_{\text{optimal}}$, the classifier is <em>underfitted</em>.</li>
-	<li> The training error is minimized by tilting the classification boundary along directions of low variance in the data, effectively overfitting
-	a small number of training samples. This results in a large tilting angle and gives a random aspect to the weight vector.</li>
-	<li> The model is sensitive to strong adverarial examples ($||\boldsymbol{x}_m-\boldsymbol{x}|| \to 0$ and $||\boldsymbol{y}_m-\boldsymbol{y}|| \to 0$)
-	when the tilting angle of $\boldsymbol{\hat{w}}$ is close to $\pi/2$. This is a symptom of strong overfitting, and whether it occurs or not depends on the difficulty 
-	to separate the two classes (compare for instance <button id="button-7vs9"> 7 vs 9 </button> and <button id="button-0vs1"> 0 vs 1 </button>). </li>
+  <p> The model is sensitive to strong adverarial examples ($||\boldsymbol{x}_m-\boldsymbol{x}|| \to 0$ and $||\boldsymbol{y}_m-\boldsymbol{y}|| \to 0$)
+	when the tilting angle approaches $\pi/2$. This is a symptom of strong overfitting, and whether it occurs or not depends on the difficulty 
+	to separate the two classes (compare for instance the classification of ${7s \text{ versus } 9s}$ and the classification of ${0s \text{ versus } 1s}$). </li>
   </ul>
   
   <script>
@@ -1248,7 +1205,7 @@
   \end{cases}$$
   </dt-fn>. Within $\mathcal{L}_x$, the raw score can thus be written:
   $$s(x) = W_2 W_1^x \, x + W_2 b_1^x + b_2$$
-  and can be seen as the raw score of a local linear classifier $\mathcal{C}_x$.
+  This can be seen as the raw score of a local linear classifier $\mathcal{C}_x$.
   Our analysis of the linear case then applies almost without modifications. First, we observe that $s(x)$ is a scaled distance. 
   If $d(x)$ is the actual <em>signed euclidean distance</em> between $x$ and $\mathcal{C}_x$, we have:
   $$s(x) = \lVert W_2 W_1^x \rVert\,d(x)$$</p>
@@ -1257,26 +1214,44 @@
   #notes-div {
     display: -webkit-flex;
     display: flex;
+	margin-top: 30px;
+	margin-bottom: 30px;
+	margin-left: 50px;
+	margin-right: 50px;
   }
-  #notes-p {
-    margin-top: 0px;
-	margin-bottom: 0px;
+  #notes-header {
+    font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	font-weight: bold;
+  }
+  #notes-container {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+  }
+  .notes-text {
 	margin-left: 20px;
+	margin-bottom: 10px;
+	font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	color: rgb(60%,60%,60%);
   }
   </style>
   
-  <div id="notes-div">
-  <div> Notes </div>
-  <p id="notes-p"> &#9656; $d(x)$ can also be viewed as a linear approximation of the distance between $x$ and the boundary defined by 
-  $\mathcal{N}$ (that is, the distance to the nearest adversarial example).<br> 
-  &#9656; $W_2 W_1^x$ is the gradient of $\mathcal{N}$ within $\mathcal{L}_x$. 
-  It is the adversarial direction for $x$, computed by backpropagation in practice.</p>
+  <div id="l-body">
+    <div id="notes-div">
+      <div id="notes-header"> Notes </div>
+	  <div id="notes-container">
+        <div class="notes-text"> &#9656; $d(x)$ can also be viewed as a linear approximation of the distance between $x$ and the boundary defined by 
+        $\mathcal{N}$ (the distance to the nearest adversarial example).</div> 
+        <div class="notes-text"> &#9656; $W_2 W_1^x$ is the gradient of $\mathcal{N}$ within $\mathcal{L}_x$. 
+        It is the adversarial direction for $x$, computed by backpropagation in practice.</div>
+	  </div>
+    </div>
   </div>
   
   <p> The norm $\lVert W_2 W_1^x \rVert$ can then be interpreted as a scaling parameter for the loss function (the scaling is now local, dependent on $x$).
   One simple way to control all the local scalings simultaneously is by adding a regularization term to the empirical risk acting on the norms 
   $\lVert W_1 \rVert$ and $\lVert W_2 \rVert$ independently (remember that the weights in $W_1^x$ are a subset of the weights in $W_1$). 
-  With gradient descent, this ends up being equivalent to decaying the weights $W_1$ and $W_2$ at every iteration.
+  With gradient descent, this is equivalent to decaying the weights $W_1$ and $W_2$ at every iteration.
   More precisely, for a learning rate $\eta$ and a decaying factor $\lambda$, the <em>weight decay update</em> is:
   $$W_1 \leftarrow W_1 - \eta\,\lambda\,W_1 \quad \text{and} \quad W_2 \leftarrow W_2 - \eta\,\lambda\,W_2$$
   
@@ -1337,12 +1312,14 @@
   as it applied only to the gradient step (and not the decay step). With this modification, we were able to train LeNet on MNIST using a weight decay of $1.0$ on every layer
   ($50$ epochs, learning rate of $0.0005$). For comparison, we also trained the same network with a standard weight decay of $0.0005$. </p>
   
-  <p> Below, we submit the two networks to the same evaluation and generate high-confidence adversarial examples (with median confidence scores) targeted to perform a 
-  cyclic permutation of the labels: $0 \to 1$, ..., $9 \to 0$. For convenience, we set the temperature of the softmax layer on each network<dt-fn>
+  <p> Below, we submit the two networks to the same visual evaluation:
+  for a random instance of each digit, we generate a high confidence adversarial example targeted to perform a cyclic permutation of the labels $0 \to 1$, $1 \to 2$, ..., $9 \to 0$. 
+  More precisely, we perform a gradient ascent on the confidence score of the desired label (projected to respect the image space bounding box) until we reach the median 
+  confidence score over the test set. For convenience, we set the temperature of the softmax layer on each network<dt-fn>
   If the inputs to the softmax layer are the raw scores $s_i$ and the outputs are the corresponding probabilities $p_i$, then:
   $$p_i = \frac{\exp(s_i/T)}{\displaystyle \sum_j \exp(s_j/T)}$$
   where T is the temperature parameter. It was introduced in the context of network distillation and produces softer probability distributions over classes <dt-cite key="hinton2015distilling"></dt-cite>.</dt-fn>
-  to ensure that the median score on the test set is 0.95.</p>
+  to ensure that the median score over the test set is 0.95.</p>
   
   <style>
   #fig5 {
@@ -1468,6 +1445,16 @@
   year={2014},
   url={https://arxiv.org/pdf/1412.6572.pdf}
 }
+@inproceedings{parkhi2015deep,
+  title={Deep Face Recognition.},
+  author={Parkhi, Omkar M and Vedaldi, Andrea and Zisserman, Andrew and others},
+  booktitle={BMVC},
+  volume={1},
+  number={3},
+  pages={6},
+  year={2015},
+  url={http://www.robots.ox.ac.uk:5000/~vgg/publications/2015/Parkhi15/parkhi15.pdf}
+}
 @article{kurakin2016adversarial,
   title={Adversarial examples in the physical world},
   author={Kurakin, Alexey and Goodfellow, Ian and Bengio, Samy},
@@ -1481,6 +1468,13 @@
   journal={arXiv preprint arXiv:1602.02697},
   year={2016},
   url={https://arxiv.org/pdf/1412.6572.pdf}
+}
+@article{evtimov2017robust,
+  title={Robust physical-world attacks on machine learning models},
+  author={Evtimov, Ivan and Eykholt, Kevin and Fernandes, Earlence and Kohno, Tadayoshi and Li, Bo and Prakash, Atul and Rahmati, Amir and Song, Dawn},
+  journal={arXiv preprint arXiv:1707.08945},
+  year={2017},
+  url={https://arxiv.org/pdf/1707.08945.pdf}
 }
 @inproceedings{moosavi2016deepfool,
   title={Deepfool: a simple and accurate method to fool deep neural networks},
@@ -1512,6 +1506,13 @@
   pages={1632--1640},
   year={2016},
   url={https://arxiv.org/pdf/1608.08967.pdf}
+}
+@article{carlini2017ground,
+  title={Ground-Truth Adversarial Examples},
+  author={Carlini, Nicholas and Katz, Guy and Barrett, Clark and Dill, David L},
+  journal={arXiv preprint arXiv:1709.10207},
+  year={2017},
+  url={https://arxiv.org/pdf/1709.10207.pdf}
 }
 @article{gu2014towards,
   title={Towards deep neural network architectures robust to adversarial examples},
@@ -1585,7 +1586,20 @@
   year={2017},
   url={https://arxiv.org/pdf/1705.07819.pdf}
 }
-
+@article{madry2017towards,
+  title={Towards deep learning models resistant to adversarial attacks},
+  author={Madry, Aleksander and Makelov, Aleksandar and Schmidt, Ludwig and Tsipras, Dimitris and Vladu, Adrian},
+  journal={arXiv preprint arXiv:1706.06083},
+  year={2017},
+  url={https://arxiv.org/pdf/1706.06083.pdf}
+}
+@article{rozsa2016towards,
+  title={Towards robust deep neural networks with BANG},
+  author={Rozsa, Andras and Gunther, Manuel and Boult, Terrance E},
+  journal={arXiv preprint arXiv:1612.00138},
+  year={2016},
+  url={https://arxiv.org/pdf/1612.00138.pdf}
+}
 @article{carlini2017adversarial,
   title={Adversarial Examples Are Not Easily Detected: Bypassing Ten Detection Methods},
   author={Carlini, Nicholas and Wagner, David},
@@ -1606,15 +1620,26 @@
   year={2017},
   url={https://arxiv.org/pdf/1705.07263.pdf}
 }
-@inproceedings{parkhi2015deep,
-  title={Deep Face Recognition.},
-  author={Parkhi, Omkar M and Vedaldi, Andrea and Zisserman, Andrew and others},
-  booktitle={BMVC},
-  volume={1},
-  number={3},
-  pages={6},
-  year={2015},
-  url={http://www.robots.ox.ac.uk:5000/~vgg/publications/2015/Parkhi15/parkhi15.pdf}
+@article{xu2009robustness,
+  title={Robustness and regularization of support vector machines},
+  author={Xu, Huan and Caramanis, Constantine and Mannor, Shie},
+  journal={Journal of Machine Learning Research},
+  volume={10},
+  number={Jul},
+  pages={1485--1510},
+  year={2009},
+  url={http://www.jmlr.org/papers/volume10/xu09b/xu09b.pdf}
+}
+@article{marron2007distance,
+  title={Distance-weighted discrimination},
+  author={Marron, James Stephen and Todd, Michael J and Ahn, Jeongyoun},
+  journal={Journal of the American Statistical Association},
+  volume={102},
+  number={480},
+  pages={1267--1271},
+  year={2007},
+  publisher={Taylor \& Francis},
+  url={http://www.tandfonline.com/doi/pdf/10.1198/016214507000001120}
 }
 @article{goh2017why,
   author = {Goh, Gabriel},
