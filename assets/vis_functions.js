@@ -1654,7 +1654,7 @@ function toy_problem3(){
 			   .attr("font-size", "15px")
                .attr("x", theta_x)
 	           .attr("y", theta_y + 130)
-		       .text("The linear classifier ")
+		       .text("The line ")
 			   .append("tspan")
 			   .attr("font-family", "Georgia, serif")
 			   .attr("font-weight", "bold")
@@ -1672,14 +1672,14 @@ function toy_problem3(){
 			   .attr("font-style", "normal")
 			   .attr("dx", "2px")
 			   .attr("dy", "-4px")
-			   .text(" defined by its");	
+			   .text(" defined by its normal");	
 			    
 	gray_labels.append("text")
 	           .attr("text-anchor", "start")
 			   .attr("font-size", "15px")
                .attr("x", theta_x)
 	           .attr("y", theta_y + 150)
-		       .text("normal weight vector ")
+		       .text("weight vector ")
 			   .append("tspan")
 			   .attr("font-family", "Georgia, serif")
 			   .attr("font-weight", "bold")

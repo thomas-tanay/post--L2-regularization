@@ -118,9 +118,6 @@
 		<div class="abstract-text-content"> $d_{\text{adv}} =$ <span id="abstract_adv_distance"> ... </span> </div>
 	  </div>
 	  <div id="abstract-text">
-	    <!-- In linear models and small neural nets, L2 regularization acts as a scaling mechanism for the loss function.
-		With standard losses, varying the regularization level then balances two objectives: minimizing the training error $err_{\text{train}}$ 
-		and maximizing the distance between the data and the boundary $d_{\text{adv}}$.-->
 		In linear models and small neural nets, L2 regularization can be understood as a balancing mechanism between two objectives:
 		minimizing the training error $err_{\text{train}}$ and maximizing the average distance between the data and the boundary $d_{\text{adv}}$. <br>
 		<br>
@@ -158,7 +155,7 @@
   or at detecting adversarial examples during evaluation <dt-cite key="bhagoji2017dimensionality,feinman2017detecting,grosse2017statistical,metzen2017detecting"></dt-cite>. 
   <em>Adversarial training</em> has also been introduced as a new regularization technique penalising adversarial directions 
   <dt-cite key="goodfellow2014explaining,shaham2015understanding,miyato2017virtual,sankaranarayanan2017regularizing,madry2017towards"></dt-cite>.
-  Unfortunately, despite some successes on the MNIST dataset, the problem stays largely unresolved <dt-cite key="goodfellow2017attacking,carlini2017adversarial"></dt-cite>.
+  Unfortunately, the problem stays largely unresolved <dt-cite key="goodfellow2017attacking,carlini2017adversarial"></dt-cite>.
   Confronted with this difficulty, we propose to proceed from fundamentals: focusing on linear classification first and then increasing complexity incrementally.</p>
   
   <hr>
@@ -305,7 +302,7 @@
     toy_problem4();
   </script>
   
-  <p> We see that the distance between $\boldsymbol{x}$ and $\boldsymbol{x}_m$ varies. 
+  <p> We see that the distance between $\boldsymbol{x}$ and $\boldsymbol{x}_m$ depends on the value of $\theta$. 
   The two borderline cases are of particular interest.</p>
   
   <style>
@@ -388,18 +385,17 @@
    images_x2_xm2();
   </script>
   
-  <p> According to the new perspective, adversarial examples exist when the classification boundary approaches the data manifold in image space.
-  This is what happens when $\theta$ tends to $\pi/2$: the line $\mathscr{L}_{\theta}$ tilts towards $I$ and $J$ and becomes increasingly 
-  vulnerable to image perturbations. </p>
-  
   <h4> The role played by L2 regularization </h4>
   
-  <p> Adversarial examples exist when $\mathscr{L}_{\theta}$ is strongly tilted&mdash;but why would $\mathscr{L}_{\theta}$ behave in this way in practice? </p>
+  <p> According to the perspective presented here, adversarial examples exist when $\mathscr{L}_{\theta}$ is strongly tilted&mdash;but 
+  why would $\mathscr{L}_{\theta}$ behave in this way in practice? </p>
+  
+  
   
   <p> Our working hypothesis is that the classification boundary defined by standard linear learning algorithms such as Support Vector Machines (SVM) 
   or logistic regression tilts by overfitting noisy data points in the training set. 
   This hypothesis is supported by the result of Xu et al. <dt-cite key="xu2009robustness"></dt-cite> relating robustness and regularization in SVMs
-  and its corrolary can be tested easily: regularization techniques designed to reduce overfitting are expected to mitigate the adversarial example phenomenon.
+  and can be tested experimentally: regularization techniques designed to reduce overfitting are expected to mitigate the adversarial example phenomenon.
   </p>
 
   <style>
@@ -721,8 +717,11 @@
     scaling_parameter();
   </script>
   
-  <p> The 0-1 indicator function is invariant to rescaling. However, varying $\lVert\boldsymbol{w}\rVert$ has a strong influence on the way the hinge loss 
-  and the softplus loss distribute penalties over the training data: </p>
+  <p> This can also be understood as applying the following substitution:
+  $$f\big(y\,s(\boldsymbol{x})\big) \quad\quad\Leftrightarrow\quad\quad f_{\,\lVert\boldsymbol{w}\rVert}\big(y\,d(\boldsymbol{x})\big)$$
+  where $f_{\lVert\boldsymbol{w}\rVert}:z \rightarrow f(\lVert\boldsymbol{w}\rVert \times z)$ is a <em>scaled loss function</em>. </p>
+  
+  <p> The 0-1 indicator function is invariant to rescaling, but the hinge loss and the softplus loss are strongly affected: </p>
   
   <style>
   #scaling-f {
@@ -808,8 +807,8 @@
 		  <div id="scaling-f-text1"> $\lVert\boldsymbol{w}\rVert = 10$ <sup> <span id="scaling-f-value-w">...</span> </sup> </div>
 		  <input id="scaling-f-controler-input" type="range" min="-1.5" max="1.5" step="0.01"> </input>
 		</div>
-	    <div id="scaling-f-text2"> Effect of the scaling parameter $\lVert\boldsymbol{w}\rVert$ on the three loss functions. 
-		The histograms represent the values of $y\,d(\boldsymbol{x})$ over $T$ and the blue lines represent the values of $f$. </div>
+	    <div id="scaling-f-text2"> Effect of the scaling parameter $\lVert\boldsymbol{w}\rVert$. The histograms represent the values of $y\,d(\boldsymbol{x})$ over $T$
+        for a given $\boldsymbol{w}$ and $b$ and the blue lines represent the values of $f_{\lVert\boldsymbol{w}\rVert}$. </div>
 	  </div>
 	</div>
   </div>
@@ -865,21 +864,21 @@
   <p>  More precisely, both losses satisfy<dt-fn>
   <u>Hinge loss</u><br>
   \begin{align}
-    \max(1-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x}),0)& \quad\> \;=\; \quad\> \textstyle\lVert\boldsymbol{w}\rVert \, \max\left(\lVert\boldsymbol{w}\rVert^{-1}-y\,d(\boldsymbol{x}),0\right)\\
+    \max(1-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x}),0)& \quad\> \;=\; \quad\> \textstyle\lVert\boldsymbol{w}\rVert \, \max\left(\lVert\boldsymbol{w}\rVert^{-1}-y\,d(\boldsymbol{x}),0\right)\\
     &\;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\; \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)
   \end{align}<br>
   
   <u>Softplus loss</u><br>
   \begin{align}
-    \ln\left(1+e^{-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})}\right) &\;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\;
+    \ln\left(1+e^{-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})}\right) &\;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\;
 	  \begin{cases}
-        -y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})  \quad & \text{if } y\,d(\boldsymbol{x}) \leq 0\\
+        -\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})  \quad & \text{if } y\,d(\boldsymbol{x}) \leq 0\\
         0                                                        & \text{if } y\,d(\boldsymbol{x}) \gt 0
       \end{cases}\\
 	&\;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\; \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)
   \end{align}
   </dt-fn>:
-  $$f\big(\lVert\boldsymbol{w}\rVert \times y\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\, 
+  $$f_{\lVert\boldsymbol{w}\rVert}\big(y\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\, 
   \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)$$
   For convenience, we name the set of misclassified data:
   $$M := \{ (\boldsymbol{x},y) \in T \;|\; y\,d(\boldsymbol{x}) \leq 0 \}$$ 
@@ -908,15 +907,15 @@
   
   <p> More precisely, both losses satisfy<dt-fn>
   <u>Hinge loss</u><br>
-  $$\max(1-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x}),0) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{=}\; 1-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
+  $$\max(1-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x}),0) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{=}\; 1-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})$$
   $$\alpha = 1 \quad\text{and}\quad \beta = 1$$
   <u>Softplus loss</u><br>
-  $$\ln\left(1+e^{-y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})}\right) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\; 
-  \ln(2)-\frac{1}{2}\,y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
+  $$\ln\left(1+e^{-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})}\right) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\; 
+  \ln(2)-\frac{1}{2}\,\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})$$
   $$\alpha = \ln(2) \quad\text{and}\quad \beta = \frac{1}{2}$$
   </dt-fn>:
-  $$f\big(\lVert\boldsymbol{w}\rVert \times y\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\, 
-  \alpha - \beta\;y\,\lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
+  $$f_{\lVert\boldsymbol{w}\rVert}\big(y\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\, 
+  \alpha - \beta\;\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})$$
   for some positive values $\alpha$ and $\beta$.</p>
   <p> We can then write the empirical risk as:
   $$R(\boldsymbol{w},b) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\;
@@ -1078,13 +1077,11 @@
   
   <h3> Example: SVM on MNIST </h3>
   
-  <p> We illustrate the previous considerations on binary classification of MNIST digits. For each possible pair of digit classes, 
-  we train multiple SVM models $(\boldsymbol{w}, b)$ for $\lambda \in [10^{-1}, 10^7]$ using a training set $T$ of $3000$ images per class.
-  Remember that each model is trained by minimizing:
-  $$L(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(y\,s(\boldsymbol{x})\big) \; + \; \lambda\,\lVert\boldsymbol{w}\rVert^2$$
-  where $f$ is the <em>hinge loss</em>.</p> 
+  <p> We now illustrate the previous considerations on binary classification of MNIST digits. For each possible pair of digit classes, 
+  we train multiple SVM models $(\boldsymbol{w}, b)$ for a regularization parameter $\lambda \in [10^{-1}, 10^7]$ using a training set $T$ of $3000$ images per class. </p>
   
-  <p> After training, the distributions of penalties $f\big(y\,s(\boldsymbol{x})\big)$ over the training set are as follow: </p>
+  <p> To start, we can plot the labelled euclidean distances $y\,d(\boldsymbol{x})$ over $T$ <br> (grey histograms),
+  along with the scaled loss function $f_{\lVert\boldsymbol{w}\rVert}$ (blue line) corresponding to each model obtained: </p>
 
   <style>
   #svm-mnist1 {
@@ -1102,7 +1099,7 @@
     svm_mnist1();
   </script>
   
-  <p> We see that the scaling of the hinge loss has a strong influence on the training error and adversarial distance obtained.
+  <p> We see that the scaling of the hinge loss has a strong influence on the resulting model.
   Unfortunately, minimising the training error and maximizing the adversarial distance are conflicting goals: 
   $err_{train}$ is minimized when $\lambda$ is small and $d_{adv}$ is maximized when $\lambda$ is large. 
   Note that the test error is minimized for an intermediate level of regularization $\lambda_{\text{optimal}}$.
@@ -1134,10 +1131,10 @@
   
   <p> For high regularization levels, the model is parallel to the nearest centroid classifier and the adversarial distance is maximized. 
   As $\lambda$ decreases, the classification boundary improves its fit of the training data by tilting along directions of decreasing variance.
-  Eventually, a small number of training samples is overfitted, resulting in a very small adversarial distance and a weight vector that looks random. </p>
+  Eventually, a small number of training samples is overfitted, resulting in a very small adversarial distance and a weight vector that appears random. </p>
   
   <p> Finally, we can look at two representative images $\boldsymbol{x}$, $\boldsymbol{y}$ (one per class) and their mirror images 
-  $\boldsymbol{x}_m$, $\boldsymbol{y}_m$ for each model. Their projections in the tilting plane of $\boldsymbol{w}$ gives a very intuitive
+  $\boldsymbol{x}_m$, $\boldsymbol{y}_m$ for each model. Their projections in the tilting plane of $\boldsymbol{w}$ give a very intuitive
   picture of the adversarial example phenomenon in linear classification:</p>
   
   <style>
@@ -1314,7 +1311,7 @@
   
   <p> Below, we submit the two networks to the same visual evaluation:
   for a random instance of each digit, we generate a high confidence adversarial example targeted to perform a cyclic permutation of the labels $0 \to 1$, $1 \to 2$, ..., $9 \to 0$. 
-  More precisely, we perform a gradient ascent on the confidence score of the desired label (projected to respect the image space bounding box) until we reach the median 
+  More precisely, we perform a gradient ascent on the confidence score of the desired label (projected to stay inside the image space) until we reach the median 
   confidence score over the test set. For convenience, we set the temperature of the softmax layer on each network<dt-fn>
   If the inputs to the softmax layer are the raw scores $s_i$ and the outputs are the corresponding probabilities $p_i$, then:
   $$p_i = \frac{\exp(s_i/T)}{\displaystyle \sum_j \exp(s_j/T)}$$
