@@ -145,16 +145,17 @@
   <p> This result is puzzling for two reasons. 
   First, it challenges a common belief according to which good generalization to novel data and robustness to small perturbations go hand in hand. 
   Second, it constitutes a potential threat to real-world applications <dt-cite key="papernot2016practical,kurakin2016adversarial,evtimov2017robust"></dt-cite>. 
-  Researchers at OpenAI have for instance recently created images that <a href="https://blog.openai.com/robust-adversarial-inputs/"> reliably fool neural network classifiers 
-  when viewed from varied scales and perspectives</a>. Understanding this phenomenon and improving deep networks' robustness has thus become an important 
-  research objective.</p>
+  Researchers at MIT have for instance recently constructed 
+  <a href="https://www.theguardian.com/technology/2017/nov/03/googles-ai-turtle-rifle-mit-research-artificial-intelligence">3D objects that are misclassified under 
+  a wide distribution of angles and viewpoints</a> <dt-cite key="athalye2017synthesizing"></dt-cite>.
+  Understanding this phenomenon and improving deep networks' robustness has thus become an important research objective.</p>
   
   <p>Several approaches have been explored already. The phenomenon has been described in detail <dt-cite key="moosavi2016deepfool,carlini2016towards"></dt-cite> 
   and some theoretical analysis has been provided <dt-cite key="bastani2016measuring,fawzi2016robustness,carlini2017ground"></dt-cite>. 
   Attempts have been made at designing more robust architectures <dt-cite key="gu2014towards,papernot2016distillation,zhao2016suppressing,rozsa2016towards"></dt-cite> 
   or at detecting adversarial examples during evaluation <dt-cite key="bhagoji2017dimensionality,feinman2017detecting,grosse2017statistical,metzen2017detecting"></dt-cite>. 
   <em>Adversarial training</em> has also been introduced as a new regularization technique penalising adversarial directions 
-  <dt-cite key="goodfellow2014explaining,shaham2015understanding,miyato2017virtual,sankaranarayanan2017regularizing,madry2017towards"></dt-cite>.
+  <dt-cite key="goodfellow2014explaining,kurakin2016adversarial,tramer2017ensemble,madry2017towards"></dt-cite>.
   Unfortunately, the problem stays largely unresolved <dt-cite key="goodfellow2017attacking,carlini2017adversarial"></dt-cite>.
   Confronted with this difficulty, we propose to proceed from fundamentals: focusing on linear classification first and then increasing complexity incrementally.</p>
   
@@ -166,7 +167,7 @@
   "for high dimensional problems, we can make many infinitesimal changes to the input that add up to one large change to the output" 
   <dt-cite key="goodfellow2014explaining"></dt-cite>.
   Here, we challenge this intuition and argue instead that adversarial examples exist when the classification boundary lies close the data manifold&mdash;independently 
-  of the image space dimension<dt-fn>
+  of the image space dimension <dt-fn>
   This idea was originally inspired by the work of Marron et al. <dt-cite key="marron2007distance"></dt-cite> on the <em>data piling phenomenon</em> affecting 
   SVMs on high-dimensional low sample size data. </dt-fn>. </p>
   
@@ -188,7 +189,7 @@
     toy_problem1();
   </script>
 
-  <p> In this simple image space, we define two classes of images that we will soon try to separate with a linear classifier. </p>
+  <p> In this simple image space, we define two classes of images... </p>
   
   <style>
   #toy-problem2 {
@@ -204,7 +205,7 @@
     toy_problem2();
   </script>
 
-  <p> The two classes just defined can be separated by an infinite number of linear classifiers. Consider for instance the following line $\mathscr{L}_{\theta}$: </p>
+  <p> ...and these two classes can be separated by an infinite number of linear classifiers. Consider for instance the line $\mathscr{L}_{\theta}$. </p>
 
   <style>
   #toy-problem3 {
@@ -252,8 +253,7 @@
   }
   </style>
   
-  <p> This raises a first question. If all the linear classifiers $\mathscr{L}_{\theta}$ perform equally well on clean data,
-    are they all equally robust to image perturbations? </p>
+  <p> This raises a first question: if all the linear classifiers $\mathscr{L}_{\theta}$ separate $I$ and $J$ equally well, are they all equally robust to image perturbations? </p>
   
   <h4> Projected and mirror images </h4>
   
@@ -286,7 +286,7 @@
   
   <h4> A mirror image as a function of $\theta$ </h4>
   
-  <p> Coming back to our original toy problem, we can now plot an image $\boldsymbol{x}$ and its mirror image $\boldsymbol{x}_m$ as a function of $\theta$. </p>
+  <p> Coming back to our toy problem, we can now plot an image $\boldsymbol{x}$ and its mirror image $\boldsymbol{x}_m$ as a function of $\theta$. </p>
   
   <style>
   #toy-problem4 {
@@ -302,7 +302,7 @@
     toy_problem4();
   </script>
   
-  <p> We see that the distance between $\boldsymbol{x}$ and $\boldsymbol{x}_m$ depends on the value of $\theta$. 
+  <p> We see that the distance between $\boldsymbol{x}$ and $\boldsymbol{x}_m$ depends on the angle $\theta$. 
   The two borderline cases are of particular interest.</p>
   
   <style>
@@ -385,17 +385,14 @@
    images_x2_xm2();
   </script>
   
-  <h4> The role played by L2 regularization </h4>
+  <p> This raises a second question: if adversarial examples exist when $\mathscr{L}_{\theta}$ is strongly tilted, what makes $\mathscr{L}_{\theta}$ tilt in practice? </p>
   
-  <p> According to the perspective presented here, adversarial examples exist when $\mathscr{L}_{\theta}$ is strongly tilted&mdash;but 
-  why would $\mathscr{L}_{\theta}$ behave in this way in practice? </p>
-  
-  
-  
+  <h4> Overfitting and L2 regularization </h4>
+
   <p> Our working hypothesis is that the classification boundary defined by standard linear learning algorithms such as Support Vector Machines (SVM) 
   or logistic regression tilts by overfitting noisy data points in the training set. 
-  This hypothesis is supported by the result of Xu et al. <dt-cite key="xu2009robustness"></dt-cite> relating robustness and regularization in SVMs
-  and can be tested experimentally: regularization techniques designed to reduce overfitting are expected to mitigate the adversarial example phenomenon.
+  This hypothesis is supported by the theoretical result of Xu et al. <dt-cite key="xu2009robustness"></dt-cite> relating robustness to regularization in SVMs. 
+  It can also be tested experimentally: techniques designed to reduce overfitting such as L2 regularization are expected to mitigate the adversarial example phenomenon.
   </p>
 
   <style>
@@ -495,13 +492,13 @@
   noisy_data1();
   noisy_data2();
   </script>
-
-  <hr>
-  
-  <h2> In Linear Classification </h2>
   
   <p> At this point, one might legitimately wonder&mdash;what does a 1-dimensional data manifold lying in a 2-dimensional image space have to do with
   high-dimensional natural images? </p>
+
+  <hr>
+  
+  <h2> Adversarial Examples in Linear Classification </h2>
   
   <p> In the following, we show that the two main ideas introduced in the previous toy problem stay valid in the general case:
   adversarial examples exist when the classification boundary lies close to the data manifold and L2 regularization controls the tilting angle of the boundary.
@@ -511,7 +508,7 @@
   
   <p> Let's start with a simple observation: during training, the norm of the weight vector acts as a scaling parameter on the loss function.
   
-  <h4> Definitions </h4>
+  <h4> Setup </h4>
   
   <p> Let $I$ and $J$ be two classes of images and $\mathcal{C}$ a hyperplane boundary defining a linear classifier in $\mathbb{R}^d$. 
   $\mathcal{C}$ is specified by a normal weight vector $\boldsymbol{w}$ and a bias $b$. For an image $\boldsymbol{x}$ in $\mathbb{R}^d$, 
@@ -588,7 +585,7 @@
 	fysx();
   </script>
   
-  <p> This leads to the notion of <em>empirical risk</em> for the classifier $\mathcal{C}$ defined as the average penalty over the training set $T$:
+  <p> This leads to the notion of <em>empirical risk</em> $R(\boldsymbol{w},b)$ for the classifier $\mathcal{C}$ defined as the average penalty over the training set $T$:
   $$R(\boldsymbol{w},b) := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in T}f\big(y\,s(\boldsymbol{x})\big)$$
   In general, learning a linear classifier consists of finding a weight vector $\boldsymbol{w}$ and a bias $b$ minimising $R(\boldsymbol{w},b)$ 
   for a well chosen loss function $f$.</p>
@@ -671,17 +668,16 @@
   </script>
   
   <p> With the 0-1 indicator function, the empirical risk is simply the <em>error rate</em> on $T$. In a sense, this is the optimal loss function
-  as minimizing the error rate is often the desired objective in practice. Unfortunately, this loss is incompatible with gradient descent (there is no gradient
+  as minimizing the error rate is often the desired objective in practice. Unfortunately, it is incompatible with gradient descent (there is no gradient
   to descend: the derivative is null everywhere). </p>
-  <p> This limitation is overcome with the hinge loss (used in SVM) and the softplus loss (used in logistic regression) 
-  by replacing the unit penalty on the misclassified data with a strictly decreasing penalty. Remark that both the hinge loss and the softplus loss also penalize 
+  <p> This limitation is overcome in the hinge loss (used in SVM) and the softplus loss (used in logistic regression) 
+  by replacing the unit penalty on the misclassified data with a strictly decreasing penalty. Note that both the hinge loss and the softplus loss also penalize 
   some correctly classified data in the neighbourhood of the boundary, effectively enforcing a safety margin.
   
   <h4> The scaling parameter $\lVert\boldsymbol{w}\rVert$ </h4>
   
-  <p> An important point previously overlooked is that the signed distance $s(\boldsymbol{x})$ is scaled 
-  by the norm of the weight vector.
-  If $d(\boldsymbol{x})$ is the actual <em> signed euclidean distance </em> between $\boldsymbol{x}$ and $\mathcal{C}$, we have:
+  <p> An important point previously overlooked is that the signed distance $s(\boldsymbol{x})$ is scaled by the norm of the weight vector.
+  If $d(\boldsymbol{x})$ is the actual <em> signed Euclidean distance </em> between $\boldsymbol{x}$ and $\mathcal{C}$, we have:
   $$d(\boldsymbol{x}):= \boldsymbol{\hat{w}} \!\cdot\! \boldsymbol{x} + b^\prime \quad\quad\quad \text{where} \quad\quad \textstyle
   \boldsymbol{\hat{w}} := \frac{\boldsymbol{w}}{\lVert\boldsymbol{w}\rVert}\,\quad b^\prime := \frac{b}{\lVert\boldsymbol{w}\rVert}$$
   $$\text{and} \quad s(\boldsymbol{x}) = \lVert\boldsymbol{w}\rVert\,d(\boldsymbol{x})$$
@@ -717,11 +713,8 @@
     scaling_parameter();
   </script>
   
-  <p> This can also be understood as applying the following substitution:
-  $$f\big(y\,s(\boldsymbol{x})\big) \quad\quad\Leftrightarrow\quad\quad f_{\,\lVert\boldsymbol{w}\rVert}\big(y\,d(\boldsymbol{x})\big)$$
-  where $f_{\lVert\boldsymbol{w}\rVert}:z \rightarrow f(\lVert\boldsymbol{w}\rVert \times z)$ is a <em>scaled loss function</em>. </p>
-  
-  <p> The 0-1 indicator function is invariant to rescaling, but the hinge loss and the softplus loss are strongly affected: </p>
+  <p> Let us define the <em>scaled loss function</em> $f_{\lVert\boldsymbol{w}\rVert}:z \rightarrow f(\lVert\boldsymbol{w}\rVert \times z)$. </p>
+  <p> We observe that the 0-1 indicator function is invariant to rescaling while the hinge loss and the softplus loss are strongly affected. </p>
   
   <style>
   #scaling-f {
@@ -807,7 +800,7 @@
 		  <div id="scaling-f-text1"> $\lVert\boldsymbol{w}\rVert = 10$ <sup> <span id="scaling-f-value-w">...</span> </sup> </div>
 		  <input id="scaling-f-controler-input" type="range" min="-1.5" max="1.5" step="0.01"> </input>
 		</div>
-	    <div id="scaling-f-text2"> Effect of the scaling parameter $\lVert\boldsymbol{w}\rVert$. The histograms represent the values of $y\,d(\boldsymbol{x})$ over $T$
+	    <div id="scaling-f-text2"> Influence of the scaling parameter $\lVert\boldsymbol{w}\rVert$. The histograms represent the values of $y\,d(\boldsymbol{x})$ over $T$
         for a given $\boldsymbol{w}$ and $b$ and the blue lines represent the values of $f_{\lVert\boldsymbol{w}\rVert}$. </div>
 	  </div>
 	</div>
@@ -856,12 +849,12 @@
   
   <div class="l-body value-w">
     <div class="value-w-left">
-	  <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is large: </h4>
+	  <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is large </h4>
       <p class="value-w-text"> The hinge loss and the softplus loss penalize <br> only the misclassified data&mdash;and do so linearly. </p>
 	</div>
     <div class="value-w-input" id="value-w-input1"> </div>
   </div>
-  <p>  More precisely, both losses satisfy<dt-fn>
+  <p>  More precisely, both losses satisfy <dt-fn>
   <u>Hinge loss</u><br>
   \begin{align}
     \max(1-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x}),0)& \quad\> \;=\; \quad\> \textstyle\lVert\boldsymbol{w}\rVert \, \max\left(\lVert\boldsymbol{w}\rVert^{-1}-y\,d(\boldsymbol{x}),0\right)\\
@@ -888,9 +881,9 @@
   This expression contains a term which we call the <em>error distance</em>:
   $$d_{\text{err}} := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in M}\!\left(-\,y\,d(\boldsymbol{x})\right)$$
   It is <em>positive</em> and can be interpreted as the average distance by which each training sample is misclassified by $\mathcal{C}$
-  (with a null contribution for the correctly classified data). It is related&mdash;although not exactly equivalent&mdash;to the training error<dt-fn> 
-	A small error distance $d_{\text{err}}$ does not <em>guarantee</em> the training error $err_{\text{train}}$ to be small 
-    (in the worst case, when all the data lies exactly on the boundary, $d_{\text{err}} = 0$ and $err_{\text{train}} = 100\%$).</dt-fn>.</p>
+  (with a null contribution for the correctly classified data). It is related&mdash;although not exactly equivalent&mdash;to the training error <dt-fn> 
+	A small error distance $d_{\text{err}}$ does not <em>guarantee</em> the training error $err_{\text{train}}$ to be small. 
+    For instance in the worst case, when all the data lies exactly on the boundary, $d_{\text{err}} = 0$ and $err_{\text{train}} = 100\%$.</dt-fn>.</p>
   
   <p> Finally we have:
   $$\text{minimize: }R(\boldsymbol{w},b) \;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\iff}\; \text{minimize: $d_{\text{err}}$}$$
@@ -899,13 +892,13 @@
   
   <div class="l-body value-w">
     <div class="value-w-left">
-	  <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is small: </h4>
+	  <h4 class="value-w-header"> When$\;\lVert\boldsymbol{w}\rVert\;$is small </h4>
       <p class="value-w-text"> The hinge loss and the softplus loss penalize the entire training data linearly. </p>
 	</div>
     <div class="value-w-input" id="value-w-input2"> </div>
   </div>
   
-  <p> More precisely, both losses satisfy<dt-fn>
+  <p> More precisely, both losses satisfy <dt-fn>
   <u>Hinge loss</u><br>
   $$\max(1-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x}),0) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{=}\; 1-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})$$
   $$\alpha = 1 \quad\text{and}\quad \beta = 1$$
@@ -936,7 +929,7 @@
 	small_norm_w();
   </script>
   
-  <h4> Wrapping up </h4>
+  <h4> Closing remarks </h4>
   
   <p>In practice, the value of $\lVert\boldsymbol{w}\rVert$ can be controlled by adding a regularization term to the empirical risk, yielding the <em>regularized loss</em>:</p>
 
@@ -1080,8 +1073,8 @@
   <p> We now illustrate the previous considerations on binary classification of MNIST digits. For each possible pair of digit classes, 
   we train multiple SVM models $(\boldsymbol{w}, b)$ for a regularization parameter $\lambda \in [10^{-1}, 10^7]$ using a training set $T$ of $3000$ images per class. </p>
   
-  <p> To start, we can plot the labelled euclidean distances $y\,d(\boldsymbol{x})$ over $T$ <br> (grey histograms),
-  along with the scaled loss function $f_{\lVert\boldsymbol{w}\rVert}$ (blue line) corresponding to each model obtained: </p>
+  <p> We start by plotting the distribution of the distances $y\,d(\boldsymbol{x})$ between the training data and the boundary (grey histograms) and the scaled loss function 
+  $f_{\lVert\boldsymbol{w}\rVert}$ (blue line) as a function of the regularization parameter $\lambda$. <p>
 
   <style>
   #svm-mnist1 {
@@ -1099,18 +1092,18 @@
     svm_mnist1();
   </script>
   
-  <p> We see that the scaling of the hinge loss has a strong influence on the resulting model.
+  <p> We see that the scaling of the hinge loss has a clear influence on the model obtained.
   Unfortunately, minimising the training error and maximizing the adversarial distance are conflicting goals: 
   $err_{train}$ is minimized when $\lambda$ is small and $d_{adv}$ is maximized when $\lambda$ is large. 
   Note that the test error is minimized for an intermediate level of regularization $\lambda_{\text{optimal}}$.
   When $\lambda \lt \lambda_{\text{optimal}}$, the classifier is <em>overfitted</em> and when $\lambda \gt \lambda_{\text{optimal}}$, the classifier is <em>underfitted</em>.</p>
   
   <p> To get a better understanding of how the two objectives are balanced, we can look at what happens in the tilting plane of each model.
-  We first compute the unit weight vector $\boldsymbol{\hat{z}}$ of the nearest centroid classifier and then project the training data in the plane 
+  We first compute the unit weight vector $\boldsymbol{\hat{z}}$ of the nearest centroid classifier and we then project the training data in the plane 
   $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$ containing $\boldsymbol{w}$ <dt-fn>
   The vector $\boldsymbol{\hat{n}}$ is defined for each model as:
   $$\boldsymbol{\hat{n}} = \frac{\boldsymbol{n}}{\lVert\boldsymbol{n}\rVert} \quad\quad \text{with} \quad\quad \boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$$
-  </dt-fn>:
+  </dt-fn>.
   </p>
   
   <style>
@@ -1130,8 +1123,9 @@
   </script>
   
   <p> For high regularization levels, the model is parallel to the nearest centroid classifier and the adversarial distance is maximized. 
-  As $\lambda$ decreases, the classification boundary improves its fit of the training data by tilting along directions of decreasing variance.
-  Eventually, a small number of training samples is overfitted, resulting in a very small adversarial distance and a weight vector that appears random. </p>
+  As $\lambda$ decreases, the classification boundary improves its fit of the training data by tilting towards directions of low variance.
+  Eventually, a small number of misclassified training samples is overfitted, resulting in a very small adversarial distance and a
+  weight vector that is hard to interpret. </p>
   
   <p> Finally, we can look at two representative images $\boldsymbol{x}$, $\boldsymbol{y}$ (one per class) and their mirror images 
   $\boldsymbol{x}_m$, $\boldsymbol{y}_m$ for each model. Their projections in the tilting plane of $\boldsymbol{w}$ give a very intuitive
@@ -1166,25 +1160,21 @@
   
   <p> The model is sensitive to strong adverarial examples ($||\boldsymbol{x}_m-\boldsymbol{x}|| \to 0$ and $||\boldsymbol{y}_m-\boldsymbol{y}|| \to 0$)
 	when the tilting angle approaches $\pi/2$. This is a symptom of strong overfitting, and whether it occurs or not depends on the difficulty 
-	to separate the two classes (compare for instance the classification of ${7s \text{ versus } 9s}$ and the classification of ${0s \text{ versus } 1s}$). </li>
+	to separate the two classes (compare for instance the classification of $7s$ versus $9s$ and the classification of $0s$ versus $1s$). </li>
   </ul>
-  
-  <script>
-   svm_mnist();
-  </script>
   
   <hr>
   
-  <h2> In Neural Networks </h2>
+  <h2> Adversarial Examples in Neural Networks </h2>
   
   <p> Thanks to the equivalence between adversarial distance and tilting angle, the linear case is simple enough to be visualized in the plane. In neural networks however, 
   the class boundary is not flat and the adversarial distance cannot be reduced to a single parameter. Nonetheless, some similarities with the linear case remain.</p>
   
   <h3> First Step: a 2-Layer Binary Network </h3>
   
-  <p> Let $\mathcal{N}$ be a 2-layer network with a single output defining a nonlinear binary classifier in $\mathbb{R}^d$. The first layer of $\mathcal{N}$ is 
+  <p> Let $\mathcal{N}$ be a 2-layer network with a single output defining a non-linear binary classifier in $\mathbb{R}^d$. The first layer of $\mathcal{N}$ is 
   specified by a weight matrix $W_1$ and a bias vector $b_1$ and the second layer of $\mathcal{N}$ is specified by a weight vector $W_2$ and bias $b_2$. We assume
-  that the two layers are separated by a layer $\phi$ of rectified linear units applying the function $z \rightarrow \max(0,z)$ element-wise.   
+  that the two layers are separated by a layer $\phi$ of rectified linear units applying the function $z \to \max(0,z)$ element-wise.   
   For an image $x$ in $\mathbb{R}^d$, we call the <em>raw score</em> of $x$ through $\mathcal{N}$ the value:
   $$s(x) := W_2\;\phi(W_1\,x + b_1) + b_2$$ 
   Similarly to the linear case, the <em>empirical risk</em> on $T$ for a <em>loss function</em> $f$ can be written:
@@ -1193,7 +1183,7 @@
   
   <p> $\phi$ is piecewise linear and around each image $x$ there is a local linear region $\mathcal{L}_x$ within which:
   $$\phi(W_1 \, x + b_1) = W_1^x \, x + b_1^x$$
-  where $W_1^x$ and $b_1^x$ are obtained by zeroing some lines in $W_1$ and $b_1$ respectively<dt-fn>
+  where $W_1^x$ and $b_1^x$ are obtained by zeroing some lines in $W_1$ and $b_1$ respectively <dt-fn>
   More precisely, the $i^{th}$ lines in $W_1^x$ and $b_1^x$ are:
   $$\left(W_1^x\,,\,b_1^x\right)_i = 
   \begin{cases}
@@ -1202,9 +1192,9 @@
   \end{cases}$$
   </dt-fn>. Within $\mathcal{L}_x$, the raw score can thus be written:
   $$s(x) = W_2 W_1^x \, x + W_2 b_1^x + b_2$$
-  This can be seen as the raw score of a local linear classifier $\mathcal{C}_x$.
-  Our analysis of the linear case then applies almost without modifications. First, we observe that $s(x)$ is a scaled distance. 
-  If $d(x)$ is the actual <em>signed euclidean distance</em> between $x$ and $\mathcal{C}_x$, we have:
+  This can be seen as the raw score of a local linear classifier $\mathcal{C}_x$ and
+  our analysis of the linear case then applies almost without modifications. First, we observe that $s(x)$ is a scaled distance. 
+  If $d(x)$ is the actual <em>signed Euclidean distance</em> between $x$ and $\mathcal{C}_x$, we have:
   $$s(x) = \lVert W_2 W_1^x \rVert\,d(x)$$</p>
   
   <style>
@@ -1246,7 +1236,7 @@
   </div>
   
   <p> The norm $\lVert W_2 W_1^x \rVert$ can then be interpreted as a scaling parameter for the loss function (the scaling is now local, dependent on $x$).
-  One simple way to control all the local scalings simultaneously is by adding a regularization term to the empirical risk acting on the norms 
+  One simple way to control all the local scalings simultaneously is by adding an L2 regularization term to the empirical risk acting on the norms 
   $\lVert W_1 \rVert$ and $\lVert W_2 \rVert$ independently (remember that the weights in $W_1^x$ are a subset of the weights in $W_1$). 
   With gradient descent, this is equivalent to decaying the weights $W_1$ and $W_2$ at every iteration.
   More precisely, for a learning rate $\eta$ and a decaying factor $\lambda$, the <em>weight decay update</em> is:
@@ -1274,10 +1264,10 @@
   
   <div>
   <div class="sum-paragraph-container">
-  In summary, a 2-layer network differs from a linear classifier in <br>
-  that the distances on which the loss function is applied are<br> 
-  <span class="sum-paragraph-span">linear approximations</span> of the actual distances between the data and<br>
-  the boundary and the scaling parameter $\lVert W_2 W_1^x \rVert$ is <span class="sum-paragraph-span">local</span>.
+  In summary, L2 regularization acts as a scaling mechanism on the <br>
+  loss function, both in linear classification and in small neural nets. <br>
+  With gradient descent, using a <span class="sum-paragraph-span">high weight decay</span> <br>
+  results in a simple form of <span class="sum-paragraph-span">adversarial training</span>.<br>
   </div>
   </div>
   
@@ -1286,137 +1276,201 @@
   <p> The previous analysis can be generalized to more layers and even to non-piecewise-linear activation functions. The important observation is that we always have:
   $$s(x) = \lVert \nabla_{\!x} \, s \rVert\, d(x)$$
   Where $\nabla_{\!x} \, s$ is the gradient of the raw score on $x$, and $d(x)$ is a linear approximation of the distance between $x$ and the boundary defined by the network.
-  The norm $\lVert \nabla_{\!x} \, s \rVert$ then acts as a scaling parameter on the loss function.</p> 
+  The norm $\lVert \nabla_{\!x} \, s \rVert$ then constitutes a scaling parameter for the loss function which can be controlled with weight decay.</p> 
   
-  <p> Another point that needs to be addressed is that, until now, we have only focussed on binary classification using the hinge loss or the softplus loss. 
-  This might appear as a serious restriction, but it's not. In the multiclass case, the raw score simply becomes a vector and each of its components 
-  can be seen as a scaled distance. The multiclass loss then applied is&mdash;in most problems&mdash;the cross-entropy loss, which is nothing more than a 
-  multidimensional version of the softplus loss.</p>
+  <p> This idea can also be extended beyond binary classification. In the multiclass case, the raw score becomes a vector whose elements are called the <em>logits</em>. 
+  Each logit $s_i(x)$ is then transformed into a <em>probability</em> $p_i(x)$ by applying the softmax function:
+  $$p_i(x) := \text{softmax}_i(s(x)) := \frac{e^{s_i(x)}}{\displaystyle \sum_j \textstyle e^{s_j(x)}}$$
+  For an image/label pair $(x,y)$, the probability associated with the correct class is $p_y(x)$. The <em>log-likelihood</em> loss function encourages it to come close to $1$ 
+  by attributing the following penalty to $(x,y)$: </p>
   
-  <p>The fact that deep networks generally converge to zero training error in practice and the fact that they are often
-  vulnerable to linear attacks of small magnitude <dt-cite key="goodfellow2014explaining"></dt-cite> suggests that they are strongly under-regularized.</p>
+  <style>
+  #cross-entropy-loss {
+    display: -webkit-flex;
+    display: flex;
+	margin-top: 40px;
+	margin-bottom: 40px;
+  }
+  #cross-entropy-loss-def {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+    margin: auto;
+  }
+  #cross-entropy-loss-eq {
+    font-size: 17px;
+    margin-bottom: 0px;
+  }
+  #cross-entropy-loss-text {
+    margin-top: -10px;
+	margin-bottom: 20px;
+    font: 15px "Roboto";
+	color: rgb(60%,60%,60%);
+  }
+  #cross-entropy-loss-fig {
+    width: 300px;
+	height: 200px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(80%,80%,80%);
+  }
+  #cross-entropy-loss-text {
+	//font: 15px -apple-system, BlinkMacSystemFont, "Roboto", sans-serif;
+	//color: rgb(60%,60%,60%);
+	text-align: center;
+	margin: auto;
+  }
+  </style>
+  
+  <div id="cross-entropy-loss">
+    <div id="cross-entropy-loss-def">
+      <div id="cross-entropy-loss-eq"> $$f(x,y) := -\log(p_y(x))$$ </div>
+	  <div id="cross-entropy-loss-text"> Log-likelihood loss function </div>
+	</div>
+    <div id="cross-entropy-loss-fig">
+    </div>
+  </div>
+  
+  <script>
+  cross_entropy_loss();
+  </script>
+  
+  <p> Now, varying weight decay influences the scaling of the logits, effectively acting as a <em>temperature</em> parameter for the softmax function <dt-fn>
+  We can redefine the softmax function as:
+  $$\text{softmax}_i(s(x),t) := \frac{e^{\frac{s_i(x)}{t}}}{\displaystyle \sum_j \textstyle e^{\frac{s_j(x)}{t}}}$$
+  where $t$ is the temperature parameter. It was introduced in the context of network distillation <dt-cite key="hinton2015distilling"></dt-cite>
+  and controls the softness of the softmax function.</dt-fn>. When weight decay is very low, the probability distributions generated are close to one-hot encodings 
+  ($p_y(x) \approx 0 \text{ or } 1$) and only the misclassified data produces non-zero penalties. With higher weight decay however, 
+  the probability distributions generated become smoother and the correctly classified data starts to participate to the training, thus preventing overfitting. </p>
+  
+  <p> In practice, a number of observations suggest that modern deep networks are under-regularized: </p>
+  <ol>
+  <li> They are often poorly calibrated and produce overconfident predictions <dt-cite key="guo2017calibration"></dt-cite>. </li>
+  <li> They often converge to zero training error, even on a random labelling of the data <dt-cite key="zhang2016understanding"></dt-cite>. </li>
+  <li> They are often vulnerable to linear attacks of small magnitude <dt-cite key="goodfellow2014explaining"></dt-cite>. </li>
+  </ol> 
 
   <h3> Example: LeNet on MNIST </h3>
   
   <p> Is it possible to regularize a neural network against adversarial examples by only using weight decay? The idea is simple enough and has been considered before:
   Goodfellow et al. <dt-cite key="goodfellow2014explaining"></dt-cite> have observed that adversarial training is <em>"somewhat similar to L1 regularization"</em> in 
   the linear case. However, the authors reported that when training maxout networks on MNIST, an L1 weight decay coefficient of $0.0025$ <em>"was too large, and caused 
-  the model to get stuck with over $5\%$ error on the training set. Smaller weight decay coefficients permitted successful training but conferred no regularization benefit."</em><p>
+  the model to get stuck with over $5\%$ error on the training set. Smaller weight decay coefficients permitted successful training but conferred no regularization benefit."</em>
+  We put the idea to the test once again and our observations are more nuanced. If using a high weight decay is clearly not the panacea, we found that it does help reduce the
+  adversarial examples phenomenon, at least in simple setups. </p>
   
-  <p> We put the idea to the test once again in a simple setup: LeNet on MNIST (10-class problem). As reported in <dt-cite key="goodfellow2014explaining"></dt-cite>, 
-  we initially observed a high training error when using large L2 weight decay, but then found that it could be fixed by disabling momentum (momentum gives a short term
-  memory to the gradient descent algorithm <dt-cite key="goh2017why"></dt-cite>). Further investigation showed that momentum could remain active, as long 
-  as it applied only to the gradient step (and not the decay step). With this modification, we were able to train LeNet on MNIST using a weight decay of $1.0$ on every layer
-  ($50$ epochs, learning rate of $0.0005$). For comparison, we also trained the same network with a standard weight decay of $0.0005$. </p>
-  
-  <p> Below, we submit the two networks to the same visual evaluation:
-  for a random instance of each digit, we generate a high confidence adversarial example targeted to perform a cyclic permutation of the labels $0 \to 1$, $1 \to 2$, ..., $9 \to 0$. 
-  More precisely, we perform a gradient ascent on the confidence score of the desired label (projected to stay inside the image space) until we reach the median 
-  confidence score over the test set. For convenience, we set the temperature of the softmax layer on each network<dt-fn>
-  If the inputs to the softmax layer are the raw scores $s_i$ and the outputs are the corresponding probabilities $p_i$, then:
-  $$p_i = \frac{\exp(s_i/T)}{\displaystyle \sum_j \exp(s_j/T)}$$
-  where T is the temperature parameter. It was introduced in the context of network distillation and produces softer probability distributions over classes <dt-cite key="hinton2015distilling"></dt-cite>.</dt-fn>
-  to ensure that the median score over the test set is 0.95.</p>
+  <p> Consider LeNet on MNIST (10-class problem). We use the baseline MatConvNet <dt-cite key="vedaldi2015matconvnet"></dt-cite> implementation with
+  the following architecture: </p>
   
   <style>
-  #fig5 {
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-  }
-  .fig5-line {
-    margin-bottom: 20px;
-    display: -webkit-flex;
-    display: flex;
-  }
-  .fig5-header {
-    margin-bottom: 10px;
-	font-size: 15px;
-	text-align: center;
-  }
-  .fig5-column1 {
-    margin-right: 20px;
-    display: -webkit-flex;
-    display: flex;
-	flex-direction: column;
-	width: 90px;
-  }
-  .fig5-caption1 {
-    margin-top: 18px;
-	text-align: center;
-  }
-  .fig5-caption2 {
-    margin-top: 22px;
-	text-align: center;
-  }
-  .fig5-caption3 {
-    margin-top: 30px;
-	text-align: center;
-  }
-  #fig5-img1 {
-    width:500px;
-	height:180px;
-  }
-  #fig5-img2 {
-    margin-left: auto;
-	margin-right: 0px;
-    width:175px;
-	height:184px;
-  }
+  #LeNet-architecture {
+    width: 1000px;
+	margin-top: 40px;
+	margin-bottom: 40px;
+  }  
   </style>
   
-  <figure class="l-middle">
-    <div id="fig5">
-	<div class="fig5-header"> Standard weight decay = 0.0005</div>
-	<div class="fig5-line">
-	  <div class="fig5-column1">
-	    <figcaption class="fig5-caption1"> original <br> images</figcaption>
-		<figcaption class="fig5-caption2"> adversarial examples</figcaption>
-		<figcaption class="fig5-caption3"> perturbations</figcaption>
-	  </div>
-	  <img id="fig5-img1" src="assets/adv_weightDecay0.0005.png">
-      <img id="fig5-img2" src="assets/plot0.0005.png">
-	</div>
-	<div class="fig5-header"> High weight decay = 1.0</div>
-	<div class="fig5-line">
-	  <div class="fig5-column1">
-	    <figcaption class="fig5-caption1"> original <br> images</figcaption>
-		<figcaption class="fig5-caption2"> adversarial examples</figcaption>
-		<figcaption class="fig5-caption3"> perturbations</figcaption>
-	  </div>
-	  <img id="fig5-img1" src="assets/adv_weightDecay1.png">
-      <img id="fig5-img2" src="assets/plot1.0.png">
-	</div>
-	</div>
-	<figcaption> LeNet on MNIST trained with two different levels of weight decay. For each network, the first line shows one digit per class (tag: prediction@score),
-	the second line shows the corresponding adversarial example (tag: prediction@score) and the third line shows the corresponding perturbation (tag: L2 norm).
-    On the right are the train and test errors as a function of the epoch number.</figcaption>
-  </figure>
+  <div id="LeNet-architecture">
+  </div>
   
-  <p>The network trained with high weight decay is superior to the comparison network in two ways:</p>
-  <ul> 
-  <li> It is less overfitted (the train and test errors are approximately equal at the end of the training) 
-  and generalizes better (final test error of $1.2\%$ with high weight decay versus $1.5\%$ with low weight decay). </li>
-  <li> It is less vulnerable to adversarial perturbations (the perturbations have higher L2 norms and are more meaningful for human observers). </li>
-  </ul>
+  <script>
+    LeNet_architecture();
+  </script>
+  
+  <p> We train one version of this network with a <em>low</em> weight decay of $10^{-4}$ and one version with a <em>high</em> weight decay of $10^{-1}$ (we refer to the two versions as
+   LeNet<sub><em>low</em></sub> and LeNet<sub><em>high</em></sub> respectively). We keep all the other parameters fixed: we train for $50$ epochs, use a batch 
+   size of $300$, a learning rate of $0.0005$ and a momentum of $0.9$. </p>
+  
+  <p> We can make several observations. To start, let's plot the training and test errors for the two networks as a function of the epoch. </p>
+  
+  <style>
+  #LeNet-errors {
+    width: 1000px;
+	margin-top: 40px;
+	margin-bottom: 40px;
+  }  
+  </style>
+  
+  <div id="LeNet-errors">
+  </div>
+  
+  <script>
+    LeNet_errors();
+  </script>
+  
+  <p> We see that LeNet<sub><em>high</em></sub> is less overfitted (the train and test errors are approximately equal at the end of the training) 
+  and performs slightly better than LeNet<sub><em>low</em></sub> (final test error of $1.2\%$ versus $1.6\%$). </p>
+  
+  <p> We can also inspect the weights that have been learnt. Below, we compute their root mean square value (RMS) and show a random selection of filters for each 
+  convolutional layer. </p>
+
+  <style>
+  #LeNet-weights {
+    width: 1000px;
+	margin-top: 40px;
+	margin-bottom: 40px;
+  }  
+  </style>
+  
+  <div id="LeNet-weights">
+  </div>
+  
+  <script>
+    LeNet_weights();
+  </script>
+  
+  <p> As expected, the weights learnt with a higher weight decay have a much lower RMS. 
+  The filters of LeNet<sub><em>high</em></sub> are also smoother than the filters of LeNet<sub><em>low</em></sub> (see the presence of clean edge detectors in $\text{Conv1}$ and $\text{Conv2}$)
+  and their magnitudes vary more within each convolutional layer (see the presence of uniformly gray filters in $\text{Conv2}$ and $\text{FC1}$). </p>
+  
+  <p> Finally, let's submit the two networks to the same visual evaluation: for a random instance of each digit, 
+  we generate a high confidence adversarial example targeted to perform a cyclic permutation of the labels $0 \to 1$, $1 \to 2$, ..., $9 \to 0$. 
+  Specifically, each adversarial example is generated by performing gradient ascent on the probability of the desired label until the median value of $0.95$
+  is reached <dt-fn>
+  On each network, we set the temperature $t$ of the softmax layer such that the median classification score over the test set is 0.95.<br><br>
+  
+  For a target label $l$, the gradient $\nabla_{\!x}\, p_l(x)$ (computed by backpropagation) gives the direction of steepest ascent towards $l$.
+  Here, we generated each adversarial example $x^\prime$ by iterating the following update rule:
+  $$x^\prime = \text{clip}_{[0,255]} \left(x^\prime + 1.0 \times \frac{\nabla_{\!x^\prime}\, p_l(x^\prime)}{\lVert \nabla_{\!x^\prime}\, p_l(x^\prime) \rVert}\right)$$
+  until $p_l(x^\prime) = 0.95$.
+  </dt-fn>.
+  We show below the $10$ original images $\text{OI}$ with their corresponding adversarial examples $\text{AE}$ and adversarial perturbations $\text{Pert}$ for the two networks.</p>
+
+  <style>
+  #LeNet-advs {
+    width: 1000px;
+	margin-top: 40px;
+	margin-bottom: 40px;
+  }  
+  </style>
+  
+  <div id="LeNet-advs">
+  </div>
+  
+  <script>
+    LeNet_advs();
+  </script>
+  
+  <p> We see that LeNet<sub><em>high</em></sub> is less susceptible to adversarial examples than LeNet<sub><em>low</em></sub>:
+  the adversarial perturbations have higher L2 norms and are more meaningful for human observers.</p>
+
   <hr>
   
   <h2>Thoughts Moving Forward</h2>
   
   <p> Despite the widespread interest it has generated for several years now, and despite its significance for the field of machine learning both in theory and in practice, 
   the adversarial example phenomenon has so far retained much of its intrigue. Our main goal here was to provide a clear and intuitive picture of the phenomenon 
-  in the linear case, hopefully constituting a solid base from which to move forward. We also showed that our approach generalizes to some extent 
-  to nonlinear neural network classifiers.</p>
+  in the linear case, hopefully constituting a solid base from which to move forward. Incidentally, we showed that L2 weight decay plays a more significant role than
+  previously suspected in a small neural net on MNIST. <p>
   
-  <p> The result with LeNet on MNIST is encouraging&mdash;but it raises more questions than it answers.
-  For instance, can deeper models be regularized in the same way on more sophisticated datasets (our experiments have been inconclusive so far)? 
-  Why did momentum interfere with weight decay in the experiment? Are regularized solutions harder to converge to? 
-  Is weight decay the right way to control the scaling of the loss function or should the raw score be normalized in some way? 
-  Is it reasonable to regard the raw score as a linear approximation of the distance between the image and the boundary for deeper models?
-  In addressing these questions, one should also keep in mind that it is possible&mdash;likely, even&mdash;that a satisfying solution to the problem
-  will require profoundly new ideas in deep learning.</p>
+  <p> Unfortunately, the story gets more complicated with deeper models on more sophisticated datasets. In our experience, the more non-linear the model becomes 
+  and the less weight decay seems to be able to help. This limitation may be superficial and it is perhaps worth exploring the ideas introduced here a bit 
+  further (for example, we should probably pay more attention to the scaling of the logits during training). Or the high non-linearity of deep networks might 
+  constitute a fundamental obstacle to the type of first-order adversarial training that L2 regularization implements.
+  Our feeling is that a truly satisfying solution to the problem will likely require profoundly new ideas in deep learning. </p>
 
-  <p> The study of the adversarial example phenomenon is a very active research area. For instance, a set of NIPS competitions hosted on Kaggle currently challenges 
+  <p> The study of the adversarial example phenomenon is a very active research area. For instance, a set of NIPS competitions hosted on Kaggle recently challenged 
   the community to come up with new attacks
   (<a href="https://www.kaggle.com/c/nips-2017-targeted-adversarial-attack">targeted</a> and
   <a href="https://www.kaggle.com/c/nips-2017-non-targeted-adversarial-attack">non-targeted</a>) and
@@ -1472,6 +1526,13 @@
   journal={arXiv preprint arXiv:1707.08945},
   year={2017},
   url={https://arxiv.org/pdf/1707.08945.pdf}
+}
+@article{athalye2017synthesizing,
+  title={Synthesizing robust adversarial examples},
+  author={Athalye, Anish and Sutskever, Ilya},
+  journal={arXiv preprint arXiv:1707.07397},
+  year={2017},
+  url={https://arxiv.org/pdf/1707.07397.pdf}
 }
 @inproceedings{moosavi2016deepfool,
   title={Deepfool: a simple and accurate method to fool deep neural networks},
@@ -1562,26 +1623,19 @@
   year={2017},
   url={https://arxiv.org/pdf/1702.04267.pdf}
 }
-@article{shaham2015understanding,
-  title={Understanding Adversarial Training: Increasing Local Stability of Neural Nets through Robust Optimization},
-  author={Shaham, Uri and Yamada, Yutaro and Negahban, Sahand},
-  journal={arXiv preprint arXiv:1511.05432},
-  year={2015},
-  url={https://arxiv.org/pdf/1511.05432.pdf}
+@article{kurakin2016adversarial,
+  title={Adversarial machine learning at scale},
+  author={Kurakin, Alexey and Goodfellow, Ian and Bengio, Samy},
+  journal={arXiv preprint arXiv:1611.01236},
+  year={2016},
+  url={https://arxiv.org/pdf/1611.01236.pdf}
 }
-@article{miyato2017virtual,
-  title={Virtual Adversarial Training: a Regularization Method for Supervised and Semi-supervised Learning},
-  author={Miyato, Takeru and Maeda, Shin-ichi and Koyama, Masanori and Ishii, Shin},
-  journal={arXiv preprint arXiv:1704.03976},
+@article{tramer2017ensemble,
+  title={Ensemble Adversarial Training: Attacks and Defenses},
+  author={Tram{\`e}r, Florian and Kurakin, Alexey and Papernot, Nicolas and Boneh, Dan and McDaniel, Patrick},
+  journal={arXiv preprint arXiv:1705.07204},
   year={2017},
-  url={https://arxiv.org/pdf/1704.03976.pdf}
-}
-@article{sankaranarayanan2017regularizing,
-  title={Regularizing deep networks using efficient layerwise adversarial training},
-  author={Sankaranarayanan, Swami and Jain, Arpit and Chellappa, Rama and Lim, Ser Nam},
-  journal={arXiv preprint arXiv:1705.07819},
-  year={2017},
-  url={https://arxiv.org/pdf/1705.07819.pdf}
+  url={https://arxiv.org/pdf/1705.07204.pdf}
 }
 @article{madry2017towards,
   title={Towards deep learning models resistant to adversarial attacks},
@@ -1638,13 +1692,21 @@
   publisher={Taylor \& Francis},
   url={http://www.tandfonline.com/doi/pdf/10.1198/016214507000001120}
 }
-@article{goh2017why,
-  author = {Goh, Gabriel},
-  title = {Why Momentum Really Works},
-  journal = {Distill},
-  year = {2017},
-  url = {http://distill.pub/2017/momentum},
-  doi = {10.23915/distill.00006}
+@inproceedings{vedaldi2015matconvnet,
+  title={Matconvnet: Convolutional neural networks for matlab},
+  author={Vedaldi, Andrea and Lenc, Karel},
+  booktitle={Proceedings of the 23rd ACM international conference on Multimedia},
+  pages={689--692},
+  year={2015},
+  organization={ACM},
+  url = {http://www.vlfeat.org/matconvnet/matconvnet-manual.pdf}
+}
+@article{guo2017calibration,
+  title={On Calibration of Modern Neural Networks},
+  author={Guo, Chuan and Pleiss, Geoff and Sun, Yu and Weinberger, Kilian Q},
+  journal={arXiv preprint arXiv:1706.04599},
+  year={2017},
+  url = {https://arxiv.org/pdf/1706.04599.pdf}
 }
 @article{hinton2015distilling,
   title={Distilling the knowledge in a neural network},
@@ -1652,6 +1714,13 @@
   journal={arXiv preprint arXiv:1503.02531},
   year={2015},
   url = {https://arxiv.org/pdf/1503.02531.pdf}
+}
+@article{zhang2016understanding,
+  title={Understanding deep learning requires rethinking generalization},
+  author={Zhang, Chiyuan and Bengio, Samy and Hardt, Moritz and Recht, Benjamin and Vinyals, Oriol},
+  journal={arXiv preprint arXiv:1611.03530},
+  year={2016},
+  url={https://arxiv.org/pdf/1611.03530.pdf}
 }
 </script>
 

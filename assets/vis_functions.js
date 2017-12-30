@@ -70,9 +70,9 @@ function abstract_fig(){
         mean2_x += data0[i][0];
 		mean3_x += data1[i][0];
       }
-	  mean_x = (mean3_x-mean2_x)/3000;
-      mean2_x = (width-space_width)/2 + x(-mean_x);
-	  mean3_x = (width-space_width)/2 + x(mean_x);
+	  var mean_x = (mean3_x-mean2_x)/3000;
+      var mean2_x = (width-space_width)/2 + x(-mean_x);
+	  var mean3_x = (width-space_width)/2 + x(mean_x);
 		
 	  var mean2_y = y(0), mean3_y = y(0);
 	  var mean2_im_x = (width - space_width)/4, mean2_im_y = height/2;  
@@ -590,7 +590,7 @@ function Carell_Deschanel(){
 	          .attr("text-anchor", "middle")
               .attr("x", margin4 + 85)
 	          .attr("y", im_size/2 + top_margin + 17)
-	          .text("(score: 0.966)");
+	          .text("(score: 0.95)");
 			  
   black_labels.append("text")
 	          .attr("text-anchor", "middle")
@@ -608,7 +608,7 @@ function Carell_Deschanel(){
 	          .attr("text-anchor", "middle")
               .attr("x", margin4 + 85)
 	          .attr("y", margin1 + im_size/2 + top_margin + 17)
-	          .text("(score: 0.968)");
+	          .text("(score: 0.95)");
 			  
   // gray labels
   var gray_labels = background.append("g")
@@ -3532,7 +3532,7 @@ function toy_problem5(){
 	            .attr("text-anchor", "start")
                 .attr("x", im_x)
                 .attr("y", im_y + 20)
-                .text("Training set containing:");
+                .text("Training set consisting of:");
 	
 	// gray labels
     var gray_labels = background.append("g")
@@ -5561,7 +5561,8 @@ function svm_mnist1(){
 	  .attr("stroke-opacity", 1)
       .attr("stroke-width", 2.5);
 
-  var path = plot.append("path");	
+  var path = plot.append("path");
+  var tick = plot.append("g");
 
   // foreground
   var foreground = fig.append("svg")
@@ -5855,6 +5856,48 @@ function svm_mnist1(){
           .attr("stroke", blue)
           .attr("stroke-width", 2)
           .attr("fill", "none");
+		  
+	  tick.attr("transform", "translate(" + (x(extras[2][40])-x(0)) + ",0)");
+	
+	  tick.append("line")
+	      .attr("stroke-width", 1)
+	      .attr("stroke", blue)
+          .attr("x1", x(0))
+	      .attr("y1", y(-0.1))
+	      .attr("x2", x(0))
+	      .attr("y2", y(0.1));
+				
+	  tick.append("text")
+          .attr("x",x(0))
+          .attr("y",y(-0.4))
+  	      .attr("text-anchor", "middle")
+	      .attr("font-family", "Roboto")
+	      .attr("fill", blue)
+	      .attr("font-size", "10px")
+          .text("1");
+			  
+	  tick.append("line")
+	      .attr("stroke-width", 1)
+	      .attr("stroke", blue)
+          .attr("x1", x(-1))
+	      .attr("y1", y(-0.5))
+	      .attr("x2", x(1))
+	      .attr("y2", y(-0.5));
+			  
+	  tick.append("text")
+          .attr("x",x(0))
+          .attr("y",y(-0.85))
+  	      .attr("text-anchor", "middle")
+	      .attr("font-family", "Roboto")
+	      .attr("fill", blue)
+	      .attr("font-size", "12px")
+          .text("||")
+	      .append("tspan")
+	      .attr("font-weight", "bold")
+		  .text("w")
+		  .append("tspan")
+		  .attr("font-weight", "normal")
+		  .text("||");
 	  
 	  d_adv_rect.attr("x", d_adv_x)
 		        .attr("y", d_adv_y + 15)
@@ -5921,6 +5964,8 @@ function svm_mnist1(){
 			  
 		path.attr("d", "M " + x(-20) + " " + y(1 + 20/(extras[2][80-reg_index]+0.001)) + " L " + x(extras[2][80-reg_index]+0.001) + " " + y(0) + " L " + x(20) + " " + y(0));
 
+		tick.attr("transform", "translate(" + (x(extras[2][80-reg_index])-x(0)) + ",0)");
+		
 	    d_adv_rect.attr("width", bar_width*extras[3][80-reg_index]/max_d_adv);		
 	    err_train_rect.attr("width", bar_width*extras[4][80-reg_index]/max_err_train);
 	    err_test_rect.attr("width", bar_width*extras[5][80-reg_index]/max_err_test);
@@ -6324,9 +6369,9 @@ function svm_mnist2(){
         mean0_x += data0[i][0];
 		mean1_x += data1[i][0];
       }
-	  mean_x = (mean1_x-mean0_x)/3000;
-      mean0_x = x(-mean_x);
-	  mean1_x = x(mean_x);
+	  var mean_x = (mean1_x-mean0_x)/3000;
+      var mean0_x = x(-mean_x);
+	  var mean1_x = x(mean_x);
 	  var mean0_y = y(0), mean1_y = y(0);
 	  
       foreground.append("image")
@@ -7231,545 +7276,949 @@ function svm_mnist3(){
 																				});
 }
 
-function svm_mnist() {
-  var width = 420;
-  var height = 280;
-  var x = d3.scaleLinear().domain([-21,21]).range([0, width]);
-  var y = d3.scaleLinear().domain([14,-14]).range([0, height]);
-  var left_digit = 2;
-  var right_digit = 3;
-  var left_color = d3.interpolateBlues(0.3); //rgb(181, 212, 233)
-  var right_color = d3.interpolateBlues(0.7); //rgb(47, 126, 188)
-  var orange = "rgb(255,102,0)";
-  var animationRunning = false;
-  var requestId;
-  var theta;
-  var reg_index;
+function cross_entropy_loss() {
+  var width = 300;
+  var height = 200;
+  var x = d3.scaleLinear().domain([-0.1, 1.25]).range([0, width]);
+  var y = d3.scaleLinear().domain([8, -1]).range([0, height]);
+  var left_color = d3.interpolateBlues(0.3);
+  var right_color = d3.interpolateBlues(0.7);
+  var light_left_color = "rgb(90%,90%,90%)";
+  var light_right_color = "rgb(80%,80%,80%)";
+  var blue = d3.interpolateBlues(0.7);
 
-  function update_buttons(left_digit, right_digit) {
-    for (i=0; i<=left_digit; i++) {
-	  d3.select('#right-input-'+i).style('visibility', 'hidden');
-      d3.select('#right-label-'+i).style('visibility', 'hidden');
-    }
-    for (i=left_digit+1; i<=9; i++) {
-	  d3.select('#right-input-'+i).style('visibility', 'visible');
-      d3.select('#right-label-'+i).style('visibility', 'visible');
-    }
-    for (i=0; i<=right_digit-1; i++) {
-	  d3.select('#left-input-'+i).style('visibility', 'visible');
-      d3.select('#left-label-'+i).style('visibility', 'visible');
-    }
-    for (i=right_digit; i<=9; i++) {
-	  d3.select('#left-input-'+i).style('visibility', 'hidden');
-      d3.select('#left-label-'+i).style('visibility', 'hidden');
-    }
-  }
+  var dataA = [0, 0, 0, 0, 0, 0.0002, 0.0017, 0.0028, 0.0066, 0.0119, 0.0198, 0.0204, 0.0227, 0.0251, 0.0291, 0.0328, 0.0404, 0.0575, 0.0898, 0.3349];
+  var dataB = [0.1645, 0.0257, 0.0193, 0.0187, 0.0200, 0.0164, 0.0153, 0.0110, 0.0086, 0.0048, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  var data = [dataA, dataB];
+  data = data[0].map(function(col, i) { return data.map(function(row) { return row[i] })});
+			   
+  var plot = d3.select("#cross-entropy-loss-fig")
+               .append("svg")
+    	   	   .attr("width", width)
+			   .attr("height", height);
+					 
+  plot.append("rect")
+      .attr("fill","rgb(98%,98%,98%)")
+	  .attr("x", 0)
+      .attr("y", 0)
+      .attr("width", width)
+      .attr("height", height);
   
-  function draw_fig(digit0, digit1) {
-	reg_index = 0;
+  plot.append("line")
+      .attr("x1", x(-0.02))
+	  .attr("y1", y(0))
+	  .attr("x2", x(1.05))
+	  .attr("y2", y(0))
+	  .attr('stroke',"rgb(40%,40%,40%)")
+	  .attr("stroke-width", 1);
 	  
-    d3.queue().defer(d3.text,"assets/data/data0_"+digit0+digit1+".csv")
-              .defer(d3.text,"assets/data/data1_"+digit0+digit1+".csv")
-		      .defer(d3.text,"assets/data/extras_"+digit0+digit1+".csv")
-              .defer(d3.text,"assets/data/w_"+digit0+digit1+".csv")
-		      .defer(d3.text,"assets/data/x_"+digit0+digit1+".csv")
-		      .defer(d3.text,"assets/data/xm_"+digit0+digit1+".csv")
-		      .defer(d3.text,"assets/data/y_"+digit0+digit1+".csv")
-		      .defer(d3.text,"assets/data/ym_"+digit0+digit1+".csv")
-              .await(draw_all);
+  plot.append("path")
+	  .attr("d","M "+ x(1.03) +" "+ (y(0)+3) +" L "+ x(1.05) +" "+ y(0) +" L "+ x(1.03) +" "+ (y(0)-3))
+      .style("stroke-width", 0.5)
+      .style("stroke", "rgb(40%,40%,40%)")
+      .style("fill", "none");
+	  
+  plot.append("line")
+      .attr("x1", x(0))
+	  .attr("y1", y(-0.1))
+	  .attr("x2", x(0))
+	  .attr("y2", y(8))
+	  .attr('stroke', "rgb(40%,40%,40%)")
+	  .attr("stroke-width", 1);
+	   
+  plot.selectAll("rect0")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i) {return x(i * 0.05);})
+      .attr("y", function(d) {return y(0) - d[1] * 1.5 * height - d[0] * 1.5 * height;})
+      .attr("width", 11)
+      .attr("height", function(d) {return d[0] * 1.5 * height;})
+      .style("stroke-width", 0.3)
+      .style("stroke", "rgb(30%, 30%, 30%)")
+      .style("fill-opacity", 1)
+      .style("fill", light_left_color);
+	   
+  plot.selectAll("rect1")
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", function(d, i) {return x(i * 0.05);})
+      .attr("y", function(d) {return y(0) - d[1] * 1.5 * height;})
+      .attr("width", 11)
+      .attr("height", function(d) {return d[1] * 1.5 * height;})
+      .style("stroke-width", 0.3)
+      .style("stroke", "rgb(10%, 10%, 10%)")
+      .style("fill-opacity", 1)
+      .style("fill", light_right_color);
+	  
+  var line = d3.line()
+               .x(function(d,i) {return x(0.0001 + i * 0.0001);})
+               .y(function(d) {return y(d);});
+  var softplusA = [];
+  for (var i = 0.0001; i < 1.0001; i+= 0.0001)
+	softplusA.push(-Math.log(i));
 
-    function draw_all(error, text_data0, text_data1, text_extras, text_w, text_x, text_xm, text_y, text_ym) {
-      var data0 = d3.csvParseRows(text_data0).map(function(row) {return row.map(function(value) {return +value;});});
-	  var data1 = d3.csvParseRows(text_data1).map(function(row) {return row.map(function(value) {return +value;});});
-	  var extras = d3.csvParseRows(text_extras).map(function(row) {return row.map(function(value) {return +value;});});	// m; dadv; errTrain; errTest; b; theta; x1; x2; xm1; xm2; y1; y2; ym1; ym2
-	  var w = d3.csvParseRows(text_w).map(function(row) {return row.map(function(value) {return +value;});});
-	  var imx = d3.csvParseRows(text_x).map(function(row) {return row.map(function(value) {return +value;});});
-	  var imxm = d3.csvParseRows(text_xm).map(function(row) {return row.map(function(value) {return +value;});});
-	  var imy = d3.csvParseRows(text_y).map(function(row) {return row.map(function(value) {return +value;});});
-	  var imym = d3.csvParseRows(text_ym).map(function(row) {return row.map(function(value) {return +value;});});
-
-	  var max_dAdv = Math.round( Math.max.apply(null, extras[12]) * 10) / 10;
-      var min_errTrain = Math.round( Math.min.apply(null, extras[13]) * 10) / 10;
-	  var min_errTest = Math.round( Math.min.apply(null, extras[14]) * 10) / 10;
-	  
-      var fig = d3.select("#fig4-right-content");
-	  fig.style("position","relative");
-	  
-      if (!fig.select("#svm-mnist-layer1").empty())
-	    fig.select("#svm-mnist-layer1").remove();
-	
-      if (!fig.select("#svm-mnist-layer2").empty())
-	    fig.select("#svm-mnist-layer2").remove();
-	
-      if (!fig.select("#svm-mnist-layer3").empty())
-	    fig.select("#svm-mnist-layer3").remove();
-	  
-      var layer1 = fig.append("svg")
-	                  .style("position","absolute")
-					  .attr("id","svm-mnist-layer1")
-                      .attr("width", width)
-                      .attr("height", height)
-					  .style("top", "0px")
-					  .style("left", "0px");
-	  
-      var layer2 = fig.append("canvas")
-					  .style("position","absolute")
-					  .attr("id","svm-mnist-layer2")
-                      .attr("width", width)
-                      .attr("height", height)
-					  .style("top", "0px")
-					  .style("left", "0px");
-	  var ctx_layer2 = layer2.node().getContext("2d");
-	  
-      var layer3 = fig.append("svg")
-	                  .style("position","absolute")
-					  .attr("id","svm-mnist-layer3")
-                      .attr("width", width)
-                      .attr("height", height)
-					  .style("top", "0px")
-					  .style("left", "0px");
-	  
-      var container = fig.append("custom");
-	  var input_time;
-	  
-	  theta = extras[1][80-reg_index];
-
-	  function init_canvas() {
-        container.selectAll("circle0")
-                 .data(data0)
-	             .enter()
-	             .append("circle0")
-                 .attr("x", function (d) { return x(d[0]);})
-		         .attr("y", function (d) { return y(d[80-reg_index+1]);})
-		         .attr("r", 0.75)
-	             .attr("lineWidth", 0.6)
-                 .attr("strokeStyle", left_color)
-			     .attr("fillStyle", left_color);
-  				 
-	    container.selectAll("circle1")
-                 .data(data1)
-		         .enter()
-		         .append("circle1")
-                 .attr("x", function (d) { return x(d[0]);})
-		         .attr("y", function (d) { return y(d[80-reg_index+1]);})
-		         .attr("r", 0.75)
-			     .attr("lineWidth", 0.6)
-                 .attr("strokeStyle", right_color)
-			     .attr("fillStyle", right_color);
-	  }
-
-	  function draw_layer1() {
-        layer1.append("rect")
-		      .attr("id","svm-mnist-layer1-left")
-			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-              .attr("fill","rgb(97.5%,97.5%,97.5%)")
-			  .attr("x", x(-extras[0][80-reg_index])-x(0)-width/2)
-              .attr("y", -height/2)
-              .attr("width", width)
-              .attr("height", 2*height);
+  plot.append("path")
+      .attr("d", line(softplusA))
+      .style("stroke", blue)
+      .style("stroke-width", 2)
+      .style("fill", "none");
 			  
-        layer1.append("rect")
-		      .attr("id","svm-mnist-layer1-right")
-			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-              .attr("fill","rgb(90%,90%,90%)")
-			  .attr("x", x(-extras[0][80-reg_index])-x(0)+width/2)
-              .attr("y", -height/2)
-              .attr("width", width)
-              .attr("height", 2*height);
-	  }
+  plot.append("text")
+	  .attr("fill", blue)
+	  .attr("font-family","Roboto")
+	  .attr("font-size", "13px")
+	  .attr("text-anchor", "start")
+	  .attr("font-style","italic")
+      .attr("x", x(0.03))
+	  .attr("y", y(7))
+	  .text("z → -log(z)");
 	  
-      function draw_layer2() {
-        //Clear canvas
-        ctx_layer2.clearRect(0, 0, width, height);
-	
-	    //Class 0
-        container.selectAll("circle0")
-                 .each(function(d) {
-                         var node = d3.select(this);
-			             ctx_layer2.beginPath();
-                         ctx_layer2.strokeStyle = node.attr("strokeStyle");
-	                     ctx_layer2.lineWidth = node.attr("lineWidth");
-	                     ctx_layer2.fillStyle = node.attr("fillStyle");
-                         ctx_layer2.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
-					     ctx_layer2.fill();
-                         ctx_layer2.stroke();
-                         ctx_layer2.closePath();
-                       });
-			 
-	    //Class 1
-        container.selectAll("circle1")
-                 .each(function(d) {
-                         var node = d3.select(this);
-			             ctx_layer2.beginPath();
-	                     ctx_layer2.strokeStyle = node.attr("strokeStyle");
-		                 ctx_layer2.lineWidth = node.attr("lineWidth");
-	                     ctx_layer2.fillStyle = node.attr("fillStyle");
-                         ctx_layer2.arc(node.attr("x"), node.attr("y"), node.attr("r"), 0, 2 * Math.PI);
-                         ctx_layer2.fill();
-					     ctx_layer2.stroke();
-                         ctx_layer2.closePath();
-                       });
-	  }	
-
-	  function draw_layer3() {
-		// boundary
-	    layer3.append("line")
-		      .attr("id","svm-mnist-layer3-boundary")
-			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-	          .attr("stroke-width", 2.5)
-              .attr("x1", x(-extras[0][80-reg_index]))
-	          .attr("y1", -height/2)
-	          .attr("x2", x(-extras[0][80-reg_index]))
-	          .attr("y2", 2*height)
-	          .attr("stroke", orange);
-			  
-	    // w_theta
-        layer3.append("line")
-	          .attr("id","svm-mnist-layer3-w-line")
-			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-              .attr("x1", x(-extras[0][80-reg_index]))
-		      .attr("y1", y(0))
-		      .attr("x2", x(-extras[0][80-reg_index]+6))
-		      .attr("y2", y(0))
-	          .attr("stroke-width", 2)
-			  .attr("stroke-dasharray", "5, 3")
-	          .attr("stroke", orange);
-
-        layer3.append("polygon")
-	          .attr("id","svm-mnist-layer3-w-polygon")
-		  	  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-              .attr("points", x(-extras[0][80-reg_index]+5.6)+","+y(0)+" "+x(-extras[0][80-reg_index]+5.2)+","+y(-0.5)+" "+x(-extras[0][80-reg_index]+6)+","+y(0)+" "+x(-extras[0][80-reg_index]+5.2)+","+y(0.5))
-  	          .attr("fill", orange)
-  	          .attr("stroke-width", 1)
-  	          .attr("stroke", orange);
-		 
-        layer3.append("text")
-	          .attr("id","svm-mnist-layer3-w-text")
-			  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-              .attr("x", x(-extras[0][80-reg_index]+7))
-	          .attr("y", y(-0.4))
+  plot.append("line")
+	  .attr("stroke-width", 1)
+	  .attr("stroke", "rgb(60%, 60%, 60%)")
+      .attr("x1", x(1))
+	  .attr("y1", y(-0.1))
+	  .attr("x2", x(1))
+	  .attr("y2", y(0.1));
+				
+  plot.append("text")
+      .attr("x",x(1))
+      .attr("y",y(-0.7))
+  	  .attr("text-anchor", "middle")
+	  .attr("font-family","Roboto")
+	  .attr("font-size", "11px")
+	  .attr("fill", "rgb(60%, 60%, 60%)")
+      .text("1");
+	  
+  plot.append("line")
+	  .attr("stroke-width", 1)
+	  .attr("stroke", "rgb(60%, 60%, 60%)")
+      .attr("x1", x(0))
+	  .attr("y1", y(-0.1))
+	  .attr("x2", x(0))
+	  .attr("y2", y(0.1));
+				
+  plot.append("text")
+      .attr("x",x(0))
+      .attr("y",y(-0.7))
+  	  .attr("text-anchor", "middle")
+	  .attr("font-family","Roboto")
+	  .attr("font-size", "11px")
+	  .attr("fill", "rgb(60%, 60%, 60%)")
+      .text("0");
+	  
+  plot.append("line")
+	  .attr("stroke-width", 1)
+	  .attr("stroke", "rgb(60%, 60%, 60%)")
+      .attr("x1", x(0.5))
+	  .attr("y1", y(-0.1))
+	  .attr("x2", x(0.5))
+	  .attr("y2", y(0.1));
+				
+  plot.append("text")
+      .attr("x",x(0.5))
+      .attr("y",y(-0.7))
+  	  .attr("text-anchor", "middle")
+	  .attr("font-family","Roboto")
+	  .attr("font-size", "11px")
+	  .attr("fill", "rgb(60%, 60%, 60%)")
+      .text("0.5");
+	  
+  plot.append("text")
+      .attr("x",x(1.15))
+      .attr("y",y(-0.1))
+  	  .attr("text-anchor", "middle")
+	  .attr("font-style","italic")
+	  .attr("font-family","Roboto")
+	  .attr("font-size", "13px")
+	  .attr("fill", "rgb(60%, 60%, 60%)")
+      .text("p")
+	  .append("tspan")
+	  .attr("dy",2)
+	  .attr("font-size", "10px")
+	  .text("y")
+	  .append("tspan")
+	  .attr("dx",1)
+	  .attr("dy",-2)
+	  .attr("font-size", "13px")
+	  .text("(x)");
+	  
+  var gray_labels1 = plot.append("g")
+	                     .attr("fill", "rgb(50%, 50%, 50%)")
+	                     .attr("font-family","Roboto")
+	                     .attr("font-size", "13px");
+								
+  gray_labels1.append("text")
 	          .attr("text-anchor", "middle")
-	          .attr("font-family","Roboto")
-	          .attr("fill", orange)
- 	          .attr("font-style", "italic")
- 	          .attr("font-weight", "bold")
-	          .attr("font-size", "15px")
-              .text("\u0175");
-			  
-	    // imx imxm imy imym	  
-	    layer3.append("circle")
-	          .attr("id","svm-mnist-layer3-x-circle")
-	          .attr("cx",x(extras[2][80-reg_index]))
-			  .attr("cy",y(extras[3][80-reg_index]))
-			  .attr("r",3)
-			  .attr("fill","rgb(0%,0%,0%)");
+              .attr("x", x(0.25))
+	          .attr("y", y(4.5))
+	          .text("mis-");
 			
-	    layer3.append("circle")
-	          .attr("id","svm-mnist-layer3-xm-circle")
-	          .attr("cx",x(extras[4][80-reg_index]))
-			  .attr("cy",y(extras[5][80-reg_index]))
-			  .attr("r",3)
-			  .attr("fill","rgb(0%,0%,0%)");
-			
-	    layer3.append("circle")
-	          .attr("id","svm-mnist-layer3-y-circle")
-	          .attr("cx",x(extras[6][80-reg_index]))
-			  .attr("cy",y(extras[7][80-reg_index]))
-			  .attr("r",3)
-			  .attr("fill","rgb(0%,0%,0%)");
-			
-	    layer3.append("circle")
-	          .attr("id","svm-mnist-layer3-ym-circle")
-	          .attr("cx",x(extras[8][80-reg_index]))
-			  .attr("cy",y(extras[9][80-reg_index]))
-			  .attr("r",3)
-			  .attr("fill","rgb(0%,0%,0%)");
-			
-        layer3.append("line")
-	          .attr("id","svm-mnist-layer3-x-xm-line")
-              .attr("x1", x(extras[2][80-reg_index]))
-		      .attr("y1", y(extras[3][80-reg_index]))
-		      .attr("x2", x(extras[4][80-reg_index]))
-		      .attr("y2", y(extras[5][80-reg_index]))
-	          .attr("stroke-width", 1)
-			  .attr("stroke-dasharray", "3, 1")
-	          .attr("stroke", "rgb(0%,0%,0%)");
-
-        layer3.append("line")
-	          .attr("id","svm-mnist-layer3-y-ym-line")
-              .attr("x1", x(extras[6][80-reg_index]))
-		      .attr("y1", y(extras[7][80-reg_index]))
-		      .attr("x2", x(extras[8][80-reg_index]))
-		      .attr("y2", y(extras[9][80-reg_index]))
-	          .attr("stroke-width", 1)
-			  .attr("stroke-dasharray", "3, 1")
-	          .attr("stroke", "rgb(0%,0%,0%)");
-	    
-		// labels
-        var labels = layer3.append("g")
-	                       .attr("text-anchor", "middle")
-	                       .attr("font-family","Roboto")
-	                       .attr("fill", "rgb(0%,0%,0%)")
- 	                       .attr("font-style", "italic")
- 	                       .attr("font-weight", "bold")
-	                       .attr("font-size", "15px");
-		
-        labels.append("text")
-	          .attr("id","svm-mnist-layer3-label-x")
-              .attr("x", x(extras[2][80-reg_index])-3)
-	          .attr("y", y(extras[3][80-reg_index])+15)
-              .text("x");
-			  
-        labels.append("text")
-	          .attr("id","svm-mnist-layer3-label-xm")
-              .attr("x", x(extras[4][80-reg_index])-3)
-	          .attr("y", y(extras[5][80-reg_index])-10)
-              .text("x")
-			  .append("tspan")
-	          .attr("font-size", "10px")
-			  .attr("dx",1)
-			  .attr("dy",2)
-			  .text("m");
-			  
-        labels.append("text")
-	          .attr("id","svm-mnist-layer3-label-y")
-              .attr("x", x(extras[6][80-reg_index])-3)
-	          .attr("y", y(extras[7][80-reg_index])-10)
-              .text("y");
-			  
-        labels.append("text")
-	          .attr("id","svm-mnist-layer3-label-ym")
-              .attr("x", x(extras[8][80-reg_index])-3)
-	          .attr("y", y(extras[9][80-reg_index])+15)
-              .text("y")
-			  .append("tspan")
-	          .attr("font-size", "10px")
-			  .attr("dx",1)
-			  .attr("dy",2)
-			  .text("m");
-	  }
-	  
-      function draw_digits() {
-        var thisCanvas = document.getElementById("fig4-left-canvas-imx");
-        var thisContext = thisCanvas.getContext("2d");
-        thisContext.imageSmoothingEnabled = false;
-        thisContext.drawImage(img_to_canvas2(imx[80-reg_index]),0,0,90,90);
-		
-        var thisCanvas = document.getElementById("fig4-left-canvas-imy");
-        var thisContext = thisCanvas.getContext("2d");
-        thisContext.imageSmoothingEnabled = false;
-        thisContext.drawImage(img_to_canvas2(imy[80-reg_index]),0,0,90,90);
-		
-        var thisCanvas = document.getElementById("fig4-left-canvas-w");
-        var thisContext = thisCanvas.getContext("2d");
-        thisContext.imageSmoothingEnabled = false;
-        thisContext.drawImage(img_to_canvas2(w[80-reg_index]),0,0,90,90);
-		
-        var thisCanvas = document.getElementById("fig4-left-canvas-minus-w");
-        var thisContext = thisCanvas.getContext("2d");
-        thisContext.imageSmoothingEnabled = false;
-        thisContext.drawImage(img_to_canvas2(math.multiply(-1, w[80-reg_index])),0,0,90,90);
-		
-        var thisCanvas = document.getElementById("fig4-left-canvas-imxm");
-        var thisContext = thisCanvas.getContext("2d");
-        thisContext.imageSmoothingEnabled = false;
-        thisContext.drawImage(img_to_canvas2(imxm[80-reg_index]),0,0,90,90);
-		
-        var thisCanvas = document.getElementById("fig4-left-canvas-imym");
-        var thisContext = thisCanvas.getContext("2d");
-        thisContext.imageSmoothingEnabled = false;
-        thisContext.drawImage(img_to_canvas2(imym[80-reg_index]),0,0,90,90);
-	  }
-
-	  function update() {
-		theta = extras[1][80-reg_index];
-		  
-		d3.select("#svm-mnist-layer1-left")
-          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-		  .attr("x", x(-extras[0][80-reg_index])-x(0)-width/2);
-		  
-		d3.select("#svm-mnist-layer1-right")
-          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-		  .attr("x", x(-extras[0][80-reg_index])-x(0)+width/2);
-		  
-        container.selectAll("circle0")
-	             .attr("y", function (d) {return y(d[80-reg_index+1]);});
-
-	    container.selectAll("circle1")
-	             .attr("y", function (d) {return y(d[80-reg_index+1]);});
-		  
-		d3.select("#svm-mnist-layer3-boundary")
-          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-          .attr("x1", x(-extras[0][80-reg_index]))
-	      .attr("x2", x(-extras[0][80-reg_index]));
-
-		d3.select("#svm-mnist-layer3-w-line")
-          .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-		  .attr("x1", x(-extras[0][80-reg_index]))
-		  .attr("x2", x(-extras[0][80-reg_index]+6));
-		  
-		d3.select("#svm-mnist-layer3-w-polygon")
-		  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-            .attr("points", x(-extras[0][80-reg_index]+5.6)+","+y(0)+" "+x(-extras[0][80-reg_index]+5.2)+","+y(-0.5)+" "+x(-extras[0][80-reg_index]+6)+","+y(0)+" "+x(-extras[0][80-reg_index]+5.2)+","+y(0.5));
-				 
-		d3.select("#svm-mnist-layer3-w-text")
-		  .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-          .attr("x", x(-extras[0][80-reg_index]+7));
-
-		d3.select("#svm-mnist-layer3-x-circle")
-	      .attr("cx",x(extras[2][80-reg_index]))
-		  .attr("cy",y(extras[3][80-reg_index]));
-	    
-		d3.select("#svm-mnist-layer3-xm-circle")
-	      .attr("cx",x(extras[4][80-reg_index]))
-		  .attr("cy",y(extras[5][80-reg_index]));
-		  
-		d3.select("#svm-mnist-layer3-y-circle")
-	      .attr("cx",x(extras[6][80-reg_index]))
-	      .attr("cy",y(extras[7][80-reg_index]));	
-			
-		d3.select("#svm-mnist-layer3-ym-circle")
-	      .attr("cx",x(extras[8][80-reg_index]))
-	      .attr("cy",y(extras[9][80-reg_index]));	
-
-		d3.select("#svm-mnist-layer3-x-xm-line")
-          .attr("x1", x(extras[2][80-reg_index]))
-		  .attr("y1", y(extras[3][80-reg_index]))
-		  .attr("x2", x(extras[4][80-reg_index]))
-		  .attr("y2", y(extras[5][80-reg_index]))
-		  
-		d3.select("#svm-mnist-layer3-y-ym-line")
-          .attr("x1", x(extras[6][80-reg_index]))
-		  .attr("y1", y(extras[7][80-reg_index]))
-		  .attr("x2", x(extras[8][80-reg_index]))
-		  .attr("y2", y(extras[9][80-reg_index]))
-		
-		d3.select("#svm-mnist-layer3-label-x")
-          .attr("x", x(extras[2][80-reg_index])-3)
-	      .attr("y", y(extras[3][80-reg_index])+15)
-		  
-		d3.select("#svm-mnist-layer3-label-xm")
-          .attr("x", x(extras[4][80-reg_index])-3)
-	      .attr("y", y(extras[5][80-reg_index])-10)
-		  
-		d3.select("#svm-mnist-layer3-label-y")
-          .attr("x", x(extras[6][80-reg_index])-3)
-	      .attr("y", y(extras[7][80-reg_index])-10)
-		  
-		d3.select("#svm-mnist-layer3-label-ym")
-          .attr("x", x(extras[8][80-reg_index])-3)
-	      .attr("y", y(extras[9][80-reg_index])+15)
-				 
-	    if (Math.round( extras[12][80-reg_index] * 10) / 10 == max_dAdv)
-		  d3.select("#fig4-left-dAdv").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
-	    else
-		  d3.select("#fig4-left-dAdv").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"});
-	    if (Math.round( extras[13][80-reg_index] * 10) / 10 == min_errTrain)
-		  d3.select("#fig4-left-errTrain").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
-	    else
-		  d3.select("#fig4-left-errTrain").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"});
-	    if (Math.round( extras[14][80-reg_index] * 10) / 10 == min_errTest)
-		  d3.select("#fig4-left-errTest").style({"font-weight": "bold", "color": "rgba(100%,0%,0%,0.6)"});
-	    else
-		  d3.select("#fig4-left-errTest").style({"font-weight": "normal", "color": "rgba(0,0,0,0.6)"});
-	  
-	    //if (Math.round( extras[15][80-reg_index] * 10) / 10 == min_errTrain)
-		//  d3.select("#abstract_err_train").style("font-weight","bold")
-		//	                              .style("color",orange);
-	    //else
-		//  d3.select("#abstract_err_train").style("font-weight","normal")
-		//	                              .style("color","rgba(60%,60%,60%)");			 
-	    //if (Math.round( extras[14][80-reg_index] * 10) / 10 == max_dAdv)
-		//  d3.select("#abstract_adv_distance").style("font-weight","bold")
-		//	                                 .style("color",orange);
-	    //else
-		//  d3.select("#abstract_adv_distance").style("font-weight","normal")
-		//	                                 .style("color","rgba(60%,60%,60%)");	
-				 
-		d3.select("#fig4-value-lambda").text(parseFloat(-1+reg_index*0.1).toFixed(1));
-	    d3.select("#fig4-value-dx").text(parseFloat(extras[10][80-reg_index]).toFixed(1));
-	    d3.select("#fig4-value-dy").text(parseFloat(extras[11][80-reg_index]).toFixed(1));
-	    d3.select("#fig4-value-dAdv").text(parseFloat(extras[12][80-reg_index]).toFixed(1));
-	    d3.select("#fig4-value-errTrain").text(parseFloat(extras[13][80-reg_index]).toFixed(1));
-	    d3.select("#fig4-value-errTest").text(parseFloat(extras[14][80-reg_index]).toFixed(1));
-	  }
-	  
-	  function animate() {
-	    draw_layer2();
-		draw_digits();
-		
-	    requestId = window.requestAnimationFrame(animate);
-		
-		if (Date.now() - input_time > 10000) {
-          animationRunning = false;
-          window.cancelAnimationFrame(requestId);
-        }
-	  }
-	  
-	  d3.select("#fig4-value-lambda").text(parseFloat(-1+reg_index*0.1).toFixed(1));
-	  d3.select("#fig4-value-dx").text(parseFloat(extras[10][80-reg_index]).toFixed(1));
-	  d3.select("#fig4-value-dy").text(parseFloat(extras[11][80-reg_index]).toFixed(1));
-	  d3.select("#fig4-value-dAdv").text(parseFloat(extras[12][80-reg_index]).toFixed(1));
-	  d3.select("#fig4-value-errTrain").text(parseFloat(extras[13][80-reg_index]).toFixed(1));
-	  d3.select("#fig4-value-errTest").text(parseFloat(extras[14][80-reg_index]).toFixed(1));
-	  draw_digits();
-	  init_canvas();
-	  draw_layer1();
-	  draw_layer2();
-	  draw_layer3();
-	
-	  var input = d3.select("#fig4-left-controler-input");
-	  input.property("value", reg_index);
-	  input.on("input", function() {if (!animationRunning) {
-			                          animationRunning = true;
-			                          requestId = window.requestAnimationFrame(animate);
-		                            }
-									input_time = Date.now();
-		                            reg_index = +this.value;
-									update();});
-    }
-  }
-  
-  d3.select('#left-input-'+left_digit).property('checked', true);
-  d3.select('#right-input-'+right_digit).property('checked', true);
-  update_buttons(left_digit,right_digit);
-  draw_fig(left_digit, right_digit);
-  
-  d3.selectAll('input[name="left-digit"]').on('click', function() {if (animationRunning) {
-                                                                     animationRunning = false;
-                                                                     window.cancelAnimationFrame(requestId);
-                                                                   }
-	                                                               left_digit = +this.value;
-                                                                   update_buttons(left_digit,right_digit);
-																   draw_fig(left_digit, right_digit);});
-  d3.selectAll('input[name="right-digit"]').on('click', function() {if (animationRunning) {
-                                                                     animationRunning = false;
-                                                                     window.cancelAnimationFrame(requestId);
-                                                                   }
-	                                                                right_digit = +this.value;
-                                                                    update_buttons(left_digit,right_digit);
-																	draw_fig(left_digit, right_digit);});
-																	
-  d3.select("#button-0vs1").on('click', function() {if (animationRunning) {
-                                                      animationRunning = false;
-                                                      window.cancelAnimationFrame(requestId);
-                                                    }
-													left_digit = 0;
-	                                                right_digit = 1;
-                                                    d3.select('#left-input-'+left_digit).property('checked', true);
-                                                    d3.select('#right-input-'+right_digit).property('checked', true); 
-                                                    update_buttons(left_digit,right_digit);
-													draw_fig(left_digit, right_digit);});
-											
-  d3.select("#button-7vs9").on('click', function() {if (animationRunning) {
-                                                      animationRunning = false;
-                                                      window.cancelAnimationFrame(requestId);
-                                                    }
-													left_digit = 7;
-	                                                right_digit = 9;
-                                                    d3.select('#left-input-'+left_digit).property('checked', true);
-                                                    d3.select('#right-input-'+right_digit).property('checked', true); 
-                                                    update_buttons(left_digit,right_digit);
-													draw_fig(left_digit, right_digit);});
+  gray_labels1.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", x(0.25))
+	          .attr("y", y(4.5)+20)
+	          .text("classified");
+			 
+  gray_labels1.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", x(0.25))
+	          .attr("y", y(4.5)+40)
+	          .text("data");
+			 
+  var gray_labels2 = plot.append("g")
+	                     .attr("fill", "rgb(70%, 70%, 70%)")
+	                     .attr("font-family","Roboto")
+	                     .attr("font-size", "13px");
+			   
+  gray_labels2.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", x(0.75))
+	          .attr("y", y(4.5))
+	          .text("correctly");
+			 
+  gray_labels2.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", x(0.75))
+	          .attr("y", y(4.5)+20)
+	          .text("classified");
+			 
+  gray_labels2.append("text")
+	          .attr("text-anchor", "middle")
+              .attr("x", x(0.75))
+	          .attr("y", y(4.5)+40)
+	          .text("data");
 }
 
+function LeNet_architecture() {
+  var width = 1000;
+  var height = 60;
+  
+  var rect_width = 108;
+  var rect_height = height;
+  
+  var text1 = 15;
+  var text2 = 35;
+  var text3 = 55;
+  var red = "rgb(255,210,210)";
+  var green = "rgb(210,255,210)";
+  var blue = "rgb(210,210,255)";
+  
+  var background = d3.select("#LeNet-architecture")
+                     .append("svg")
+    	   	  	     .attr("width", width)
+			         .attr("height", height);
+  
+  var space_between = (width-rect_width)/7;
+  var array_x = [0,space_between,2*space_between,3*space_between,4*space_between,6*space_between];
+  var array_color = [blue, red,blue,red,blue,blue];
+  var array_type = ["Convolution","Max Pooling","Convolution","Max Pooling","Fully Connected","Fully Connected"];
+  var array_name = ["Conv1","Pool1","Conv2","Pool2","FC1","FC2"];
+  var array_kernel = ["(5,5,1,20)","(2,2)","(5,5,20,50)","(2,2)","(4,4,50,500)","(1,1,500,10)"];
+  
+  for (var i = 0; i < 6; i++) {
+    background.append("rect")
+              .attr("rx", 10)
+              .attr("ry", 10)
+              .attr("x", array_x[i])
+              .attr("y", 0)
+              .attr("width", rect_width)
+              .attr("height", rect_height)
+			  .attr("fill",array_color[i]);
+			
+    background.append("text")
+              .attr("x", array_x[i]+rect_width/2)
+	          .attr("y", text1)
+	          .attr("text-anchor", "middle")
+	          .attr("font-family","Roboto Light")
+	          .attr("fill", "rgb(0%,0%,0%)")
+ 	          .attr("font-style", "italic")
+ 	          .attr("font-weight", "normal")
+	          .attr("font-size", "13px")
+              .text(array_type[i]);
+			
+    background.append("text")
+              .attr("x", array_x[i]+rect_width/2)
+	          .attr("y", text2)
+	          .attr("text-anchor", "middle")
+	          .attr("font-family","Roboto")
+	          .attr("fill", "rgb(0%,0%,0%)")
+ 	          .attr("font-style", "normal")
+ 	          .attr("font-weight", "bold")
+	          .attr("font-size", "15px")
+              .text(array_name[i]);
+			
+    background.append("text")
+              .attr("x", array_x[i]+rect_width/2)
+	          .attr("y", text3)
+	          .attr("text-anchor", "middle")
+	          .attr("font-family","Roboto Light")
+	          .attr("fill", "rgb(0%,0%,0%)")
+ 	          .attr("font-style", "normal")
+ 	          .attr("font-weight", "normal")
+	          .attr("font-size", "13px")
+              .text(array_kernel[i]);
+			  
+    background.append("line")
+              .attr("x1", array_x[i]+rect_width)
+		      .attr("y1", rect_height/2)
+	          .attr("x2", array_x[i]+space_between-5)
+		      .attr("y2", rect_height/2)
+	          .attr("stroke-width", 1)
+	          .attr("stroke", "rgb(60%,60%,60%)");
+			  
+    background.append("polygon")
+	          .attr("fill", "rgb(60%,60%,60%)")
+              .attr("points", (array_x[i]+space_between) + "," + (rect_height/2) + " " +
+		                      (array_x[i]+space_between - 8) + "," + (rect_height/2 + 2) + " " + 
+						      (array_x[i]+space_between - 8) + "," + (rect_height/2 - 2));
+  }
+  
+  background.append("rect")
+            .attr("rx", 10)
+            .attr("ry", 10)
+            .attr("x", 5*space_between)
+            .attr("y", 0)
+            .attr("width", rect_width)
+            .attr("height", rect_height)
+			.attr("fill", green);
+			
+  background.append("text")
+            .attr("x", 5*space_between+rect_width/2)
+	        .attr("y", text1)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "italic")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "13px")
+            .text("Re")
+			.append("tspan")
+	        .attr("font-family","Roboto Light")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "italic")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "13px")
+            .text("ctified");
+			
+  background.append("text")
+            .attr("x", 5*space_between+rect_width/2)
+	        .attr("y", text2)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "italic")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "13px")
+            .text("L")
+			.append("tspan")
+	        .attr("font-family","Roboto Light")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "italic")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "13px")
+            .text("inear");
+			
+  background.append("text")
+            .attr("x", 5*space_between+rect_width/2)
+	        .attr("y", text3)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "italic")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "13px")
+            .text("U")
+			.append("tspan")
+	        .attr("font-family","Roboto Light")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "italic")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "13px")
+            .text("nit");
+			
+    background.append("line")
+              .attr("x1", 5*space_between+rect_width)
+		      .attr("y1", rect_height/2)
+	          .attr("x2", 5*space_between+space_between-5)
+		      .attr("y2", rect_height/2)
+	          .attr("stroke-width", 1)
+	          .attr("stroke", "rgb(60%,60%,60%)");
+			  
+    background.append("polygon")
+	          .attr("fill", "rgb(60%,60%,60%)")
+              .attr("points", (5*space_between+space_between) + "," + (rect_height/2) + " " +
+		                      (5*space_between+space_between - 8) + "," + (rect_height/2 + 2) + " " + 
+						      (5*space_between+space_between - 8) + "," + (rect_height/2 - 2));
+
+  var points = [[7*space_between, rect_height/2],[7*space_between+rect_width/2, rect_height],[7*space_between+rect_width, rect_height/2],[7*space_between+rect_width/2, 0]];
+  background.append("polygon")
+            .attr("points",points)
+            .attr("fill","rgb(210,210,210)");
+			
+  background.append("text")
+            .attr("x", 7*space_between+rect_width/2)
+	        .attr("y", text2)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("Softmax");
+}
+
+function LeNet_errors() {
+  var width = 1000;
+  var height = 260;
+  var im_width = 0.6*625;
+  var im_height = 0.6*312;
+  var margin_left = 120;
+  var im_x = margin_left+(width-margin_left)/2-im_width;
+  var im_y = 60;
+  
+  var error_y = 110;
+  var train_y = 150;
+  var test_y = 170;
+  
+  var background = d3.select("#LeNet-errors")
+                     .append("svg")
+    	   	  	     .attr("width", width)
+			         .attr("height", height);
+					 
+  background.append("rect")
+            .attr("fill","rgb(95%,95%,95%)")
+	        .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", margin_left)
+            .attr("height", height);
+
+  background.append("svg:image")
+            .attr('x', im_x)
+            .attr('y', im_y)
+            .attr('width', im_width)
+			.attr('height', im_height)
+            .attr("xlink:href","assets/plot_low.png");
+			
+  background.append("svg:image")
+            .attr('x', (width-margin_left)/2+im_x)
+            .attr('y', im_y)
+            .attr('width', im_width)
+			.attr('height', im_height)
+            .attr("xlink:href","assets/plot_high.png");
+			
+  background.append("text")
+            .attr("x", margin_left+(width-margin_left)/4+20)
+	        .attr("y", 30)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "18px")
+            .text("LeNet")
+			.append("tspan")
+			.attr("dx","2px")
+			.attr("dy","5px")
+			.attr("font-size", "13px")
+			.attr("font-style", "italic")
+			.text("low");
+			
+  background.append("text")
+            .attr("x", margin_left+3*(width-margin_left)/4+20)
+	        .attr("y", 30)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "18px")
+            .text("LeNet")
+			.append("tspan")
+			.attr("dx","2px")
+			.attr("dy","5px")
+			.attr("font-size", "13px")
+			.attr("font-style", "italic")
+			.text("high");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", error_y)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("Errors Rates:");
+			
+  background.append("text")
+            .attr("x", margin_left/2+20)
+	        .attr("y", train_y)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "15px")
+            .text("Train");
+			
+  background.append("line")
+            .attr("x1", margin_left/2-30)
+		    .attr("y1", train_y-5)
+	        .attr("x2", margin_left/2-10)
+		    .attr("y2", train_y-5)
+	        .attr("stroke-width", 2.5)
+	        .attr("stroke", "rgb(0,114,189)");
+			
+  background.append("circle")
+	        .attr("cx", margin_left/2-20)
+			.attr("cy", train_y-5)
+			.attr("r", 3)
+			.attr("fill","rgb(0,114,189)");
+			
+  background.append("text")
+            .attr("x", margin_left/2+20)
+	        .attr("y", test_y)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "15px")
+            .text("Test");
+			
+  background.append("line")
+            .attr("x1", margin_left/2-30)
+		    .attr("y1", test_y-5)
+	        .attr("x2", margin_left/2-10)
+		    .attr("y2", test_y-5)
+	        .attr("stroke-width", 2.5)
+	        .attr("stroke", "rgb(217,83,25)");
+			
+  background.append("circle")
+	        .attr("cx", margin_left/2-20)
+			.attr("cy", test_y-5)
+			.attr("r", 3)
+			.attr("fill","rgb(217,83,25)");
+}
+
+function LeNet_weights() {
+  var width = 1000;
+  var height = 490;
+  var im_width = 0.75*420;
+  var im_height = 0.75*481;
+  var margin_left = 120; //170
+  var im_x = margin_left+(width-margin_left)/2-im_width;
+  var im_y = 110;
+
+  var layer0_y = 30;
+  var layer1_y = im_y+13;
+  var layer2_y = im_y+108;
+  var layer3_y = im_y+257;
+  var layer4_y = im_y+355;
+  var rms_x1 = margin_left+((width-margin_left)/2-im_width)/2;
+  var rms_x2 = (width-margin_left)/2+rms_x1;
+  
+  var background = d3.select("#LeNet-weights")
+                     .append("svg")
+    	   	  	     .attr("width", width)
+			         .attr("height", height);
+					 
+  background.append("rect")
+            .attr("fill","rgb(95%,95%,95%)")
+	        .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", margin_left)
+            .attr("height", height);
+
+  background.append("svg:image")
+            .attr('x', im_x)
+            .attr('y', im_y)
+            .attr('width', im_width)
+			.attr('height', im_height)
+            .attr("xlink:href","assets/weights_low.png");
+			
+  background.append("svg:image")
+            .attr('x', (width-margin_left)/2+im_x)
+            .attr('y', im_y)
+            .attr('width', im_width)
+			.attr('height', im_height)
+            .attr("xlink:href","assets/weights_high.png");
+			
+  background.append("text")
+            .attr("x", margin_left+(width-margin_left)/4+20)
+	        .attr("y", 30)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "18px")
+            .text("LeNet")
+			.append("tspan")
+			.attr("dx","2px")
+			.attr("dy","5px")
+			.attr("font-size", "13px")
+			.attr("font-style", "italic")
+			.text("low");
+			
+  background.append("text")
+            .attr("x", margin_left+3*(width-margin_left)/4+20)
+	        .attr("y", 30)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "18px")
+            .text("LeNet")
+			.append("tspan")
+			.attr("dx","2px")
+			.attr("dy","5px")
+			.attr("font-size", "13px")
+			.attr("font-style", "italic")
+			.text("high");
+			
+  background.append("text")
+            .attr("x", 15+rms_x1)
+	        .attr("y", 80)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("RMS");
+			
+  background.append("text")
+            .attr("x", 15+rms_x2)
+	        .attr("y", 80)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("RMS");
+			
+  background.append("text")
+            .attr("x", im_x+im_width/2)
+	        .attr("y", 80)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("Random selection of filters");
+			
+  background.append("text")
+            .attr("x", (width-margin_left)/2+im_x+im_width/2)
+	        .attr("y", 80)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("Random selection of filters");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer0_y-10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(80%,80%,80%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("Layer");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer0_y+10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(80%,80%,80%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "13px")
+            .text("(kernel size)");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer1_y-10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("Conv1");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer1_y+10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "13px")
+            .text("(5,5,1,20)");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer2_y-10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("Conv2");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer2_y+10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "13px")
+            .text("(5,5,20,50)");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer3_y-10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("FC1");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer3_y+10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "13px")
+            .text("(4,4,50,500)");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer4_y-10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("FC2");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", layer4_y+10)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "13px")
+            .text("(1,1,500,10)");
+			
+  var array_x = [rms_x1, rms_x1, rms_x1, rms_x1, rms_x2, rms_x2, rms_x2, rms_x2];
+  var array_y = [layer1_y, layer2_y, layer3_y, layer4_y, layer1_y, layer2_y, layer3_y, layer4_y];
+  var array_val = ["0.04","0.04","0.02","0.5","0.03","0.005","0.001","0.01"];
+  
+  for (var i = 0; i < 8; i++) {
+    background.append("text")
+              .attr("x", 15+array_x[i])
+	          .attr("y", array_y[i])
+	          .attr("text-anchor", "middle")
+	          .attr("font-family","Roboto")
+	          .attr("fill", "rgb(60%,60%,60%)")
+ 	          .attr("font-style", "italic")
+ 	          .attr("font-weight", "normal")
+	          .attr("font-size", "13px")
+              .text(array_val[i]);
+  }
+}
+
+function LeNet_advs() {
+  var width = 1000;
+  var height = 245;
+  var im_width = 0.3*1375;
+  var im_height = 0.3*625;
+  var margin_left = 120;
+  var im_x = margin_left+(width-margin_left)/2-im_width;
+  var im_y = 50;
+  
+  var line1_y = im_y+36;
+  var line2_y = im_y+99;
+  var line3_y = im_y+162;
+  
+  var rect_size = 37;
+  
+  var background = d3.select("#LeNet-advs")
+                     .append("svg")
+    	   	  	     .attr("width", width)
+			         .attr("height", height);
+					 
+  background.append("rect")
+            .attr("fill","rgb(95%,95%,95%)")
+	        .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", margin_left)
+            .attr("height", height);
+
+  background.append("svg:image")
+            .attr('x', im_x)
+            .attr('y', im_y)
+            .attr('width', im_width)
+			.attr('height', im_height)
+            .attr("xlink:href","assets/advs_low.png");
+			
+  background.append("svg:image")
+            .attr('x', (width-margin_left)/2+im_x)
+            .attr('y', im_y)
+            .attr('width', im_width)
+			.attr('height', im_height)
+            .attr("xlink:href","assets/advs_high.png");
+			
+  background.append("text")
+            .attr("x", margin_left+(width-margin_left)/4+20)
+	        .attr("y", 30)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "18px")
+            .text("LeNet")
+			.append("tspan")
+			.attr("dx","2px")
+			.attr("dy","5px")
+			.attr("font-size", "13px")
+			.attr("font-style", "italic")
+			.text("low");
+			
+  background.append("text")
+            .attr("x", margin_left+3*(width-margin_left)/4+20)
+	        .attr("y", 30)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(0%,0%,0%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "18px")
+            .text("LeNet")
+			.append("tspan")
+			.attr("dx","2px")
+			.attr("dy","5px")
+			.attr("font-size", "13px")
+			.attr("font-style", "italic")
+			.text("high");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", line1_y-23)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "10px")
+            .text("class@score");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", line1_y+6)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("OI");
+			
+  background.append("rect")
+		    .attr("stroke","rgb(60%,60%,60%)")
+		    .attr("stroke-width", 1)
+			.attr("fill", "none")
+	        .attr("x", margin_left/2 - rect_size/2)
+            .attr("y", line1_y - rect_size/2)
+            .attr("width", rect_size)
+            .attr("height", rect_size);
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", line2_y-23)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "10px")
+            .text("class@score");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", line2_y+6)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("AE");
+			
+  background.append("rect")
+		    .attr("stroke","rgb(60%,60%,60%)")
+		    .attr("stroke-width", 1)
+			.attr("fill", "none")
+	        .attr("x", margin_left/2 - rect_size/2)
+            .attr("y", line2_y - rect_size/2)
+            .attr("width", rect_size)
+            .attr("height", rect_size);
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", line3_y-23)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "normal")
+	        .attr("font-size", "10px")
+            .text("L2 norm");
+			
+  background.append("text")
+            .attr("x", margin_left/2)
+	        .attr("y", line3_y+6)
+	        .attr("text-anchor", "middle")
+	        .attr("font-family","Roboto")
+	        .attr("fill", "rgb(60%,60%,60%)")
+ 	        .attr("font-style", "normal")
+ 	        .attr("font-weight", "bold")
+	        .attr("font-size", "15px")
+            .text("Pert");
+			
+  background.append("rect")
+		    .attr("stroke","rgb(60%,60%,60%)")
+		    .attr("stroke-width", 1)
+			.attr("fill", "none")
+	        .attr("x", margin_left/2 - rect_size/2)
+            .attr("y", line3_y - rect_size/2)
+            .attr("width", rect_size)
+            .attr("height", rect_size);
+}
