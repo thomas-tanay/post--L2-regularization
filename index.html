@@ -98,6 +98,11 @@
 	color: rgb(60%,60%,60%);
   }
   #abstract-text {
+    display: -webkit-flex;
+    display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	text-align: center;
     width: 580px;
 	font: 15px/1.55em "Roboto";
 	line-height: 1.5em;
@@ -112,16 +117,20 @@
     <div id="abstract-fig"> </div>
 	<div id="abstract-rest">
 	  <div id="abstract-controler">
-	    <div class="abstract-text-content"> Regularization: </div>
+	    <div class="abstract-text-content"> L2 Regularization: </div>
         <input id="abstract-input" type="range" min="0" max="80" step="1"> </input>
 		<div class="abstract-text-content"> $err_{\text{train}} =$ <span id="abstract_err_train"> ... </span> </div>
 		<div class="abstract-text-content"> $d_{\text{adv}} =$ <span id="abstract_adv_distance"> ... </span> </div>
 	  </div>
 	  <div id="abstract-text">
-		In linear models and small neural nets, L2 regularization can be understood as a balancing mechanism between two objectives:
-		minimizing the training error $err_{\text{train}}$ and maximizing the average distance between the data and the boundary $d_{\text{adv}}$. <br>
+	    <div> Imagine two high dimensional clusters and a hyperplane separating them. </div>
+		<div> Consider in particular <b>the angle between</b>: <br> the direction joining the two clusters' centroids and the normal to the hyperplane. </div>
+		<div> In linear classification, this angle depends on the level of L2 regularization used. <br> &mdash; <em>Can you explain why?</em> &mdash; </div>
+	  
+		<!--In linear models and small neural nets, L2 regularization can be understood as a balancing mechanism between two objectives:
+		minimizing the training error $err_{\text{train}}$ and maximizing the average distance $d_{\text{adv}}$ between the data and the boundary. <br>
 		<br>
-		In practice, using an appropriate level of regularization helps avoid overfitting and constitutes a simple form of adversarial training.	
+		In practice, using an appropriate level of regularization helps avoid overfitting and constitutes a simple form of adversarial training.-->
 	  </div> 
 	</div>
   </div>
@@ -205,7 +214,7 @@
     toy_problem2();
   </script>
 
-  <p> ...and these two classes can be separated by an infinite number of linear classifiers. Consider for instance the line $\mathscr{L}_{\theta}$. </p>
+  <p> ...which can be separated by an infinite number of linear classifiers. Consider for instance the line $\mathscr{L}_{\theta}$. </p>
 
   <style>
   #toy-problem3 {
@@ -465,7 +474,7 @@
 	<div class="noisy-data-div">
 	  <div class="noisy-data-text">
 	    <div class="noisy-data-text-header"> Without L2 regularization: </div>
-		<div class="noisy-data-text-subheader"> The classification boundary is strongly titled. </div>
+		<div class="noisy-data-text-subheader"> The classification boundary is strongly tilted. </div>
 		<div class="noisy-data-text-content"> 
         Most of the leeway available to fit the training data resides in the tilting angle of the boundary.
         Here, the data point $\boldsymbol{p}$ can be classified correctly, but the classifier obtained is then vulnerable to adversarial examples.
@@ -1061,20 +1070,21 @@
   <p> On a given training set $T$ where the distance between the two centroids $\lVert\boldsymbol{j}-\boldsymbol{i}\rVert$ is fixed, 
   $d_{\text{adv}}$ depends only on the tilting angle $\theta$. Two observations follow: <br>
   <ul> 
-  <li> The adversarial example phenomenon is minimized by the nearest centroid classifier ($\theta = 0$) and the classifiers parallel to it ($d_{\text{adv}}$ is independent 
-  of the bias $b$) <dt-fn>
-   The fact that the adversarial distance is independent of the bias explains why the models defined by SVM are poorly adjusted when regularization is high, 
-   resulting in very high training and test errors (see for instance the classification of 1s vs 8s when $\lambda = 10^7$ in the next section).</dt-fn>.</li>
+  <li> The adversarial example phenomenon is minimized by the nearest centroid classifier ($\theta = 0$) <dt-fn>
+  ...and the classifiers parallel to it: $d_{\text{adv}}$ is independent of the bias $b$. This explains why the models defined by SVM are poorly adjusted when 
+  regularization is high,    resulting in very high training and test errors (see for instance the classification of 1s vs 8s when $\lambda = 10^7$ in the next section).</dt-fn>.</li>
   <li> Adversarial examples can be arbitrarily strong when $\theta \to \pi/2$ <br>(as was the case with the classifier $\mathscr{L}_{\theta}$ in the toy problem section).</li>
   </ul>
   
   <h3> Example: SVM on MNIST </h3>
   
   <p> We now illustrate the previous considerations on binary classification of MNIST digits. For each possible pair of digit classes, 
-  we train multiple SVM models $(\boldsymbol{w}, b)$ for a regularization parameter $\lambda \in [10^{-1}, 10^7]$ using a training set $T$ of $3000$ images per class. </p>
-  
-  <p> We start by plotting the distribution of the distances $y\,d(\boldsymbol{x})$ between the training data and the boundary (grey histograms) and the scaled loss function 
-  $f_{\lVert\boldsymbol{w}\rVert}$ (blue line) as a function of the regularization parameter $\lambda$. <p>
+  we train multiple SVM models $(\boldsymbol{w}, b)$ for a regularization parameter $\lambda \in [10^{-1}, 10^7]$ using a training set of $3000$ images per class <dt-fn>
+  More precisely, we train for each pair of digit classes 81 models with a regularization parameter $\lambda = 10^{\alpha}$ with $\alpha$ ranging from $-1$ to $7$ by steps
+  of $0.1$.</dt-fn>. </p>
+
+  <p> We start by plotting the distributions of the distances $y\,d(\boldsymbol{x})$ between the training data and the boundary as a function of the regularization parameter
+  $\lambda$ (grey histograms). We superimpose the loss function $f_{\lVert\boldsymbol{w}\rVert}$ as scaled after the convergence of each model (blue line).<p>
 
   <style>
   #svm-mnist1 {
@@ -1098,12 +1108,18 @@
   Note that the test error is minimized for an intermediate level of regularization $\lambda_{\text{optimal}}$.
   When $\lambda \lt \lambda_{\text{optimal}}$, the classifier is <em>overfitted</em> and when $\lambda \gt \lambda_{\text{optimal}}$, the classifier is <em>underfitted</em>.</p>
   
-  <p> To get a better understanding of how the two objectives are balanced, we can look at what happens in the tilting plane of each model.
-  We first compute the unit weight vector $\boldsymbol{\hat{z}}$ of the nearest centroid classifier and we then project the training data in the plane 
+  <p> To get a better understanding of how the two objectives are balanced, let's look at the training data under a different point of view.</p>
+  
+  <p> We first compute the unit weight vector $\boldsymbol{\hat{z}}$ of the nearest centroid classifier. Then for each SVM model $(\boldsymbol{w}, b)$, 
+  we compute the unit vector $\boldsymbol{\hat{n}}$ such that $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$ is an orthonormal basis of the tilting plane of $\boldsymbol{w}$ <dt-fn>
+  We do this by using the Gram-Schmidt process: 
+  $$\boldsymbol{\hat{n}} = \frac{\boldsymbol{n}}{\lVert\boldsymbol{n}\rVert} \quad\quad \text{with} \quad\quad \boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$$
+  </dt-fn>. Finally, we project the training data in $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$:
+  <!--and we then project the training data in the plane 
   $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$ containing $\boldsymbol{w}$ <dt-fn>
   The vector $\boldsymbol{\hat{n}}$ is defined for each model as:
-  $$\boldsymbol{\hat{n}} = \frac{\boldsymbol{n}}{\lVert\boldsymbol{n}\rVert} \quad\quad \text{with} \quad\quad \boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$$
-  </dt-fn>.
+
+  </dt-fn>.-->
   </p>
   
   <style>
@@ -1121,6 +1137,12 @@
   <script>
     svm_mnist2();
   </script>
+  
+  <p> The horizontal direction passes through the two centroids and the vertical direction is chosen such that $\boldsymbol{w}$ belongs to the plane 
+  (the hyperplane boundary then appears as a line). Remark also that since $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$ is an orthonormal basis, 
+  the distances in this plane are actual pixel distances. To understand why the data points appear to be moving around when $\lambda$ varies, one needs to 
+  imagine the tilting plane rotating around $\boldsymbol{\hat{z}}$ in the 784-dimensional input space (thus showing a different section of the 784-dimensional 
+  training data for each value of $\lambda$).</p>
   
   <p> For high regularization levels, the model is parallel to the nearest centroid classifier and the adversarial distance is maximized. 
   As $\lambda$ decreases, the classification boundary improves its fit of the training data by tilting towards directions of low variance.
@@ -1470,13 +1492,13 @@
   constitute a fundamental obstacle to the type of first-order adversarial training that L2 regularization implements.
   Our feeling is that a truly satisfying solution to the problem will likely require profoundly new ideas in deep learning. </p>
 
-  <p> The study of the adversarial example phenomenon is a very active research area. For instance, a set of NIPS competitions hosted on Kaggle recently challenged 
+  <!--  <p> The study of the adversarial example phenomenon is a very active research area. For instance, a set of NIPS competitions hosted on Kaggle recently challenged 
   the community to come up with new attacks
   (<a href="https://www.kaggle.com/c/nips-2017-targeted-adversarial-attack">targeted</a> and
   <a href="https://www.kaggle.com/c/nips-2017-non-targeted-adversarial-attack">non-targeted</a>) and
   <a href="https://www.kaggle.com/c/nips-2017-defense-against-adversarial-attack">new defenses</a>.
   Interested readers might also want to visit Ian Goodfellow's and Nicolas Papernot's <a href="http://www.cleverhans.io/">cleverhans blog</a>,
-  dedicated to the topic.</p>
+  dedicated to the topic.</p>-->
 
 <dt-appendix>
 </dt-appendix>

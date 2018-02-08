@@ -13,6 +13,7 @@ function abstract_fig(){
   var reg_index = 40;
   var animationRunning = false;
   var requestId;
+  var arrow_length = 35;
   
   function draw_fig(digit0, digit1) {
     d3.queue().defer(d3.text,"assets/data/data0_"+digit0+digit1+".csv")
@@ -54,6 +55,8 @@ function abstract_fig(){
       var d_adv_arrow1 = layer3.append("path");
       var d_adv_arrow2 = layer3.append("path");
       var d_adv_text =layer3.append("text");
+      var w_line = layer3.append("line");
+      var w_polygon = layer3.append("polygon");
 	  
       var layer4 = fig.append("svg")
 	                  .style("position","absolute")
@@ -202,6 +205,22 @@ function abstract_fig(){
               .attr("y1", -200)
               .attr("x2", x(-extras[1][80-reg_index]))
               .attr("y2", width+200);
+			
+	    // w_theta
+        w_line.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+              .attr("x1", x(-extras[1][80-reg_index]))
+		      .attr("y1", y(0))
+		      .attr("x2", x(-extras[1][80-reg_index])+arrow_length)
+		      .attr("y2", y(0))
+	          .attr("stroke-width", 2)
+			  .attr("stroke-dasharray", "5, 3")
+	          .attr("stroke", orange);
+
+        w_polygon.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+                 .attr("points", (x(-extras[1][80-reg_index])+arrow_length-4)+","+y(0)+" "+(x(-extras[1][80-reg_index])+arrow_length-8)+","+(y(0)-4)+" "+(x(-extras[1][80-reg_index])+arrow_length)+","+y(0)+" "+(x(-extras[1][80-reg_index])+arrow_length-8)+","+(y(0)+4))
+  	             .attr("fill", orange)
+  	             .attr("stroke-width", 1)
+  	             .attr("stroke", orange);
 	  }
 
 	  function draw_layer4() {
@@ -372,6 +391,14 @@ function abstract_fig(){
 
         d_adv_text.attr("x", x(anchor_x)-10)
 	              .attr("y", y(anchor_y)+10);
+				  
+        w_line.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+              .attr("x1", x(-extras[1][80-reg_index]))
+		      .attr("x2", x(-extras[1][80-reg_index])+arrow_length);
+			  
+        w_polygon.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
+                 .attr("points", (x(-extras[1][80-reg_index])+arrow_length-4)+","+y(0)+" "+(x(-extras[1][80-reg_index])+arrow_length-8)+","+(y(0)-4)+" "+(x(-extras[1][80-reg_index])+arrow_length)+","+y(0)+" "+(x(-extras[1][80-reg_index])+arrow_length-8)+","+(y(0)+4));
+
 		  
 		d3.select("#abstract-boundary")
           .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
@@ -5302,22 +5329,9 @@ function d_adv() {
 	 .attr("font-family","Roboto")
 	 .attr("font-size", "13px")
 	 .attr("text-anchor", "start")
-	 .attr("font-style", "italic")
-     .attr("x", x(mean0_x)+50)
-	 .attr("y", y(mean0_y)-75)
-	 .text("2 d")
-	 .append("tspan")
-     .attr("font-size", "10px")
-     .attr("dx", "1px")
-     .attr("dy", "4px")
-	 .text("adv")
-	 .append("tspan")
-	 .attr("font-size", "13px")
-     .attr("dx", "1px")
-     .attr("dy", "-4px")
-     .attr("font-weight", "normal")
-	 .attr("font-style", "normal")
-	 .text(" = ||")
+     .attr("x", x(mean0_x)+40)
+	 .attr("y", y(mean0_y)-80)
+	 .text("||")
 	 .append("tspan")
      .attr("font-weight", "bold")
 	 .attr("font-style", "italic")
@@ -5344,7 +5358,7 @@ function d_adv() {
      .attr("x2", x(mean1_x))
      .attr("y2", y(mean1_y));
 	 
-  svg.append("path")
+  /*svg.append("path")
 	 .attr("d","M "+ (x(mean0_x)+5) +" "+ (y(mean0_y)+3) +" L "+ x(mean0_x) +" "+ y(mean0_y) +" L "+ (x(mean0_x)+5) +" "+ (y(mean0_y)-3))
      .style("stroke-width", 0.5)
      .style("stroke", "rgb(40%,40%,40%)")
@@ -5379,7 +5393,7 @@ function d_adv() {
 	 .append("tspan")
      .attr("font-weight", "normal")
 	 .attr("font-style", "normal")
-	 .text("||");
+	 .text("||");*/
 	 
   svg.append("line")
 	 .attr("transform", "rotate("+ (-90*2/Math.PI*theta) +","+ x(mean0_x+7) +","+ y(0) +")")
@@ -6047,7 +6061,7 @@ function svm_mnist2(){
   var orange = "rgb(255,102,0)";
   var left_color = d3.interpolateBlues(0.3); //rgb(181, 212, 233)
   var right_color = d3.interpolateBlues(0.7); //rgb(47, 126, 188)
-  var arrow_length = 40;
+  var arrow_length = 35;
   
   var animationRunning = false;
   var requestId;
