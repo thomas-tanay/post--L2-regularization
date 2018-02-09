@@ -1,6 +1,5 @@
 # post--L2-regularization
 
-Distill submission
+This is our submission to Distill titled: "A New Angle on L2 Regularization".
 
-Title: "A New Angle on L2 Regularization"
-Subtitle: "Adversarial Examples in Linear Classification and Beyond"
+[Web version can be accessed here](https://thomas-tanay.github.io/post--L2-regularization/)
