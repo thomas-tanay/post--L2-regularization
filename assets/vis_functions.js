@@ -2,8 +2,8 @@ function abstract_fig(){
   var width = 816;
   var space_width = 408;
   var height = 2/3*space_width+1;
-  var x = d3.scaleLinear().domain([-24,24]).range([0, height*3/2]);
-  var y = d3.scaleLinear().domain([16,-16]).range([0, height]);
+  var x = d3.scaleLinear().domain([-9.2,9.2]).range([0, height*3/2]);
+  var y = d3.scaleLinear().domain([6.133,-6.133]).range([0, height]);
   var left_digit = 2;
   var right_digit = 3;
   var left_color = d3.interpolateBlues(0.3); //rgb(181, 212, 233)
@@ -159,8 +159,8 @@ function abstract_fig(){
               .attr("height", width+200);
 		
 		var d_adv_width = 2*mean_x*Math.cos(theta);
-		var anchor_x = -mean_x + 13*Math.tan(theta);
-		var anchor_y = -13;
+		var anchor_x = -mean_x + 5.1*Math.tan(theta);
+		var anchor_y = -5.1;
         d_adv_line.attr("transform", "rotate("+ (-90*2/Math.PI*theta) +","+ x(anchor_x) +","+ y(anchor_y) +")")
 	              .attr("stroke","rgb(40%,40%,40%)")
 		          .attr("stroke-width",0.5)
@@ -371,11 +371,11 @@ function abstract_fig(){
           .attr("width", 2*(x(mean_x*Math.cos(theta))-x(0)));
 		
 		var d_adv_width = 2*mean_x*Math.cos(theta);
-       	var anchor_x = -mean_x + 13*Math.tan(theta);
-		var anchor_y = -13;
-		if (anchor_x > 20) {
-		  anchor_x = 20;
-		  anchor_y = - (mean_x+20)/Math.tan(theta);
+       	var anchor_x = -mean_x + 5.1*Math.tan(theta);
+		var anchor_y = -5.1;
+		if (anchor_x > 7.84) {
+		  anchor_x = 7.84;
+		  anchor_y = - (mean_x+7.84)/Math.tan(theta);
 		}
         d_adv_line.attr("transform", "rotate("+ (-90*2/Math.PI*theta) +","+ x(anchor_x) +","+ y(anchor_y) +")")
                   .attr("x1", x(anchor_x))
@@ -5866,12 +5866,12 @@ function svm_mnist1(){
             .style("fill", light_right_color);
 				
 	  
-      path.attr("d", "M " + x(-20) + " " + y(1 + 20/extras[2][40]) + " L " + x(extras[2][40]) + " " + y(0) + " L " + x(20) + " " + y(0))
+      path.attr("d", "M " + x(-20) + " " + y(1 + 20/(2.55 * extras[2][40])) + " L " + x(2.55 * extras[2][40]) + " " + y(0) + " L " + x(20) + " " + y(0))
           .attr("stroke", blue)
           .attr("stroke-width", 2)
           .attr("fill", "none");
 		  
-	  tick.attr("transform", "translate(" + (x(extras[2][40])-x(0)) + ",0)");
+	  tick.attr("transform", "translate(" + (x(2.55 * extras[2][40])-x(0)) + ",0)");
 	
 	  tick.append("line")
 	      .attr("stroke-width", 1)
@@ -5915,21 +5915,21 @@ function svm_mnist1(){
 	  
 	  d_adv_rect.attr("x", d_adv_x)
 		        .attr("y", d_adv_y + 15)
-		        .attr("width", bar_width*extras[3][40]/max_d_adv)
+		        .attr("width", bar_width * Math.round(extras[3][40] * 10) / (10 * max_d_adv))
 		        .attr("height", 15)
                 .style("fill-opacity", 1)
                 .style("fill", bar_color);
 					 
 	  err_train_rect.attr("x", err_train_x)
 			        .attr("y", err_train_y + 15)
-			        .attr("width", bar_width*extras[4][40]/max_err_train)
+			        .attr("width", bar_width * Math.round(extras[4][40] * 10) / (10 * max_err_train))
 			        .attr("height", 15)
                     .style("fill-opacity", 1)
                     .style("fill", bar_color);
 								
       err_test_rect.attr("x", err_test_x)
 			       .attr("y", err_test_y + 15)
-			       .attr("width", bar_width*extras[5][40]/max_err_test)
+			       .attr("width", bar_width * Math.round(extras[5][40] * 10) / (10 * max_err_test))
 			       .attr("height", 15)
                    .style("fill-opacity", 1)
                    .style("fill", bar_color);
@@ -5940,7 +5940,7 @@ function svm_mnist1(){
 			  .attr("font-size","10px")
 			  .attr("x", reg_x + 178 +"px")
 			  .attr("y", reg_y - 6 +"px")
-			  .text(parseFloat(3).toFixed(1));
+			  .text(parseFloat(-2).toFixed(1));
 				
       d_adv_text.attr("text-anchor", "start")
 	            .attr("font-family","Roboto")
@@ -5976,15 +5976,15 @@ function svm_mnist1(){
 		      .attr("y", function(d) {return y(0) - (d[2*(80-reg_index)]+d[2*(80-reg_index)+1]) * 1.5 * plot_h;})
 			  .attr("height", function(d) {return d[2*(80-reg_index)+1] * 1.5 * plot_h;});
 			  
-		path.attr("d", "M " + x(-20) + " " + y(1 + 20/(extras[2][80-reg_index]+0.001)) + " L " + x(extras[2][80-reg_index]+0.001) + " " + y(0) + " L " + x(20) + " " + y(0));
+		path.attr("d", "M " + x(-20) + " " + y(1 + 20/(2.55 * extras[2][80-reg_index]+0.001)) + " L " + x(2.55 * extras[2][80-reg_index]+0.001) + " " + y(0) + " L " + x(20) + " " + y(0));
 
-		tick.attr("transform", "translate(" + (x(extras[2][80-reg_index])-x(0)) + ",0)");
+		tick.attr("transform", "translate(" + (x(2.55 * extras[2][80-reg_index])-x(0)) + ",0)");
 		
-	    d_adv_rect.attr("width", bar_width*extras[3][80-reg_index]/max_d_adv);		
-	    err_train_rect.attr("width", bar_width*extras[4][80-reg_index]/max_err_train);
-	    err_test_rect.attr("width", bar_width*extras[5][80-reg_index]/max_err_test);
+	    d_adv_rect.attr("width", bar_width * Math.round(extras[3][80-reg_index] * 10) / (10 * max_d_adv));		
+	    err_train_rect.attr("width", bar_width * Math.round(extras[4][80-reg_index] * 10) / (10 * max_err_train));
+	    err_test_rect.attr("width", bar_width * Math.round(extras[5][80-reg_index] * 10) / (10 * max_err_test));
 
-		reg_text.text(parseFloat(-1+reg_index*0.1).toFixed(1));
+		reg_text.text(parseFloat(-6+reg_index*0.1).toFixed(1));
 		d_adv_text.text(parseFloat(extras[3][80-reg_index]).toFixed(1));
 		err_train_text.text(parseFloat(extras[4][80-reg_index]).toFixed(1)+"%");
 		err_test_text.text(parseFloat(extras[5][80-reg_index]).toFixed(1)+"%");
@@ -6056,8 +6056,8 @@ function svm_mnist2(){
   var left_digit = 2;
   var right_digit = 3;
   
-  var x = d3.scaleLinear().domain([-21, 21]).range([0, plot_w]);
-  var y = d3.scaleLinear().domain([14, -14]).range([0, plot_h]);
+  var x = d3.scaleLinear().domain([-8.3, 8.3]).range([0, plot_w]);
+  var y = d3.scaleLinear().domain([5.53, -5.53]).range([0, plot_h]);
   var orange = "rgb(255,102,0)";
   var left_color = d3.interpolateBlues(0.3); //rgb(181, 212, 233)
   var right_color = d3.interpolateBlues(0.7); //rgb(47, 126, 188)
@@ -6410,7 +6410,7 @@ function svm_mnist2(){
 	          .attr("font-size","10px")
 		      .attr("x", reg_x + 178 +"px")
 		      .attr("y", reg_y - 6 +"px")
-		      .text(parseFloat(3).toFixed(1));
+		      .text(parseFloat(-2).toFixed(1));
 			  
 	  w_context.drawImage(img_to_canvas(w[40]),0,0,im_size,im_size);
 			  
@@ -6512,8 +6512,8 @@ function svm_mnist2(){
                     .attr("height", plot_w+200);
 		
 		var d_adv_width = 2*mean_x*Math.cos(theta);
-		var anchor_x = -mean_x + 12*Math.tan(theta);
-		var anchor_y = -12;
+		var anchor_x = -mean_x + 4.7*Math.tan(theta);
+		var anchor_y = -4.7;
         d_adv_line.attr("transform", "rotate("+ (-90*2/Math.PI*theta) +","+ x(anchor_x) +","+ y(anchor_y) +")")
 	              .attr("stroke","rgb(40%,40%,40%)")
 		          .attr("stroke-width",0.5)
@@ -6575,7 +6575,7 @@ function svm_mnist2(){
 
         w_text.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
               .attr("x", x(-extras[1][40])+arrow_length+10)
-	          .attr("y", y(-0.4))
+	          .attr("y", y(-0.16))
 	          .attr("text-anchor", "middle")
 	          .attr("font-family","Roboto")
 	          .attr("fill", orange)
@@ -6599,11 +6599,11 @@ function svm_mnist2(){
                     .attr("width", 2*(x(mean_x*Math.cos(theta))-x(0)))
 		
 		var d_adv_width = 2*mean_x*Math.cos(theta);
-       	var anchor_x = -mean_x + 12*Math.tan(theta);
-		var anchor_y = -12;
-		if (anchor_x > 18) {
-		  anchor_x = 18;
-		  anchor_y = - (mean_x+18)/Math.tan(theta);
+       	var anchor_x = -mean_x + 4.7*Math.tan(theta);
+		var anchor_y = -4.7;
+		if (anchor_x > 7.1) {
+		  anchor_x = 7.1;
+		  anchor_y = - (mean_x+7.1)/Math.tan(theta);
 		}
         d_adv_line.attr("transform", "rotate("+ (-90*2/Math.PI*theta) +","+ x(anchor_x) +","+ y(anchor_y) +")")
                   .attr("x1", x(anchor_x))
@@ -6634,7 +6634,7 @@ function svm_mnist2(){
         w_text.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
               .attr("x", x(-extras[1][80-reg_index])+arrow_length+10);
 				 
-		reg_text.text(parseFloat(-1+reg_index*0.1).toFixed(1));
+		reg_text.text(parseFloat(-6+reg_index*0.1).toFixed(1));
 	    w_context.drawImage(img_to_canvas(w[80-reg_index]),0,0,im_size,im_size);
 	  }
 	  
@@ -6703,8 +6703,8 @@ function svm_mnist3(){
   var left_digit = 2;
   var right_digit = 3;
   
-  var x = d3.scaleLinear().domain([-21, 21]).range([0, plot_w]);
-  var y = d3.scaleLinear().domain([14, -14]).range([0, plot_h]);
+  var x = d3.scaleLinear().domain([-8.3, 8.3]).range([0, plot_w]);
+  var y = d3.scaleLinear().domain([5.53, -5.53]).range([0, plot_h]);
   var blue = d3.interpolateBlues(0.7);
   var orange = "rgb(255,102,0)";
   var left_color = d3.interpolateBlues(0.3); //rgb(181, 212, 233)
@@ -6830,7 +6830,7 @@ function svm_mnist3(){
 	      .attr("font-size","10px")
 		  .attr("x", reg_x + 178 +"px")
 		  .attr("y", reg_y - 6 +"px")
-		  .text(parseFloat(3).toFixed(1));
+		  .text(parseFloat(-2).toFixed(1));
 		  
   // x xm y ym
   var imx_canvas = fig.append("canvas")
@@ -7243,7 +7243,7 @@ function svm_mnist3(){
         label_ym.attr("x", x(extras[12][80-reg_index])-3)
 	            .attr("y", y(extras[13][80-reg_index])+15);
 	  
-		reg_text.text(parseFloat(-1+reg_index*0.1).toFixed(1));
+		reg_text.text(parseFloat(-6+reg_index*0.1).toFixed(1));
 		
 	    imx_context.drawImage(img_to_canvas(imx[80-reg_index]),0,0,im_size,im_size);
 	    imxm_context.drawImage(img_to_canvas(imxm[80-reg_index]),0,0,im_size,im_size);
