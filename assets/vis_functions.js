@@ -6923,7 +6923,7 @@ function svm_mnist3(){
 	        .attr("font-family","Roboto")
 	        .attr("fill", "rgb(60%,60%,60%)")
 	        .attr("font-size", "13px")
-            .text("Mirro image ")
+            .text("Mirror image ")
 			.append("tspan")
  	        .attr("font-style", "italic")
  	        .attr("font-weight", "bold")

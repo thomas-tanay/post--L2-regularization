@@ -1,8 +1,6 @@
 <!doctype html><html>
 <head>
 <meta charset="utf-8">
-<script src="https://distill.pub/template.v1.js"></script>
-
 <script src="https://d3js.org/d3.v4.min.js"></script>
 
 <script src="https://d3js.org/d3-color.v1.min.js"></script>
@@ -51,6 +49,7 @@
 </script>
 
 <script src="assets/vis_functions.js"></script>
+<script src="assets/template.v1.js"></script>
 
 </head>
 
@@ -176,9 +175,9 @@
   "for high dimensional problems, we can make many infinitesimal changes to the input that add up to one large change to the output" 
   <dt-cite key="goodfellow2014explaining"></dt-cite>.
   Here, we challenge this intuition and argue instead that adversarial examples exist when the classification boundary lies close the data manifold&mdash;independently 
-  of the image space dimension <dt-fn>
+  of the image space dimension.<dt-fn>
   This idea was originally inspired by the work of Marron et al. <dt-cite key="marron2007distance"></dt-cite> on the <em>data piling phenomenon</em> affecting 
-  SVMs on high-dimensional low sample size data. </dt-fn>. </p>
+  SVMs on high-dimensional low sample size data. </dt-fn> </p>
   
   <h4> Setup </h4>
   
@@ -863,7 +862,7 @@
 	</div>
     <div class="value-w-input" id="value-w-input1"> </div>
   </div>
-  <p>  More precisely, both losses satisfy <dt-fn>
+  <p>  More precisely, both losses satisfy:<dt-fn>
   <u>Hinge loss</u><br>
   \begin{align}
     \max(1-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x}),0)& \quad\> \;=\; \quad\> \textstyle\lVert\boldsymbol{w}\rVert \, \max\left(\lVert\boldsymbol{w}\rVert^{-1}-y\,d(\boldsymbol{x}),0\right)\\
@@ -879,7 +878,7 @@
       \end{cases}\\
 	&\;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\; \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)
   \end{align}
-  </dt-fn>:
+  </dt-fn>
   $$f_{\lVert\boldsymbol{w}\rVert}\big(y\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\approx}\, 
   \lVert\boldsymbol{w}\rVert \, \max\left(-y\,d(\boldsymbol{x}),0\right)$$
   For convenience, we name the set of misclassified data:
@@ -890,9 +889,9 @@
   This expression contains a term which we call the <em>error distance</em>:
   $$d_{\text{err}} := \frac{1}{n}\sum_{(\boldsymbol{x},y) \in M}\!\left(-\,y\,d(\boldsymbol{x})\right)$$
   It is <em>positive</em> and can be interpreted as the average distance by which each training sample is misclassified by $\mathcal{C}$
-  (with a null contribution for the correctly classified data). It is related&mdash;although not exactly equivalent&mdash;to the training error <dt-fn> 
+  (with a null contribution for the correctly classified data). It is related&mdash;although not exactly equivalent&mdash;to the training error.<dt-fn> 
 	A small error distance $d_{\text{err}}$ does not <em>guarantee</em> the training error $err_{\text{train}}$ to be small. 
-    For instance in the worst case, when all the data lies exactly on the boundary, $d_{\text{err}} = 0$ and $err_{\text{train}} = 100\%$.</dt-fn>.</p>
+    For instance in the worst case, when all the data lies exactly on the boundary, $d_{\text{err}} = 0$ and $err_{\text{train}} = 100\%$.</dt-fn></p>
   
   <p> Finally we have:
   $$\text{minimize: }R(\boldsymbol{w},b) \;\underset{\lVert\boldsymbol{w}\rVert \to +\infty}{\iff}\; \text{minimize: $d_{\text{err}}$}$$
@@ -907,7 +906,7 @@
     <div class="value-w-input" id="value-w-input2"> </div>
   </div>
   
-  <p> More precisely, both losses satisfy <dt-fn>
+  <p> More precisely, both losses satisfy:<dt-fn>
   <u>Hinge loss</u><br>
   $$\max(1-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x}),0) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{=}\; 1-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})$$
   $$\alpha = 1 \quad\text{and}\quad \beta = 1$$
@@ -915,7 +914,7 @@
   $$\ln\left(1+e^{-\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})}\right) \;\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\; 
   \ln(2)-\frac{1}{2}\,\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})$$
   $$\alpha = \ln(2) \quad\text{and}\quad \beta = \frac{1}{2}$$
-  </dt-fn>:
+  </dt-fn>
   $$f_{\lVert\boldsymbol{w}\rVert}\big(y\,d(\boldsymbol{x})\big) \,\underset{\lVert\boldsymbol{w}\rVert\ \to 0}{\approx}\, 
   \alpha - \beta\;\lVert\boldsymbol{w}\rVert\,y\,d(\boldsymbol{x})$$
   for some positive values $\alpha$ and $\beta$.</p>
@@ -1070,18 +1069,18 @@
   <p> On a given training set $T$ where the distance between the two centroids $\lVert\boldsymbol{j}-\boldsymbol{i}\rVert$ is fixed, 
   $d_{\text{adv}}$ depends only on the tilting angle $\theta$. Two observations follow: <br>
   <ul> 
-  <li> The adversarial example phenomenon is minimized by the nearest centroid classifier ($\theta = 0$) <dt-fn>
+  <li> The adversarial example phenomenon is minimized by the nearest centroid classifier ($\theta = 0$).<dt-fn>
   ...and the classifiers parallel to it: $d_{\text{adv}}$ is independent of the bias $b$. This explains why the models defined by SVM are poorly adjusted when 
-  regularization is high,    resulting in very high training and test errors (see for instance the classification of 1s vs 8s when $\lambda = 10^7$ in the next section).</dt-fn>.</li>
+  regularization is high,    resulting in very high training and test errors (see for instance the classification of 1s vs 8s when $\lambda = 10^7$ in the next section).</dt-fn></li>
   <li> Adversarial examples can be arbitrarily strong when $\theta \to \pi/2$ <br>(as was the case with the classifier $\mathscr{L}_{\theta}$ in the toy problem section).</li>
   </ul>
   
   <h3> Example: SVM on MNIST </h3>
   
   <p> We now illustrate the previous considerations on binary classification of MNIST digits. For each possible pair of digit classes, 
-  we train multiple SVM models $(\boldsymbol{w}, b)$ for a regularization parameter $\lambda \in [10^{-1}, 10^7]$ using a training set of $3000$ images per class <dt-fn>
+  we train multiple SVM models $(\boldsymbol{w}, b)$ for a regularization parameter $\lambda \in [10^{-1}, 10^7]$ using a training set of $3000$ images per class.<dt-fn>
   More precisely, we train for each pair of digit classes 81 models with a regularization parameter $\lambda = 10^{\alpha}$ with $\alpha$ ranging from $-1$ to $7$ by steps
-  of $0.1$.</dt-fn>. </p>
+  of $0.1$.</dt-fn> </p>
 
   <p> We start by plotting the distributions of the distances $y\,d(\boldsymbol{x})$ between the training data and the boundary as a function of the regularization parameter
   $\lambda$ (grey histograms). We superimpose the loss function $f_{\lVert\boldsymbol{w}\rVert}$ as scaled after the convergence of each model (blue line).<p>
@@ -1111,15 +1110,10 @@
   <p> To get a better understanding of how the two objectives are balanced, we can look at the training data under a different point of view.</p>
   
   <p> We first compute the unit weight vector $\boldsymbol{\hat{z}}$ of the nearest centroid classifier. Then for each SVM model $(\boldsymbol{w}, b)$, 
-  we compute the unit vector $\boldsymbol{\hat{n}}$ such that $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$ is an orthonormal basis of the tilting plane of $\boldsymbol{w}$ <dt-fn>
+  we compute the unit vector $\boldsymbol{\hat{n}}$ such that $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$ is an orthonormal basis of the tilting plane of $\boldsymbol{w}$.<dt-fn>
   We do this by using the Gram-Schmidt process: 
   $$\boldsymbol{\hat{n}} = \frac{\boldsymbol{n}}{\lVert\boldsymbol{n}\rVert} \quad\quad \text{with} \quad\quad \boldsymbol{n} = \boldsymbol{w} - (\boldsymbol{w} \!\cdot\! \boldsymbol{\hat{z}})\,\boldsymbol{\hat{z}}$$
-  </dt-fn>. Finally, we project the training data in $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$:
-  <!--and we then project the training data in the plane 
-  $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$ containing $\boldsymbol{w}$ <dt-fn>
-  The vector $\boldsymbol{\hat{n}}$ is defined for each model as:
-
-  </dt-fn>.-->
+  </dt-fn> Finally, we project the training data in $(\boldsymbol{\hat{z}},\boldsymbol{\hat{n}})$:
   </p>
   
   <style>
@@ -1205,14 +1199,14 @@
   
   <p> $\phi$ is piecewise linear and around each image $x$ there is a local linear region $\mathcal{L}_x$ within which:
   $$\phi(W_1 \, x + b_1) = W_1^x \, x + b_1^x$$
-  where $W_1^x$ and $b_1^x$ are obtained by zeroing some lines in $W_1$ and $b_1$ respectively <dt-fn>
+  where $W_1^x$ and $b_1^x$ are obtained by zeroing some lines in $W_1$ and $b_1$ respectively.<dt-fn>
   More precisely, the $i^{th}$ lines in $W_1^x$ and $b_1^x$ are:
   $$\left(W_1^x\,,\,b_1^x\right)_i = 
   \begin{cases}
     \left(W_1\,,\,b_1\right)_i  \quad & \text{if } \left(W_1\,x + b_1\right)_i \gt 0\\
     0                                 & \text{if } \left(W_1\,x + b_1\right)_i \leq 0
   \end{cases}$$
-  </dt-fn>. Within $\mathcal{L}_x$, the raw score can thus be written:
+  </dt-fn> Within $\mathcal{L}_x$, the raw score can thus be written:
   $$s(x) = W_2 W_1^x \, x + W_2 b_1^x + b_2$$
   This can be seen as the raw score of a local linear classifier $\mathcal{C}_x$ and
   our analysis of the linear case then applies almost without modifications. First, we observe that $s(x)$ is a scaled distance. 
@@ -1358,11 +1352,11 @@
   cross_entropy_loss();
   </script>
   
-  <p> Now, varying weight decay influences the scaling of the logits, effectively acting as a <em>temperature</em> parameter for the softmax function <dt-fn>
+  <p> Now, varying weight decay influences the scaling of the logits, effectively acting as a <em>temperature</em> parameter for the softmax function.<dt-fn>
   We can redefine the softmax function as:
   $$\text{softmax}_i(s(x),t) := \frac{e^{\frac{s_i(x)}{t}}}{\displaystyle \sum_j \textstyle e^{\frac{s_j(x)}{t}}}$$
   where $t$ is the temperature parameter. It was introduced in the context of network distillation <dt-cite key="hinton2015distilling"></dt-cite>
-  and controls the softness of the softmax function.</dt-fn>. When weight decay is very low, the probability distributions generated are close to one-hot encodings 
+  and controls the softness of the softmax function.</dt-fn> When weight decay is very low, the probability distributions generated are close to one-hot encodings 
   ($p_y(x) \approx 0 \text{ or } 1$) and only the misclassified data produces non-zero penalties. With higher weight decay however, 
   the probability distributions generated become smoother and the correctly classified data starts to participate to the training, thus preventing overfitting. </p>
   
@@ -1449,14 +1443,14 @@
   <p> Finally, let's submit the two networks to the same visual evaluation: for a random instance of each digit, 
   we generate a high confidence adversarial example targeted to perform a cyclic permutation of the labels $0 \to 1$, $1 \to 2$, ..., $9 \to 0$. 
   Specifically, each adversarial example is generated by performing gradient ascent on the probability of the desired label until the median value of $0.95$
-  is reached <dt-fn>
+  is reached.<dt-fn>
   On each network, we set the temperature $t$ of the softmax layer such that the median classification score over the test set is 0.95.<br><br>
   
   For a target label $l$, the gradient $\nabla_{\!x}\, p_l(x)$ (computed by backpropagation) gives the direction of steepest ascent towards $l$.
   Here, we generated each adversarial example $x^\prime$ by iterating the following update rule:
   $$x^\prime = \text{clip}_{[0,255]} \left(x^\prime + 1.0 \times \frac{\nabla_{\!x^\prime}\, p_l(x^\prime)}{\lVert \nabla_{\!x^\prime}\, p_l(x^\prime) \rVert}\right)$$
   until $p_l(x^\prime) = 0.95$.
-  </dt-fn>.
+  </dt-fn>
   We show below the $10$ original images $\text{OI}$ with their corresponding adversarial examples $\text{AE}$ and adversarial perturbations $\text{Pert}$ for the two networks.</p>
 
   <style>
