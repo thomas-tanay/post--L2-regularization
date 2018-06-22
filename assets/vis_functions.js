@@ -156,7 +156,7 @@ function abstract_fig(){
               .attr("x", x(-mean_x*Math.cos(theta)))
               .attr("y", -200)
               .attr("width", 2*(x(mean_x*Math.cos(theta))-x(0)))
-              .attr("height", width+200);
+              .attr("height", height+400);
 		
 		var d_adv_width = 2*mean_x*Math.cos(theta);
 		var anchor_x = -mean_x + 5.1*Math.tan(theta);
@@ -204,7 +204,7 @@ function abstract_fig(){
               .attr("x1", x(-extras[1][80-reg_index]))
               .attr("y1", -200)
               .attr("x2", x(-extras[1][80-reg_index]))
-              .attr("y2", width+200);
+              .attr("y2", height+200);
 			
 	    // w_theta
         w_line.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
@@ -876,7 +876,7 @@ function toy_problem1(){
 	           .attr("text-anchor", "middle")
 	           .attr("id","toy-problem1-text")
                .attr("x", space_x + space_scale(a))
-	           .attr("y", space_y + space_scale(-b) + 20)
+	           .attr("y", space_y + space_scale(-b) + 23)
                .text("("+parseFloat(a).toFixed(1)+", "+parseFloat(b).toFixed(1)+")");
 			
     // bracket
@@ -906,7 +906,7 @@ function toy_problem1(){
 		 
     var path = d3.path();
         path.moveTo(im_x - 10, im_y + im_size/2);
-		path.bezierCurveTo(im_x - 10 - 90, im_y + im_size/2, space_x + space_scale(a) + 90, space_y + space_scale(-b), space_x + space_scale(a), space_y + space_scale(-b));
+		path.bezierCurveTo(im_x - 10 - 90, im_y + im_size/2, space_x + space_scale(a) + 90, space_y + space_scale(-b), space_x + space_scale(a) + 13, space_y + space_scale(-b));
 
     bracket.append("path")
 	       .attr("id","toy-problem1-path")
@@ -915,16 +915,24 @@ function toy_problem1(){
     bracket.append("polygon")
 	       .attr("id","toy-problem1-polygon")
 	       .attr("fill", "rgb(0%,0%,0%)")
-           .attr("points", (space_x + space_scale(a) + 5) + "," + (space_y + space_scale(-b)) + " " +
-		                   (space_x + space_scale(a) + 10) + "," + (space_y + space_scale(-b) + 2) + " " + 
-						   (space_x + space_scale(a) + 10) + "," + (space_y + space_scale(-b) - 2));
-		   
+           .attr("points", (space_x + space_scale(a) + 8) + "," + (space_y + space_scale(-b)) + " " +
+		                   (space_x + space_scale(a) + 13) + "," + (space_y + space_scale(-b) + 2) + " " + 
+						   (space_x + space_scale(a) + 13) + "," + (space_y + space_scale(-b) - 2));
+
 	bracket.append("circle")
 	       .attr("id","toy-problem1-circle")
 	       .attr("cx", space_x + space_scale(a))
 		   .attr("cy", space_y + space_scale(-b))
-		   .attr("r", 5)
+		   .attr("r", 8)
 		   .attr("fill", "rgb(95%,95%,95%)");
+						   
+	bracket.append("svg:image")
+		   .attr("id","toy-problem1-hand")
+           .attr('x', space_x + space_scale(a) - 10)
+           .attr('y', space_y + space_scale(-b) - 10)
+           .attr('width', 20)
+		   .attr('height', 20)
+           .attr("xlink:href","assets/hand_pointer.png");
 		   
     var path = d3.path();
         path.moveTo(text_x - 7, text_y + 2);
@@ -959,19 +967,23 @@ function toy_problem1(){
 	
     var path = d3.path();
         path.moveTo(im_x - 10, im_y + im_size/2);
-		path.bezierCurveTo(im_x - 10 - 90, im_y + im_size/2, space_x + space_scale(a) + 90, space_y + space_scale(-b), space_x + space_scale(a), space_y + space_scale(-b));	
+		path.bezierCurveTo(im_x - 10 - 90, im_y + im_size/2, space_x + space_scale(a) + 90, space_y + space_scale(-b), space_x + space_scale(a) + 13, space_y + space_scale(-b));	
 
 	d3.select("#toy-problem1-path")
 	  .attr("d", path.toString());
 	
     d3.select("#toy-problem1-polygon")
-	  .attr("points", (space_x + space_scale(a) + 5) + "," + (space_y + space_scale(-b)) + " " +
-		              (space_x + space_scale(a) + 10) + "," + (space_y + space_scale(-b) + 2) + " " + 
-					  (space_x + space_scale(a) + 10) + "," + (space_y + space_scale(-b) - 2));
+	  .attr("points", (space_x + space_scale(a) + 8) + "," + (space_y + space_scale(-b)) + " " +
+		              (space_x + space_scale(a) + 13) + "," + (space_y + space_scale(-b) + 2) + " " + 
+					  (space_x + space_scale(a) + 13) + "," + (space_y + space_scale(-b) - 2));
 	  
 	d3.select("#toy-problem1-circle")
 	  .attr("cx", space_x + space_scale(a))
 	  .attr("cy", space_y + space_scale(-b));
+	  
+	d3.select("#toy-problem1-hand")
+      .attr('x', space_x + space_scale(a) - 10)
+      .attr('y', space_y + space_scale(-b) - 10);
 	  
 	d3.select("#toy-problem1-background-rect")
       .attr("fill", d3.interpolateBlues((b+1)/2));
@@ -981,7 +993,7 @@ function toy_problem1(){
 	  
 	d3.select("#toy-problem1-text")
       .attr("x", space_x + space_scale(a))
-	  .attr("y", space_y + space_scale(-b) + 20)
+	  .attr("y", space_y + space_scale(-b) + 23)
       .text("("+parseFloat(a).toFixed(1)+", "+parseFloat(b).toFixed(1)+")");
 	 
 	d3.select("#toy-problem1-labela")
@@ -991,7 +1003,7 @@ function toy_problem1(){
   }
   
   init_toy_problem();
-  d3.select("#toy-problem1-circle").call(d3.drag().on("drag", mousemove));
+  d3.select("#toy-problem1-hand").call(d3.drag().on("drag", mousemove));
 }
 
 function toy_problem2(){
@@ -4147,9 +4159,9 @@ function sx() {
 
   plot.append("line")
       .attr("x1", x(0))
-	  .attr("y1", y(-5))
+	  .attr("y1", y(-1) + height/2)
 	  .attr("x2", x(0))
-	  .attr("y2", y(5))
+	  .attr("y2", y(7) + height/2)
 	  .attr('stroke',orange)
 	  .attr("stroke-opacity",1)
 	  .attr("stroke-width", 2.5);
@@ -4246,7 +4258,7 @@ function ysx() {
       .attr("x1", x(0))
 	  .attr("y1", y(-2))
 	  .attr("x2", x(0))
-	  .attr("y2", y(8))
+	  .attr("y2", y(7))
 	  .attr('stroke', orange)
 	  .attr("stroke-opacity", 1)
 	  .attr("stroke-width", 2.5);
@@ -4362,7 +4374,7 @@ function fysx() {
       .attr("x1", x(0))
 	  .attr("y1", y(-2))
 	  .attr("x2", x(0))
-	  .attr("y2", y(8))
+	  .attr("y2", y(7))
 	  .attr('stroke', orange)
 	  .attr("stroke-opacity", 1)
 	  .attr("stroke-width", 2.5);
@@ -4416,7 +4428,7 @@ function loss_functions() {
               .attr("x1", x(0))
 	          .attr("y1", y(-2))
 	          .attr("x2", x(0))
-	          .attr("y2", y(8))
+	          .attr("y2", y(7))
 	          .attr('stroke',"rgb(0%,0%,0%)")
 			  .attr("stroke-opacity",0.2)
 			  .attr("stroke-width", 1);
@@ -4469,7 +4481,7 @@ function loss_functions() {
             .attr("x1", x(0))
 	        .attr("y1", y(-2))
 	        .attr("x2", x(0))
-	        .attr("y2", y(8))
+	        .attr("y2", y(7))
 	        .attr('stroke',"rgb(0%,0%,0%)")
 			.attr("stroke-opacity",0.2)
 			.attr("stroke-width", 1);
@@ -4529,7 +4541,7 @@ function loss_functions() {
                .attr("x1", x(0))
 	           .attr("y1", y(-2))
 	           .attr("x2", x(0))
-	           .attr("y2", y(8))
+	           .attr("y2", y(7))
 	           .attr('stroke',"rgb(0%,0%,0%)")
 			   .attr("stroke-opacity",0.2)
 			   .attr("stroke-width", 1);
@@ -4684,7 +4696,7 @@ function scaling_f() {
            .attr("x1", x(0))
 	       .attr("y1", y(-2))
 	       .attr("x2", x(0))
-	       .attr("y2", y(8))
+	       .attr("y2", y(7))
 	       .attr('stroke', orange)
 	       .attr("stroke-opacity", 1)
 	       .attr("stroke-width", 2.5);
@@ -4765,7 +4777,7 @@ function scaling_f() {
            .attr("x1", x(0))
 	       .attr("y1", y(-2))
 	       .attr("x2", x(0))
-	       .attr("y2", y(8))
+	       .attr("y2", y(7))
 	       .attr('stroke',"rgb(0%,0%,0%)")
 		   .attr("stroke-opacity",0.2)
 		   .attr("stroke-width", 1);
@@ -4800,7 +4812,7 @@ function scaling_f() {
            .attr("x1", x(0))
 	       .attr("y1", y(-2))
 	       .attr("x2", x(0))
-	       .attr("y2", y(8))
+	       .attr("y2", y(7))
 	       .attr('stroke', orange)
 	       .attr("stroke-opacity", 1)
 	       .attr("stroke-width", 2.5);
@@ -5295,9 +5307,9 @@ function d_adv() {
      .attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
 	 .attr("fill", "rgba(0,0,0,0.07)")
      .attr("x", x(mean0_x*Math.cos(theta)))
-     .attr("y", -500)
+     .attr("y", -100)
      .attr("width", 2*(x(mean1_x*Math.cos(theta))-x(0)))
-     .attr("height", plot_w+1000);
+     .attr("height", plot_w+200);
   
   var d_adv_width = 2*mean1_x*Math.cos(theta);
   svg.append("line")
@@ -5357,43 +5369,6 @@ function d_adv() {
      .attr("y1", y(mean0_y))
      .attr("x2", x(mean1_x))
      .attr("y2", y(mean1_y));
-	 
-  /*svg.append("path")
-	 .attr("d","M "+ (x(mean0_x)+5) +" "+ (y(mean0_y)+3) +" L "+ x(mean0_x) +" "+ y(mean0_y) +" L "+ (x(mean0_x)+5) +" "+ (y(mean0_y)-3))
-     .style("stroke-width", 0.5)
-     .style("stroke", "rgb(40%,40%,40%)")
-     .style("fill", "none");
-			  
-  svg.append("path")
-	 .attr("d","M "+ (x(mean1_x)-5) +" "+ (y(mean1_y)+3) +" L "+ x(mean1_x) +" "+ y(mean1_y) +" L "+ (x(mean1_x)-5) +" "+ (y(mean1_y)-3))
-     .style("stroke-width", 0.5)
-     .style("stroke", "rgb(40%,40%,40%)")
-     .style("fill", "none");
-	 
-  svg.append("text")
-     .attr("fill", "rgb(60%,60%,60%)")
-	 .attr("font-family","Roboto")
-	 .attr("font-size", "13px")
-	 .attr("text-anchor", "start")
-     .attr("x", x(mean1_x)+15)
-	 .attr("y", y(mean1_y)+2)
-	 .text("||")
-	 .append("tspan")
-     .attr("font-weight", "bold")
-	 .attr("font-style", "italic")
-	 .text(" j ")
-	 .append("tspan")
-     .attr("font-weight", "normal")
-	 .attr("font-style", "normal")
-	 .text(" - ")
-	 .append("tspan")
-     .attr("font-weight", "bold")
-	 .attr("font-style", "italic")
-	 .text(" i ")
-	 .append("tspan")
-     .attr("font-weight", "normal")
-	 .attr("font-style", "normal")
-	 .text("||");*/
 	 
   svg.append("line")
 	 .attr("transform", "rotate("+ (-90*2/Math.PI*theta) +","+ x(mean0_x+7) +","+ y(0) +")")
@@ -5570,7 +5545,7 @@ function svm_mnist1(){
       .attr("x1", x(0))
 	  .attr("y1", y(-2))
 	  .attr("x2", x(0))
-	  .attr("y2", y(8))
+	  .attr("y2", y(7))
 	  .attr('stroke', orange)
 	  .attr("stroke-opacity", 1)
       .attr("stroke-width", 2.5);
@@ -6507,9 +6482,9 @@ function svm_mnist2(){
 	    d_adv_margin.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
 	                .attr("fill", "rgba(0,0,0,0.07)")
                     .attr("x", x(-mean_x*Math.cos(theta)))
-                    .attr("y", -200)
+                    .attr("y", -plot_h/2)
                     .attr("width", 2*(x(mean_x*Math.cos(theta))-x(0)))
-                    .attr("height", plot_w+200);
+                    .attr("height", 2*plot_h);
 		
 		var d_adv_width = 2*mean_x*Math.cos(theta);
 		var anchor_x = -mean_x + 4.7*Math.tan(theta);
@@ -6554,7 +6529,7 @@ function svm_mnist2(){
                 .attr("x1", x(-extras[1][40]))
 	            .attr("y1", -plot_h/2)
 	            .attr("x2", x(-extras[1][40]))
-	            .attr("y2", 2*plot_h)
+	            .attr("y2", 3*plot_h/2)
 	            .attr("stroke", orange);
 				
 	    // w_theta
@@ -7047,16 +7022,16 @@ function svm_mnist3(){
 	  function draw_layer1() {
 	    background_left.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
                        .attr("fill",light_left_color)
-			           .attr("x", x(-extras[1][40])-x(0)-plot_w/2)
+			           .attr("x", x(-extras[1][40])-x(0)-plot_w/4)
                        .attr("y", -plot_h/2)
-                       .attr("width", plot_w)
+                       .attr("width", 3*plot_w/4)
                        .attr("height", 2*plot_h);
 			  
         background_right.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
                         .attr("fill",light_right_color)
 			            .attr("x", x(-extras[1][40])-x(0)+plot_w/2)
                         .attr("y", -plot_h/2)
-                        .attr("width", plot_w)
+                        .attr("width", 3*plot_w/4)
                         .attr("height", 2*plot_h);
 	  }
 
@@ -7099,7 +7074,7 @@ function svm_mnist3(){
                 .attr("x1", x(-extras[1][40]))
 	            .attr("y1", -plot_h/2)
 	            .attr("x2", x(-extras[1][40]))
-	            .attr("y2", 2*plot_h)
+	            .attr("y2", 3*plot_h/2)
 	            .attr("stroke", orange);
 				
 	    // imx imxm imy imym	  
@@ -7194,7 +7169,7 @@ function svm_mnist3(){
 		theta = extras[0][80-reg_index];
 		
 	    background_left.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
-			           .attr("x", x(-extras[1][80-reg_index])-x(0)-plot_w/2);
+			           .attr("x", x(-extras[1][80-reg_index])-x(0)-plot_w/4);
 					   
         background_right.attr("transform", "rotate("+ (- 90*2/Math.PI*theta) +","+ x(0) +","+ y(0) +")")
 			            .attr("x", x(-extras[1][80-reg_index])-x(0)+plot_w/2);
