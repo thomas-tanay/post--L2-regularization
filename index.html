@@ -125,11 +125,6 @@
 	    <div> Imagine two high dimensional clusters and a hyperplane separating them. </div>
 		<div> Consider in particular <b>the angle between</b>: <br> the direction joining the two clusters' centroids and the normal to the hyperplane. </div>
 		<div> In linear classification, this angle depends on the level of L2 regularization used. <br> &mdash; <em>Can you explain why?</em> &mdash; </div>
-	  
-		<!--In linear models and small neural nets, L2 regularization can be understood as a balancing mechanism between two objectives:
-		minimizing the training error $err_{\text{train}}$ and maximizing the average distance $d_{\text{adv}}$ between the data and the boundary. <br>
-		<br>
-		In practice, using an appropriate level of regularization helps avoid overfitting and constitutes a simple form of adversarial training.-->
 	  </div> 
 	</div>
   </div>
@@ -174,7 +169,7 @@
   <p> In linear classification, adversarial perturbations are often understood as a property of the dot product in high dimension. A widespread intuition is that:
   "for high dimensional problems, we can make many infinitesimal changes to the input that add up to one large change to the output" 
   <dt-cite key="goodfellow2014explaining"></dt-cite>.
-  Here, we challenge this intuition and argue instead that adversarial examples exist when the classification boundary lies close the data manifold&mdash;independently 
+  Here, we challenge this intuition and argue instead that adversarial examples exist when the classification boundary lies close to the data manifold&mdash;independently 
   of the image space dimension.<dt-fn>
   This idea was originally inspired by the work of Marron et al. <dt-cite key="marron2007distance"></dt-cite> on the <em>data piling phenomenon</em> affecting 
   SVMs on high-dimensional low sample size data. </dt-fn> </p>
