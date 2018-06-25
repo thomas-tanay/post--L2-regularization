@@ -5520,7 +5520,8 @@ function svm_mnist1(){
 	            .style("left", plot_x+"px")
 	            .style("top", plot_y+"px")
 	            .attr("width", plot_w)
-	            .attr("height", plot_h);
+	            .attr("height", plot_h)
+				.attr("overflow","hidden");
 
   plot.append("rect")
       .attr("fill","rgb(98%,98%,98%)")
@@ -6073,7 +6074,8 @@ function svm_mnist2(){
 	              .style("left", plot_x+"px")
 	              .style("top", plot_y+"px")
 	              .attr("width", plot_w)
-	              .attr("height", plot_h);
+	              .attr("height", plot_h)
+				  .attr("overflow","hidden");
 				  
   var d_adv_margin = layer3.append("rect");
   var mean0 = layer3.append("circle");
@@ -6699,7 +6701,8 @@ function svm_mnist3(){
 	              .style("left", plot_x+"px")
 	              .style("top", plot_y+"px")
 	              .attr("width", plot_w)
-	              .attr("height", plot_h);
+	              .attr("height", plot_h)
+				  .attr("overflow","hidden");
 
   var background_left = layer1.append("rect");
   var background_right = layer1.append("rect");
@@ -6709,7 +6712,8 @@ function svm_mnist3(){
 	              .style("left", plot_x+"px")
 	              .style("top", plot_y+"px")
 	              .attr("width", plot_w)
-	              .attr("height", plot_h);
+	              .attr("height", plot_h)
+				  .attr("overflow","hidden");
   var ctx_layer2 = layer2.node().getContext("2d");
   var container = fig.append("custom");
   
@@ -6718,7 +6722,8 @@ function svm_mnist3(){
 	              .style("left", plot_x+"px")
 	              .style("top", plot_y+"px")
 	              .attr("width", plot_w)
-	              .attr("height", plot_h);
+	              .attr("height", plot_h)
+				  .attr("overflow","hidden");
 				  
   var boundary = layer3.append("line");
   var point_x = layer3.append("circle");
