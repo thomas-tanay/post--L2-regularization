@@ -51,6 +51,20 @@
 <script src="assets/vis_functions.js"></script>
 <script src="assets/template.v1.js"></script>
 
+	<script type="text/javascript">
+	  var _paq = _paq || [];
+	  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+	  _paq.push(['trackPageView']);
+	  _paq.push(['enableLinkTracking']);
+	  (function() {
+		var u="//piwik.martinruenz.de/";
+		_paq.push(['setTrackerUrl', u+'piwik.php']);
+		_paq.push(['setSiteId', '2']);
+		var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+		g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+	  })();
+	</script>
+
 </head>
 
 <body>
@@ -1254,7 +1268,7 @@ input[type=range]::-ms-thumb {
   }
   </style>
   
-  <p> The model is sensitive to strong adverarial examples ($||\boldsymbol{x}_m-\boldsymbol{x}|| \to 0$ and $||\boldsymbol{y}_m-\boldsymbol{y}|| \to 0$)
+  <p> The model is sensitive to strong adversarial examples ($||\boldsymbol{x}_m-\boldsymbol{x}|| \to 0$ and $||\boldsymbol{y}_m-\boldsymbol{y}|| \to 0$)
 	when the tilting angle approaches $\pi/2$. This is a symptom of strong overfitting, and whether it occurs or not depends on the difficulty 
 	to separate the two classes (compare for instance the classification of $7s$ versus $9s$ and the classification of $0s$ versus $1s$). </li>
   </ul>
